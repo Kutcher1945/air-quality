@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { CircleMarker, MapContainer, Popup, TileLayer } from "react-leaflet"
 import { CRS } from "leaflet"
 import type { LatLngExpression } from "leaflet"
@@ -28,6 +28,12 @@ interface SensorMapProps {
   sensors: Sensor[]
 }
 
+type DailyStat = {
+  pm25?: number
+  no2?: number
+  datetime?: string
+}
+
 const DEFAULT_CENTER: LatLngExpression = [43.238949, 76.889709] // Almaty
 
 const YANDEX_TILE_URL =
@@ -44,10 +50,42 @@ const getMarkerColor = (pm25?: number | null) => {
 }
 
 export default function SensorMapYandex({ sensors }: SensorMapProps) {
+  const [dailyStats, setDailyStats] = useState<Record<string, DailyStat | null>>({})
+  const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set())
+
   const markers = useMemo(
     () => sensors.filter((sensor) => sensor.latitude !== null && sensor.latitude !== undefined && sensor.longitude !== null && sensor.longitude !== undefined),
     [sensors],
   )
+
+  const fetchDailyStat = async (sensorId: string) => {
+    if (!sensorId) return
+    if (dailyStats[sensorId] !== undefined) return
+    if (loadingIds.has(sensorId)) return
+
+    const nextLoading = new Set(loadingIds)
+    nextLoading.add(sensorId)
+    setLoadingIds(nextLoading)
+
+    try {
+      const resp = await fetch(`https://api.air.org.kz/api/stats/daily?station_id=${sensorId}`)
+      if (!resp.ok) throw new Error(`Failed ${resp.status}`)
+      const data = await resp.json()
+      const first = Array.isArray(data) ? data[0] : data?.[0] || data
+      const stat: DailyStat = {
+        pm25: first?.pm25 ?? first?.avg_pm25 ?? first?.value,
+        no2: first?.no2,
+        datetime: first?.datetime || first?.date,
+      }
+      setDailyStats((prev) => ({ ...prev, [sensorId]: stat }))
+    } catch (_err) {
+      setDailyStats((prev) => ({ ...prev, [sensorId]: null }))
+    } finally {
+      const updated = new Set(nextLoading)
+      updated.delete(sensorId)
+      setLoadingIds(updated)
+    }
+  }
 
   if (!markers.length) {
     return (
@@ -70,10 +108,13 @@ export default function SensorMapYandex({ sensors }: SensorMapProps) {
         const metric = sensor.latest_measurement
         const color = getMarkerColor(metric?.pm25)
         const coords: LatLngExpression = [Number(sensor.latitude), Number(sensor.longitude)]
+        const sensorKey = sensor.sensor_id.toString()
+        const currentDaily = dailyStats[sensorKey]
+        const isLoadingDaily = loadingIds.has(sensorKey)
 
         return (
           <CircleMarker
-            key={sensor.sensor_id}
+            key={sensorKey}
             center={coords}
             radius={10}
             pathOptions={{
@@ -82,11 +123,15 @@ export default function SensorMapYandex({ sensors }: SensorMapProps) {
               fillOpacity: 0.85,
               weight: 2,
             }}
+            eventHandlers={{
+              click: () => fetchDailyStat(sensorKey),
+              popupopen: () => fetchDailyStat(sensorKey),
+            }}
           >
             <Popup>
               <div className="space-y-1 text-sm">
                 <p className="font-semibold text-foreground">{sensor.name || "Станция"}</p>
-                {sensor.district && <p className="text-muted-foreground">Район: {sensor.district}</p>}
+                {sensor.district && <p className="text-muted-foreground">Поставщик: {sensor.district}</p>}
                 {metric ? (
                   <>
                     {metric.pm25 !== null && metric.pm25 !== undefined && (
@@ -102,7 +147,30 @@ export default function SensorMapYandex({ sensors }: SensorMapProps) {
                     {metric.datetime && <p className="text-xs text-muted-foreground">Обновлено: {new Date(metric.datetime).toLocaleString()}</p>}
                   </>
                 ) : (
-                  <p className="text-muted-foreground">Нет свежих измерений</p>
+                  <p className="text-muted-foreground">Нет свежих измерений (подгружаем суточные)</p>
+                )}
+                {isLoadingDaily && <p className="text-xs text-muted-foreground">Подгружаем суточные данные…</p>}
+                {!isLoadingDaily && currentDaily === null && (
+                  <p className="text-muted-foreground">Суточные данные отсутствуют</p>
+                )}
+                {!isLoadingDaily && currentDaily && (
+                  <>
+                    {currentDaily.pm25 !== undefined && currentDaily.pm25 !== null && (
+                      <p>
+                        Текущее (api/stats/daily): <span className="font-semibold">{currentDaily.pm25}</span>
+                      </p>
+                    )}
+                    {currentDaily.no2 !== undefined && currentDaily.no2 !== null && (
+                      <p>
+                        NO2 (суточн.): <span className="font-semibold">{currentDaily.no2}</span>
+                      </p>
+                    )}
+                    {currentDaily.datetime && (
+                      <p className="text-xs text-muted-foreground">
+                        Обновлено (api/stats/daily): {new Date(currentDaily.datetime).toLocaleString()}
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
             </Popup>

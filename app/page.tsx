@@ -2,7 +2,8 @@
 
 import dynamic from "next/dynamic"
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Moon, Sun } from "lucide-react"
+import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import type { Sensor } from "@/components/sensor-map-yandex"
@@ -64,6 +65,7 @@ const computeStatisticsFromData = (data: Record<string, number>): Statistics | n
 }
 
 export default function AirQualityDashboard() {
+  const { resolvedTheme, setTheme } = useTheme()
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
   const [aqiData, setAqiData] = useState<Record<string, number>>({})
   const [statistics, setStatistics] = useState<Statistics | null>(null)
@@ -75,6 +77,8 @@ export default function AirQualityDashboard() {
   const [districtFilter, setDistrictFilter] = useState<string | "all">("all")
   const [onlyActive, setOnlyActive] = useState(true)
   const [onlyWithData, setOnlyWithData] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const themeIsDark = resolvedTheme === "dark"
 
   const MIN_YEAR = 2019
   const MAX_YEAR = new Date().getFullYear()
@@ -226,6 +230,21 @@ export default function AirQualityDashboard() {
     setOnlyWithData(false)
   }
 
+  const toggleTheme = () => {
+    setTheme(themeIsDark ? "light" : "dark")
+  }
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const lastCalendarDate = useMemo(() => {
+    const dates = Object.keys(aqiData || {})
+    if (!dates.length) return null
+    const maxMs = Math.max(...dates.map((d) => new Date(d).getTime()))
+    return new Date(maxMs).toISOString()
+  }, [aqiData])
+
   const generateMockData = () => {
     const mockData: Record<string, number> = {}
     const startDate = new Date(2019, 0, 9) // January 9, 2019
@@ -357,11 +376,11 @@ export default function AirQualityDashboard() {
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Air Quality / Алматы</p>
             <h1 className="text-4xl font-bold text-foreground">Календарь качества воздуха</h1>
             <p className="text-muted-foreground">
-              PM2.5 с 9 января 2019 по сегодня. Последние данные:{" "}
-              {latestSensorUpdate ? new Date(latestSensorUpdate).toLocaleString("ru-RU") : "—"}
+              PM2.5 с 9 января 2019 по сегодня. Последние данные календаря:{" "}
+              {lastCalendarDate ? new Date(lastCalendarDate).toLocaleDateString("ru-RU") : "—"}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -381,6 +400,23 @@ export default function AirQualityDashboard() {
             >
               Следующий год
               <ChevronRight className="ml-1 h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={toggleTheme}
+              className="border-border bg-transparent"
+              aria-label="Toggle theme"
+            >
+              {mounted ? (
+                themeIsDark ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )
+              ) : (
+                <div className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </header>

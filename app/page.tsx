@@ -27,6 +27,42 @@ interface Statistics {
 
 const SensorMap = dynamic(() => import("@/components/sensor-map-yandex"), { ssr: false })
 
+const normalizeApiStats = (apiStats: any): Statistics | null => {
+  if (!apiStats) return null
+  const pm25 = apiStats.pm25 || {}
+
+  return {
+    total_days: apiStats.total_days ?? 0,
+    good_days: pm25.good_days ?? 0,
+    moderate_days: pm25.moderate_days ?? 0,
+    sensitive_days: pm25.sensitive_days ?? 0,
+    unhealthy_days: pm25.unhealthy_days ?? 0,
+    very_unhealthy_days: pm25.very_unhealthy_days ?? 0,
+    hazardous_days: pm25.hazardous_days ?? 0,
+    avg_pm25: pm25.avg ?? undefined,
+    max_pm25: pm25.max ?? undefined,
+    min_pm25: pm25.min ?? undefined,
+  }
+}
+
+const computeStatisticsFromData = (data: Record<string, number>): Statistics | null => {
+  const values = Object.values(data || {})
+  if (!values.length) return null
+
+  return {
+    total_days: values.length,
+    good_days: values.filter((v) => v <= 15).length,
+    moderate_days: values.filter((v) => v > 15 && v <= 35).length,
+    sensitive_days: values.filter((v) => v > 35 && v <= 55).length,
+    unhealthy_days: values.filter((v) => v > 55 && v <= 150).length,
+    very_unhealthy_days: values.filter((v) => v > 150 && v <= 250).length,
+    hazardous_days: values.filter((v) => v > 250).length,
+    avg_pm25: values.reduce((a, b) => a + b, 0) / values.length,
+    max_pm25: Math.max(...values),
+    min_pm25: Math.min(...values),
+  }
+}
+
 export default function AirQualityDashboard() {
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
   const [aqiData, setAqiData] = useState<Record<string, number>>({})
@@ -117,11 +153,15 @@ export default function AirQualityDashboard() {
 
         const processedData: Record<string, number> = {}
         result.data?.forEach((item: AQIData) => {
-          processedData[item.date] = item.avg_pm25
+          if (item.avg_pm25 !== null && item.avg_pm25 !== undefined) {
+            processedData[item.date] = item.avg_pm25
+          }
         })
 
         setAqiData(processedData)
-        setStatistics(result.stats || null)
+        const fallbackStats = computeStatisticsFromData(processedData)
+        const apiStats = normalizeApiStats(result.stats)
+        setStatistics(fallbackStats || apiStats)
       } catch (error) {
         console.error("Failed to fetch air quality data:", error)
         setAqiData({})
@@ -310,22 +350,103 @@ export default function AirQualityDashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-background p-4 md:p-6">
-      <div className="w-full">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">Календарь качества воздуха</h1>
-          <p className="text-muted-foreground">Ежедневные данные мониторинга PM2.5 с 9 января 2019 по сегодня</p>
-        </div>
+    <main className="min-h-screen bg-background">
+      <div className="w-full px-4 pb-12 pt-8 md:px-8">
+        <header className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Air Quality / Алматы</p>
+            <h1 className="text-4xl font-bold text-foreground">Календарь качества воздуха</h1>
+            <p className="text-muted-foreground">
+              PM2.5 с 9 января 2019 по сегодня. Последние данные:{" "}
+              {latestSensorUpdate ? new Date(latestSensorUpdate).toLocaleString("ru-RU") : "—"}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={previousYear}
+              className="border-border bg-transparent"
+              disabled={!canGoPreviousYear}
+            >
+              <ChevronLeft className="mr-1 h-4 w-4" />
+              Предыдущий год
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={nextYear}
+              className="border-border bg-transparent"
+              disabled={!canGoNextYear}
+            >
+              Следующий год
+              <ChevronRight className="ml-1 h-4 w-4" />
+            </Button>
+          </div>
+        </header>
 
-        <Card className="mb-6 bg-card border-border">
+        {statistics && (
+          <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+            <Card className="bg-card border-border">
+              <CardContent className="pt-4">
+                <p className="mb-1 text-xs text-muted-foreground">Всего дней</p>
+                <p className="text-2xl font-bold text-foreground">{statistics.total_days}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border">
+              <CardContent className="pt-4">
+                <p className="mb-1 text-xs text-muted-foreground">Среднее PM2.5</p>
+                <p className="text-2xl font-bold text-foreground">{statistics.avg_pm25?.toFixed(1) || "—"}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border">
+              <CardContent className="pt-4">
+                <p className="mb-1 text-xs text-muted-foreground">Хорошие дни</p>
+                <p className="text-2xl font-bold text-aqi-good">{statistics.good_days}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border">
+              <CardContent className="pt-4">
+                <p className="mb-1 text-xs text-muted-foreground">Умеренные дни</p>
+                <p className="text-2xl font-bold text-aqi-moderate">{statistics.moderate_days}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border">
+              <CardContent className="pt-4">
+                <p className="mb-1 text-xs text-muted-foreground">Вредные дни</p>
+                <p className="text-2xl font-bold text-aqi-unhealthy">{statistics.unhealthy_days}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border">
+              <CardContent className="pt-4">
+                <p className="mb-1 text-xs text-muted-foreground">Опасные дни</p>
+                <p className="text-2xl font-bold text-aqi-hazardous">{statistics.hazardous_days}</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        <Card className="mb-8 bg-card border-border">
           <CardHeader className="border-b border-border">
-            <CardTitle className="text-2xl">Карта сенсоров воздуха</CardTitle>
-            <CardDescription>Позиции станций из API /air-quality-sensors с последними измерениями</CardDescription>
+            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+              <div>
+                <CardTitle className="text-2xl">Карта сенсоров воздуха</CardTitle>
+                <CardDescription>
+                  {filteredSensors.length} из {sensors.length} сенсоров отображены · Активных: {activeSensors.length} · С
+                  данными PM2.5: {sensorsWithData.length}
+                </CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={resetFilters} className="border-border">
+                  Сбросить фильтры
+                </Button>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="p-4 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <CardContent className="space-y-4 p-4">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-4 md:items-end">
               <div className="flex flex-col gap-1">
-                <label className="text-sm text-muted-foreground">Поиск по названию или поставщику</label>
+                <label className="text-sm text-muted-foreground">Поиск по названию или району</label>
                 <input
                   type="text"
                   value={sensorSearch}
@@ -335,13 +456,13 @@ export default function AirQualityDashboard() {
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-sm text-muted-foreground">Поставщик</label>
+                <label className="text-sm text-muted-foreground">Район</label>
                 <select
                   value={districtFilter}
                   onChange={(e) => setDistrictFilter(e.target.value as string | "all")}
                   className="h-10 rounded-md border border-border bg-background px-3 text-sm"
                 >
-                  <option value="all">Все поставщики</option>
+                  <option value="all">Все районы</option>
                   {districts.map((district) => (
                     <option key={district} value={district}>
                       {district}
@@ -358,8 +479,8 @@ export default function AirQualityDashboard() {
                     className="h-4 w-4"
                   />
                   Только активные
-                </label> */}
-                {/* <label className="flex items-center gap-2 text-sm text-foreground">
+                </label>
+                <label className="flex items-center gap-2 text-sm text-foreground">
                   <input
                     type="checkbox"
                     checked={onlyWithData}
@@ -380,57 +501,28 @@ export default function AirQualityDashboard() {
                 </Button>
               </div>
             ) : (
-              <SensorMap sensors={filteredSensors} />
+              <div className="relative">
+                <SensorMap sensors={filteredSensors} />
+                <div className="absolute right-4 top-4 hidden rounded-lg border border-border bg-background/90 p-3 shadow-lg md:block">
+                  <p className="mb-2 text-xs font-semibold text-muted-foreground">PM2.5 легенда</p>
+                  <div className="flex flex-col gap-2">
+                    {aqiLegend.map((item) => (
+                      <div key={item.label} className="flex items-center gap-2 text-xs">
+                        <span className={`h-3 w-3 rounded-sm ${item.className}`} />
+                        <span className="text-foreground">{item.label}</span>
+                        <span className="text-muted-foreground">{item.range}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-          {statistics && (
-            <>
-              <Card className="bg-card border-border">
-                <CardContent className="pt-4">
-                  <p className="text-xs text-muted-foreground mb-1">Всего дней</p>
-                  <p className="text-2xl font-bold text-foreground">{statistics.total_days}</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-card border-border">
-                <CardContent className="pt-4">
-                  <p className="text-xs text-muted-foreground mb-1">Среднее PM2.5</p>
-                  <p className="text-2xl font-bold text-foreground">{statistics.avg_pm25?.toFixed(1) || "—"}</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-card border-border">
-                <CardContent className="pt-4">
-                  <p className="text-xs text-muted-foreground mb-1">Хорошие дни</p>
-                  <p className="text-2xl font-bold text-aqi-good">{statistics.good_days}</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-card border-border">
-                <CardContent className="pt-4">
-                  <p className="text-xs text-muted-foreground mb-1">Умеренные дни</p>
-                  <p className="text-2xl font-bold text-aqi-moderate">{statistics.moderate_days}</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-card border-border">
-                <CardContent className="pt-4">
-                  <p className="text-xs text-muted-foreground mb-1">Вредные дни</p>
-                  <p className="text-2xl font-bold text-aqi-unhealthy">{statistics.unhealthy_days}</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-card border-border">
-                <CardContent className="pt-4">
-                  <p className="text-xs text-muted-foreground mb-1">Опасные дни</p>
-                  <p className="text-2xl font-bold text-aqi-hazardous">{statistics.hazardous_days}</p>
-                </CardContent>
-              </Card>
-            </>
-          )}
-        </div>
-
         <Card className="bg-card border-border">
           <CardHeader className="border-b border-border">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
               <div>
                 <CardTitle className="text-2xl">{currentYear}</CardTitle>
                 <CardDescription>Отслеживайте ежедневный уровень качества воздуха за весь год</CardDescription>
@@ -443,7 +535,7 @@ export default function AirQualityDashboard() {
                   className="border-border bg-transparent"
                   disabled={!canGoPreviousYear}
                 >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  <ChevronLeft className="mr-1 h-4 w-4" />
                   Предыдущий год
                 </Button>
                 <Button
@@ -454,7 +546,7 @@ export default function AirQualityDashboard() {
                   disabled={!canGoNextYear}
                 >
                   Следующий год
-                  <ChevronRight className="h-4 w-4 ml-1" />
+                  <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -462,49 +554,32 @@ export default function AirQualityDashboard() {
 
           <CardContent className="p-6">
             {loading ? (
-              <div className="text-center py-12">
+              <div className="py-12 text-center">
                 <p className="text-muted-foreground">Загрузка данных о качестве воздуха...</p>
               </div>
             ) : Object.keys(aqiData).length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-red-500 font-semibold mb-2">Ошибка загрузки данных</p>
-                <p className="text-muted-foreground text-sm">
+              <div className="py-12 text-center">
+                <p className="mb-2 font-semibold text-red-500">Ошибка загрузки данных</p>
+                <p className="text-sm text-muted-foreground">
                   Проверьте консоль браузера для деталей. Убедитесь, что API доступен и возвращает JSON.
                 </p>
               </div>
             ) : (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-                  {Array.from({ length: 12 }, (_, i) => renderMonthCalendar(i))}
-                </div>
-              </>
+              <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {Array.from({ length: 12 }, (_, i) => renderMonthCalendar(i))}
+              </div>
             )}
 
-            <div className="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-aqi-good rounded" />
-                <span className="text-sm text-foreground">Хорошо (0-15)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-aqi-moderate rounded" />
-                <span className="text-sm text-foreground">Умеренно (16-35)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-aqi-sensitive rounded" />
-                <span className="text-sm text-foreground">Чувствительные (36-55)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-aqi-unhealthy rounded" />
-                <span className="text-sm text-foreground">Вредно (56-150)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-aqi-very-unhealthy rounded" />
-                <span className="text-sm text-foreground">Очень вредно (151-250)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-aqi-hazardous rounded" />
-                <span className="text-sm text-foreground">Опасно (250+)</span>
-              </div>
+            <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+              {aqiLegend.map((item) => (
+                <div key={item.label} className="flex items-center gap-2">
+                  <div className={`h-8 w-8 rounded ${item.className}`} />
+                  <div className="leading-tight">
+                    <p className="text-sm text-foreground">{item.label}</p>
+                    <p className="text-xs text-muted-foreground">{item.range}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

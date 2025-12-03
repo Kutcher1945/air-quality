@@ -42,6 +42,14 @@ export default function AirQualityDashboard() {
 
   const MIN_YEAR = 2019
   const MAX_YEAR = new Date().getFullYear()
+  const aqiLegend = [
+    { label: "Хорошо", range: "0-15", className: "bg-aqi-good" },
+    { label: "Умеренно", range: "16-35", className: "bg-aqi-moderate" },
+    { label: "Чувствительные", range: "36-55", className: "bg-aqi-sensitive" },
+    { label: "Вредно", range: "56-150", className: "bg-aqi-unhealthy" },
+    { label: "Очень вредно", range: "151-250", className: "bg-aqi-very-unhealthy" },
+    { label: "Опасно", range: "250+", className: "bg-aqi-hazardous" },
+  ]
 
   const fetchSensors = useCallback(async () => {
     try {
@@ -155,6 +163,28 @@ export default function AirQualityDashboard() {
       return true
     })
   }, [sensors, onlyActive, districtFilter, onlyWithData, sensorSearch])
+
+  const activeSensors = useMemo(() => sensors.filter((sensor) => sensor.is_active !== false), [sensors])
+  const sensorsWithData = useMemo(
+    () => sensors.filter((sensor) => sensor.latest_measurement && sensor.latest_measurement.pm25 !== null && sensor.latest_measurement.pm25 !== undefined),
+    [sensors],
+  )
+
+  const latestSensorUpdate = useMemo(() => {
+    const timestamps = sensors
+      .map((sensor) => sensor.latest_measurement?.datetime)
+      .filter((dt): dt is string => Boolean(dt))
+    if (!timestamps.length) return null
+    const mostRecent = Math.max(...timestamps.map((dt) => new Date(dt).getTime()))
+    return new Date(mostRecent).toISOString()
+  }, [sensors])
+
+  const resetFilters = () => {
+    setSensorSearch("")
+    setDistrictFilter("all")
+    setOnlyActive(true)
+    setOnlyWithData(false)
+  }
 
   const generateMockData = () => {
     const mockData: Record<string, number> = {}

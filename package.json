@@ -55,7 +55,6 @@
     "react-hook-form": "^7.60.0",
     "react-leaflet": "^5.0.0",
     "react-resizable-panels": "^2.1.7",
-    "@pbe/react-yandex-maps": "^4.6.0",
     "recharts": "2.15.4",
     "sonner": "^1.7.4",
     "tailwind-merge": "^2.5.5",

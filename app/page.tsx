@@ -482,7 +482,7 @@ export default function AirQualityDashboard() {
           <CardContent className="space-y-4 p-4">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-4 md:items-end">
               <div className="flex flex-col gap-1">
-                <label className="text-sm text-muted-foreground">Поиск по названию или району</label>
+                <label className="text-sm text-muted-foreground">Поиск по названию или поставщику</label>
                 <input
                   type="text"
                   value={sensorSearch}
@@ -492,13 +492,13 @@ export default function AirQualityDashboard() {
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-sm text-muted-foreground">Район</label>
+                <label className="text-sm text-muted-foreground">Поставщик</label>
                 <select
                   value={districtFilter}
                   onChange={(e) => setDistrictFilter(e.target.value as string | "all")}
                   className="h-10 rounded-md border border-border bg-background px-3 text-sm"
                 >
-                  <option value="all">Все районы</option>
+                  <option value="all">Все поставщики</option>
                   {districts.map((district) => (
                     <option key={district} value={district}>
                       {district}

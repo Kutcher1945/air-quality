@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Building2, MapPin, AlertCircle, CheckCircle } from "lucide-react"
 
 // Динамически загружаем карту для избежания SSR проблем
-const BuildingsMap = dynamic(() => import("@/components/buildings-map"), { ssr: false })
+const BuildingsMap = dynamic(() => import("../../components/buildings-map"), { ssr: false })
 
 const DISTRICT_LABELS: Record<string, string> = {
   "1": "Алатауский район",

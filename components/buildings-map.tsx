@@ -6,6 +6,7 @@ import "leaflet/dist/leaflet.css"
 import "leaflet.markercluster/dist/leaflet.markercluster"
 import "leaflet.markercluster/dist/MarkerCluster.css"
 import "leaflet.markercluster/dist/MarkerCluster.Default.css"
+import "leaflet.heat"
 
 interface Building {
   id: string
@@ -27,6 +28,7 @@ interface Building {
 
 interface BuildingsMapProps {
   buildings: Building[]
+  showHeatmap?: boolean
 }
 
 // Fix Leaflet default marker icon issue
@@ -84,9 +86,11 @@ const createMarkerIcon = (category: "general" | "izhs" | "susn") => {
   })
 }
 
-export default function BuildingsMap({ buildings }: BuildingsMapProps) {
+export default function BuildingsMap({ buildings, showHeatmap = false }: BuildingsMapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
+  const heatLayerRef = useRef<any>(null)
+  const clusterGroupRef = useRef<any>(null)
 
   useEffect(() => {
     if (typeof window === "undefined" || !mapRef.current) return
@@ -114,22 +118,47 @@ export default function BuildingsMap({ buildings }: BuildingsMapProps) {
       minZoom: 0,
     }).addTo(map)
 
-    // Cluster markers for performance on large datasets
-    // @ts-ignore markercluster is attached to L by side-effect import
-    const clusterGroup: L.MarkerClusterGroup = L.markerClusterGroup({
-      disableClusteringAtZoom: 16,
-      chunkedLoading: true,
-      maxClusterRadius: 45,
-      spiderfyOnMaxZoom: true,
-      showCoverageOnHover: false,
-    })
+    if (showHeatmap) {
+      // Create heatmap layer
+      const heatData: [number, number, number][] = buildings.map((building) => [
+        building.latitude,
+        building.longitude,
+        0.5, // intensity
+      ])
 
-    buildings.forEach((building) => {
-      // Use different colored icon based on building category
-      const icon = createMarkerIcon(building.building_category)
+      // @ts-ignore leaflet.heat is attached to L by side-effect import
+      const heatLayer = L.heatLayer(heatData, {
+        radius: 25,
+        blur: 35,
+        maxZoom: 13,
+        max: 1.0,
+        gradient: {
+          0.0: "blue",
+          0.5: "lime",
+          0.7: "yellow",
+          0.9: "orange",
+          1.0: "red",
+        },
+      }).addTo(map)
 
-      const marker = L.marker([building.latitude, building.longitude], { icon }).bindPopup(
-        `
+      heatLayerRef.current = heatLayer
+    } else {
+      // Cluster markers for performance on large datasets
+      // @ts-ignore markercluster is attached to L by side-effect import
+      const clusterGroup = L.markerClusterGroup({
+        disableClusteringAtZoom: 16,
+        chunkedLoading: true,
+        maxClusterRadius: 45,
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+      })
+
+      buildings.forEach((building) => {
+        // Use different colored icon based on building category
+        const icon = createMarkerIcon(building.building_category)
+
+        const marker = L.marker([building.latitude, building.longitude], { icon }).bindPopup(
+          `
           <div style="padding: 8px; min-width: 200px;">
             <strong style="font-size: 14px;">${building.address}</strong>
             <hr style="margin: 8px 0; border: none; border-top: 1px solid #e5e7eb;">
@@ -141,28 +170,35 @@ export default function BuildingsMap({ buildings }: BuildingsMapProps) {
             <p style="margin: 8px 0 4px; color: #f97316; font-weight: bold; font-size: 12px;">⚠️ Без газоснабжения</p>
           </div>
         `,
-      )
+        )
 
-      clusterGroup.addLayer(marker)
+        clusterGroup.addLayer(marker)
 
-      // Draw polygons if geometry exists
-      if (building.geometry && building.geometry.type === "MultiPolygon") {
-        const latLngPolys: L.LatLngExpression[][] = []
-        building.geometry.coordinates.forEach((poly: any) => {
-          // poly is array of rings, take first ring
-          const ring = poly[0]
-          const latLngs = ring.map((coord: [number, number]) => [coord[1], coord[0]]) // [lon, lat] -> [lat, lon]
-          latLngPolys.push(latLngs)
-        })
-        L.polygon(latLngPolys, {
-          color: icon.options.html?.includes("#3b82f6") ? "#3b82f6" : icon.options.html?.includes("#ef4444") ? "#ef4444" : "#f97316",
-          weight: 1,
-          fillOpacity: 0.15,
-        }).addTo(map)
-      }
-    })
+        // Draw polygons if geometry exists
+        if (building.geometry && building.geometry.type === "MultiPolygon") {
+          const latLngPolys: L.LatLngExpression[][] = []
+          building.geometry.coordinates.forEach((poly: any) => {
+            // poly is array of rings, take first ring
+            const ring = poly[0]
+            const latLngs = ring.map((coord: [number, number]) => [coord[1], coord[0]]) // [lon, lat] -> [lat, lon]
+            latLngPolys.push(latLngs)
+          })
+          const htmlString = typeof icon.options.html === "string" ? icon.options.html : ""
+          L.polygon(latLngPolys, {
+            color: htmlString.includes("#3b82f6")
+              ? "#3b82f6"
+              : htmlString.includes("#ef4444")
+                ? "#ef4444"
+                : "#f97316",
+            weight: 1,
+            fillOpacity: 0.15,
+          }).addTo(map)
+        }
+      })
 
-    clusterGroup.addTo(map)
+      clusterGroup.addTo(map)
+      clusterGroupRef.current = clusterGroup
+    }
 
     // Auto-fit bounds if there are buildings
     if (buildings.length > 0) {
@@ -177,8 +213,10 @@ export default function BuildingsMap({ buildings }: BuildingsMapProps) {
         mapInstanceRef.current.remove()
         mapInstanceRef.current = null
       }
+      heatLayerRef.current = null
+      clusterGroupRef.current = null
     }
-  }, [buildings])
+  }, [buildings, showHeatmap])
 
   return <div ref={mapRef} className="h-full w-full" />
 }

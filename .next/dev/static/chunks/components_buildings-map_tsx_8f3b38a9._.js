@@ -10,9 +10,11 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/leaflet/dist/leaflet-src.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2e$markercluster$2f$dist$2f$leaflet$2e$markercluster$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/leaflet.markercluster/dist/leaflet.markercluster.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2e$heat$2f$dist$2f$leaflet$2d$heat$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/leaflet.heat/dist/leaflet-heat.js [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
+;
 ;
 ;
 ;
@@ -78,10 +80,12 @@ const createMarkerIcon = (category)=>{
         ]
     });
 };
-function BuildingsMap({ buildings }) {
+function BuildingsMap({ buildings, showHeatmap = false }) {
     _s();
     const mapRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const mapInstanceRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const heatLayerRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const clusterGroupRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "BuildingsMap.useEffect": ()=>{
             if (("TURBOPACK compile-time value", "object") === "undefined" || !mapRef.current) return;
@@ -107,25 +111,50 @@ function BuildingsMap({ buildings }) {
                 maxZoom: 18,
                 minZoom: 0
             }).addTo(map);
-            // Cluster markers for performance on large datasets
-            // @ts-ignore markercluster is attached to L by side-effect import
-            const clusterGroup = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].markerClusterGroup({
-                disableClusteringAtZoom: 16,
-                chunkedLoading: true,
-                maxClusterRadius: 45,
-                spiderfyOnMaxZoom: true,
-                showCoverageOnHover: false
-            });
-            buildings.forEach({
-                "BuildingsMap.useEffect": (building)=>{
-                    // Use different colored icon based on building category
-                    const icon = createMarkerIcon(building.building_category);
-                    const marker = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].marker([
-                        building.latitude,
-                        building.longitude
-                    ], {
-                        icon
-                    }).bindPopup(`
+            if (showHeatmap) {
+                // Create heatmap layer
+                const heatData = buildings.map({
+                    "BuildingsMap.useEffect.heatData": (building)=>[
+                            building.latitude,
+                            building.longitude,
+                            0.5
+                        ]
+                }["BuildingsMap.useEffect.heatData"]);
+                // @ts-ignore leaflet.heat is attached to L by side-effect import
+                const heatLayer = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].heatLayer(heatData, {
+                    radius: 25,
+                    blur: 35,
+                    maxZoom: 13,
+                    max: 1.0,
+                    gradient: {
+                        0.0: "blue",
+                        0.5: "lime",
+                        0.7: "yellow",
+                        0.9: "orange",
+                        1.0: "red"
+                    }
+                }).addTo(map);
+                heatLayerRef.current = heatLayer;
+            } else {
+                // Cluster markers for performance on large datasets
+                // @ts-ignore markercluster is attached to L by side-effect import
+                const clusterGroup = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].markerClusterGroup({
+                    disableClusteringAtZoom: 16,
+                    chunkedLoading: true,
+                    maxClusterRadius: 45,
+                    spiderfyOnMaxZoom: true,
+                    showCoverageOnHover: false
+                });
+                buildings.forEach({
+                    "BuildingsMap.useEffect": (building)=>{
+                        // Use different colored icon based on building category
+                        const icon = createMarkerIcon(building.building_category);
+                        const marker = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].marker([
+                            building.latitude,
+                            building.longitude
+                        ], {
+                            icon
+                        }).bindPopup(`
           <div style="padding: 8px; min-width: 200px;">
             <strong style="font-size: 14px;">${building.address}</strong>
             <hr style="margin: 8px 0; border: none; border-top: 1px solid #e5e7eb;">
@@ -137,33 +166,36 @@ function BuildingsMap({ buildings }) {
             <p style="margin: 8px 0 4px; color: #f97316; font-weight: bold; font-size: 12px;">⚠️ Без газоснабжения</p>
           </div>
         `);
-                    clusterGroup.addLayer(marker);
-                    // Draw polygons if geometry exists
-                    if (building.geometry && building.geometry.type === "MultiPolygon") {
-                        const latLngPolys = [];
-                        building.geometry.coordinates.forEach({
-                            "BuildingsMap.useEffect": (poly)=>{
-                                // poly is array of rings, take first ring
-                                const ring = poly[0];
-                                const latLngs = ring.map({
-                                    "BuildingsMap.useEffect.latLngs": (coord)=>[
-                                            coord[1],
-                                            coord[0]
-                                        ]
-                                }["BuildingsMap.useEffect.latLngs"]) // [lon, lat] -> [lat, lon]
-                                ;
-                                latLngPolys.push(latLngs);
-                            }
-                        }["BuildingsMap.useEffect"]);
-                        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].polygon(latLngPolys, {
-                            color: icon.options.html?.includes("#3b82f6") ? "#3b82f6" : icon.options.html?.includes("#ef4444") ? "#ef4444" : "#f97316",
-                            weight: 1,
-                            fillOpacity: 0.15
-                        }).addTo(map);
+                        clusterGroup.addLayer(marker);
+                        // Draw polygons if geometry exists
+                        if (building.geometry && building.geometry.type === "MultiPolygon") {
+                            const latLngPolys = [];
+                            building.geometry.coordinates.forEach({
+                                "BuildingsMap.useEffect": (poly)=>{
+                                    // poly is array of rings, take first ring
+                                    const ring = poly[0];
+                                    const latLngs = ring.map({
+                                        "BuildingsMap.useEffect.latLngs": (coord)=>[
+                                                coord[1],
+                                                coord[0]
+                                            ]
+                                    }["BuildingsMap.useEffect.latLngs"]) // [lon, lat] -> [lat, lon]
+                                    ;
+                                    latLngPolys.push(latLngs);
+                                }
+                            }["BuildingsMap.useEffect"]);
+                            const htmlString = typeof icon.options.html === "string" ? icon.options.html : "";
+                            __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].polygon(latLngPolys, {
+                                color: htmlString.includes("#3b82f6") ? "#3b82f6" : htmlString.includes("#ef4444") ? "#ef4444" : "#f97316",
+                                weight: 1,
+                                fillOpacity: 0.15
+                            }).addTo(map);
+                        }
                     }
-                }
-            }["BuildingsMap.useEffect"]);
-            clusterGroup.addTo(map);
+                }["BuildingsMap.useEffect"]);
+                clusterGroup.addTo(map);
+                clusterGroupRef.current = clusterGroup;
+            }
             // Auto-fit bounds if there are buildings
             if (buildings.length > 0) {
                 const bounds = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].latLngBounds(buildings.map({
@@ -186,22 +218,25 @@ function BuildingsMap({ buildings }) {
                         mapInstanceRef.current.remove();
                         mapInstanceRef.current = null;
                     }
+                    heatLayerRef.current = null;
+                    clusterGroupRef.current = null;
                 }
             })["BuildingsMap.useEffect"];
         }
     }["BuildingsMap.useEffect"], [
-        buildings
+        buildings,
+        showHeatmap
     ]);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         ref: mapRef,
         className: "h-full w-full"
     }, void 0, false, {
         fileName: "[project]/components/buildings-map.tsx",
-        lineNumber: 183,
+        lineNumber: 221,
         columnNumber: 10
     }, this);
 }
-_s(BuildingsMap, "HGOaeZ8o3YxgkGMPZTdc6qMIX/A=");
+_s(BuildingsMap, "kKyaFD/4IqT05x6ohTPpEfee6X4=");
 _c = BuildingsMap;
 var _c;
 __turbopack_context__.k.register(_c, "BuildingsMap");

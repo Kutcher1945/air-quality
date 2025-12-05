@@ -2,10 +2,10 @@
   "[project]/components/buildings-map.tsx [app-client] (ecmascript, next/dynamic entry)": {
     "id": "[project]/components/buildings-map.tsx [app-client] (ecmascript, next/dynamic entry)",
     "files": [
-      "static/chunks/node_modules_3d31df79._.js",
+      "static/chunks/node_modules_e963b43f._.js",
       "static/chunks/components_buildings-map_tsx_8f3b38a9._.js",
       "static/chunks/node_modules_2d9b6395._.css",
-      "static/chunks/components_buildings-map_tsx_bd5f90dd._.js"
+      "static/chunks/components_buildings-map_tsx_3836b068._.js"
     ]
   }
 }

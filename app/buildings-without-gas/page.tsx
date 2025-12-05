@@ -5,7 +5,7 @@ import dynamic from "next/dynamic"
 import { HeaderMenu } from "@/components/header-menu"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Building2, MapPin, AlertCircle, CheckCircle } from "lucide-react"
+import { Building2, MapPin, AlertCircle, CheckCircle, Flame } from "lucide-react"
 
 // Динамически загружаем карту для избежания SSR проблем
 const BuildingsMap = dynamic(() => import("../../components/buildings-map"), { ssr: false })
@@ -48,6 +48,7 @@ export default function BuildingsWithoutGasPage() {
   const [districtFilter, setDistrictFilter] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [buildingTypeFilter, setBuildingTypeFilter] = useState<string>("all") // all, izhs, susn
+  const [showHeatmap, setShowHeatmap] = useState(false)
 
   useEffect(() => {
     fetchBuildings()
@@ -227,224 +228,152 @@ export default function BuildingsWithoutGasPage() {
 
   return (
     <>
-      <main className="min-h-screen bg-background">
-        <div className="w-full px-4 pb-12 pt-8 md:px-8">
-          {/* Header */}
-          <header className="mb-8">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-500/10">
-                <Building2 className="h-6 w-6 text-orange-500" />
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Инфраструктура / Алматы</p>
-                <h1 className="text-4xl font-bold text-foreground">Здания без газа</h1>
+      <main className="relative h-screen w-screen overflow-hidden">
+        {/* Full-screen Map Background */}
+        <div className="absolute inset-0 z-0">
+          {loading ? (
+            <div className="flex h-full items-center justify-center bg-background text-muted-foreground">
+              Загрузка карты...
+            </div>
+          ) : error ? (
+            <div className="flex h-full flex-col items-center justify-center gap-3 bg-background">
+              <AlertCircle className="h-12 w-12 text-orange-500" />
+              <p className="text-red-500 font-semibold">{error}</p>
+              <p className="text-sm text-muted-foreground">Используются тестовые данные для демонстрации</p>
+              <Button variant="outline" size="sm" onClick={fetchBuildings}>
+                Попробовать снова
+              </Button>
+            </div>
+          ) : (
+            <BuildingsMap buildings={filteredBuildings} showHeatmap={showHeatmap} />
+          )}
+        </div>
+
+        {/* Floating UI Elements */}
+        <div className="relative z-10 h-full w-full pointer-events-none">
+          {/* Top Header Bar - Title + Buttons + Search + Filters */}
+          <div className="absolute top-0 left-0 right-0 pointer-events-auto z-20">
+            <div className="bg-white border-b border-gray-200/80 backdrop-blur-xl bg-white/90">
+              <div className="px-4 py-3">
+                <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center">
+                  {/* Title Section */}
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-900">
+                      <Building2 className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-[9px] uppercase tracking-[0.15em] text-gray-400 font-medium leading-tight">
+                        ИНФРАСТРУКТУРА / АЛМАТЫ
+                      </p>
+                      <h1 className="text-sm font-semibold text-gray-900 leading-tight mt-0.5">Здания без газа</h1>
+                    </div>
+                  </div>
+
+                  {/* Buttons */}
+                  <div className="flex gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => setShowHeatmap(!showHeatmap)}
+                      className={`h-8 px-3 rounded-lg text-xs font-medium transition-all ${
+                        showHeatmap
+                          ? "bg-gray-900 text-white shadow-sm"
+                          : "bg-white text-gray-700 border border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <Flame className="inline-block mr-1.5 h-3.5 w-3.5" />
+                      {showHeatmap ? "Маркеры" : "Тепловая карта"}
+                    </button>
+                    <button
+                      onClick={fetchBuildings}
+                      className="h-8 px-3 rounded-lg text-xs font-medium bg-white text-gray-700 border border-gray-200 hover:border-gray-300 transition-all"
+                    >
+                      Обновить
+                    </button>
+                  </div>
+
+                  {/* Search and Filters */}
+                  <div className="flex gap-2 flex-wrap flex-1">
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Поиск по адресу"
+                      className="h-8 rounded-lg border border-gray-200 bg-white px-3 text-xs flex-1 min-w-[150px] focus:outline-none focus:border-gray-400 transition-colors"
+                    />
+                    <select
+                      value={districtFilter}
+                      onChange={(e) => setDistrictFilter(e.target.value)}
+                      className="h-8 rounded-lg border border-gray-200 bg-white px-3 text-xs focus:outline-none focus:border-gray-400 transition-colors"
+                    >
+                      <option value="all">Все районы</option>
+                      {districts.map((district) => (
+                        <option key={district} value={district}>
+                          {district}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={buildingTypeFilter}
+                      onChange={(e) => setBuildingTypeFilter(e.target.value)}
+                      className="h-8 rounded-lg border border-gray-200 bg-white px-3 text-xs focus:outline-none focus:border-gray-400 transition-colors"
+                    >
+                      <option value="all">Все типы</option>
+                      <option value="general">ALSECO</option>
+                      <option value="izhs">ИЖС</option>
+                      <option value="susn">СУСН</option>
+                    </select>
+                  </div>
+
+                  {/* Count */}
+                  <div className="text-[10px] text-gray-400 whitespace-nowrap flex-shrink-0 font-medium">
+                    {filteredBuildings.length} / {buildings.length}
+                  </div>
+                </div>
               </div>
             </div>
-            <p className="text-muted-foreground">
-              Карта жилых зданий Алматы, не подключенных к системе газоснабжения
-            </p>
-          </header>
-
-          {/* Statistics Cards */}
-          <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
-            <Card className="bg-card border-border">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Всего уникальных зданий</p>
-                    <p className="text-3xl font-bold text-foreground">{stats.uniqueMarkers}</p>
-                  </div>
-                  <Building2 className="h-8 w-8 text-muted-foreground" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card border-border">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">ALSECO</p>
-                    <p className="text-3xl font-bold text-orange-500">{stats.byCategory.general}</p>
-                  </div>
-                  <AlertCircle className="h-8 w-8 text-orange-500" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card border-border">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">ИЖС</p>
-                    <p className="text-3xl font-bold text-blue-500">{stats.byCategory.izhs}</p>
-                  </div>
-                    <Building2 className="h-8 w-8 text-blue-500" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card border-border">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">СУСН</p>
-                    <p className="text-3xl font-bold text-red-500">{stats.byCategory.susn}</p>
-                  </div>
-                  <MapPin className="h-8 w-8 text-red-500" />
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
-          {/* Map Card */}
-          <Card className="mb-8 bg-card border-border">
-            <CardHeader className="border-b border-border">
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <CardTitle className="text-2xl">Интерактивная карта</CardTitle>
-                  <CardDescription>
-                    {filteredBuildings.length} из {buildings.length} зданий отображено
-                    {" · "}ИЖС: {filteredCounts.izhs}/{categoryCounts.izhs} · СУСН: {filteredCounts.susn}/{categoryCounts.susn} · ALSECO: {filteredCounts.general}/{categoryCounts.general}
-                  </CardDescription>
-                </div>
-                <Button variant="outline" size="sm" onClick={fetchBuildings}>
-                  Обновить данные
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="p-4">
-              {/* Filters */}
-              <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm text-muted-foreground">Поиск по адресу</label>
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Введите адрес или район"
-                    className="h-10 rounded-md border border-border bg-background px-3 text-sm"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm text-muted-foreground">Район</label>
-                  <select
-                    value={districtFilter}
-                    onChange={(e) => setDistrictFilter(e.target.value)}
-                    className="h-10 rounded-md border border-border bg-background px-3 text-sm"
-                  >
-                    <option value="all">Все районы</option>
-                    {districts.map((district) => (
-                      <option key={district} value={district}>
-                        {district}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm text-muted-foreground">Тип</label>
-                  <select
-                    value={buildingTypeFilter}
-                    onChange={(e) => setBuildingTypeFilter(e.target.value)}
-                    className="h-10 rounded-md border border-border bg-background px-3 text-sm"
-                  >
-                    <option value="all">Все типы</option>
-                    <option value="general">ALSECO</option>
-                    <option value="izhs">ИЖС (индивидуальное строительство)</option>
-                    <option value="susn">СУСН (соц.уязвимые)</option>
-                  </select>
-                </div>
-              </div>
+          {/* Left Sidebar - Statistics Cards Stacked Vertically */}
+          <div className="absolute top-[70px] left-0 w-[150px] flex flex-col gap-2.5 pointer-events-auto z-10">
+            <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-gray-400">
+              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ВСЕГО</p>
+              <p className="text-[2.75rem] font-bold text-gray-900 leading-none tabular-nums">{stats.uniqueMarkers}</p>
+            </div>
 
-              {/* Map */}
-              {loading ? (
-                <div className="flex h-[600px] items-center justify-center text-muted-foreground">
-                  Загрузка карты...
-                </div>
-              ) : error ? (
-                <div className="flex h-[600px] flex-col items-center justify-center gap-3">
-                  <AlertCircle className="h-12 w-12 text-orange-500" />
-                  <p className="text-red-500 font-semibold">{error}</p>
-                  <p className="text-sm text-muted-foreground">Используются тестовые данные для демонстрации</p>
-                  <Button variant="outline" size="sm" onClick={fetchBuildings}>
-                    Попробовать снова
-                  </Button>
-                </div>
-              ) : (
-                <div className="h-[600px] w-full">
-                  <BuildingsMap buildings={filteredBuildings} />
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-orange-500">
+              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO</p>
+              <p className="text-[2.75rem] font-bold text-orange-600 leading-none tabular-nums">{stats.byCategory.general}</p>
+            </div>
 
-          {/* Buildings List */}
-          {/* <Card className="bg-card border-border">
-            <CardHeader className="border-b border-border">
-              <CardTitle className="text-2xl">Список зданий</CardTitle>
-              <CardDescription>Подробная информация о зданиях без газоснабжения</CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="divide-y divide-border">
-                {filteredBuildings.length === 0 ? (
-                  <div className="p-8 text-center text-muted-foreground">
-                    Нет зданий, соответствующих фильтрам
-                  </div>
-                ) : (
-                  filteredBuildings.map((building) => (
-                    <div key={building.id} className="p-4 hover:bg-muted/50 transition-colors">
-                      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Building2 className="h-4 w-4 text-muted-foreground" />
-                            <h3 className="font-semibold text-foreground">{building.address}</h3>
-                          </div>
-                          <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              {building.district}
-                            </span>
-                            {building.floors && <span>Этажей: {building.floors}</span>}
-                            {building.apartments && <span>Квартир: {building.apartments}</span>}
-                            {building.year_built && <span>Год постройки: {building.year_built}</span>}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/10 px-3 py-1 text-xs font-medium text-orange-500">
-                            <AlertCircle className="h-3 w-3" />
-                            Без газа
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </CardContent>
-          </Card> */}
+            <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-blue-500">
+              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ИЖС</p>
+              <p className="text-[2.75rem] font-bold text-blue-600 leading-none tabular-nums">{stats.byCategory.izhs}</p>
+            </div>
 
-          {/* Info Section */}
-          <Card className="mt-8 bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-2xl">Информация</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h3 className="mb-2 font-semibold text-foreground">О проекте</h3>
-                <p className="text-sm text-muted-foreground">
-                  Данная карта показывает жилые здания города Алматы, которые не подключены к централизованной
-                  системе газоснабжения. Информация обновляется регулярно и может быть использована для планирования
-                  инфраструктурных проектов.
-                </p>
-              </div>
-              <div>
-                <h3 className="mb-2 font-semibold text-foreground">Альтернативные источники отопления</h3>
-                <p className="text-sm text-muted-foreground">
-                  Здания без газа обычно используют электрическое отопление, централизованное теплоснабжение или
-                  автономные котельные. Это может влиять на стоимость коммунальных услуг и экологическую обстановку.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+            <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-red-500">
+              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">СУСН</p>
+              <p className="text-[2.75rem] font-bold text-red-600 leading-none tabular-nums">{stats.byCategory.susn}</p>
+            </div>
+          </div>
+
+          {/* Info Card - Bottom Left */}
+          <div className="absolute bottom-6 left-0 w-[220px] pointer-events-auto z-10">
+            <div className="bg-white border-r border-gray-200/80 backdrop-blur-xl bg-white/90 rounded-r-xl p-3 shadow-sm">
+              <details className="group">
+                <summary className="cursor-pointer text-[10px] font-semibold text-gray-900 list-none flex items-center justify-between">
+                  <span>Информация</span>
+                  <span className="text-gray-400 group-open:rotate-180 transition-transform">▼</span>
+                </summary>
+                <div className="mt-2 space-y-2 text-[9px] text-gray-600 leading-relaxed">
+                  <p>
+                    Карта показывает жилые здания Алматы без централизованного газоснабжения.
+                  </p>
+                  <p>
+                    Здания используют альтернативное отопление: электрическое, централизованное или автономное.
+                  </p>
+                </div>
+              </details>
+            </div>
+          </div>
         </div>
       </main>
     </>

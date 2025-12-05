@@ -118,13 +118,22 @@ function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
                 center: mapCenter,
                 zoom: 11,
                 preferCanvas: true,
-                renderer: canvasRenderer
+                renderer: canvasRenderer,
+                zoomAnimation: true,
+                markerZoomAnimation: true,
+                fadeAnimation: true,
+                // Performance optimizations
+                wheelDebounceTime: 40,
+                wheelPxPerZoomLevel: 60
             });
             // Add Yandex tiles layer (no API key needed!)
             __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].tileLayer("https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&lang=ru_RU", {
                 attribution: '&copy; <a href="https://yandex.com/maps/">Yandex</a>',
                 maxZoom: 18,
-                minZoom: 0
+                minZoom: 0,
+                updateWhenIdle: false,
+                updateWhenZooming: false,
+                keepBuffer: 2
             }).addTo(map);
             if (showHeatmap) {
                 // Create heatmap layer
@@ -156,11 +165,15 @@ function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
                 const clusterGroup = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].markerClusterGroup({
                     disableClusteringAtZoom: 17,
                     chunkedLoading: true,
+                    chunkInterval: 200,
+                    chunkDelay: 50,
                     maxClusterRadius: 60,
                     spiderfyOnMaxZoom: true,
-                    showCoverageOnHover: true,
+                    showCoverageOnHover: false,
                     spiderfyDistanceMultiplier: 2,
                     removeOutsideVisibleBounds: true,
+                    animate: true,
+                    animateAddingMarkers: false,
                     iconCreateFunction: {
                         "BuildingsMap.useEffect.clusterGroup": function(cluster) {
                             const markers = cluster.getAllChildMarkers();
@@ -278,8 +291,9 @@ function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
                             }
                         }["BuildingsMap.useEffect"]);
                         clusterGroup.addLayer(marker);
-                        // Draw polygons with canvas renderer for better performance
-                        if (building.geometry && building.geometry.type === "MultiPolygon") {
+                        // Draw polygons only at high zoom for performance (zoom 16+)
+                        // Comment this out if polygons cause lag
+                        if (building.geometry && building.geometry.type === "MultiPolygon" && map.getZoom() >= 16) {
                             const latLngPolys = [];
                             building.geometry.coordinates.forEach({
                                 "BuildingsMap.useEffect": (poly)=>{
@@ -301,7 +315,8 @@ function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
                                 weight: 1,
                                 fillOpacity: 0.15,
                                 renderer: canvasRenderer,
-                                interactive: false
+                                interactive: false,
+                                smoothFactor: 2
                             }).addTo(map);
                         }
                     }
@@ -423,7 +438,7 @@ function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
         className: "h-full w-full"
     }, void 0, false, {
         fileName: "[project]/components/buildings-map.tsx",
-        lineNumber: 397,
+        lineNumber: 412,
         columnNumber: 10
     }, this);
 }

@@ -121,6 +121,12 @@ export default function BuildingsMap({ buildings, showHeatmap = false, onBuildin
       zoom: 11,
       preferCanvas: true, // Use canvas for better performance
       renderer: canvasRenderer,
+      zoomAnimation: true,
+      markerZoomAnimation: true,
+      fadeAnimation: true,
+      // Performance optimizations
+      wheelDebounceTime: 40,
+      wheelPxPerZoomLevel: 60,
     })
 
     // Add Yandex tiles layer (no API key needed!)
@@ -128,6 +134,9 @@ export default function BuildingsMap({ buildings, showHeatmap = false, onBuildin
       attribution: '&copy; <a href="https://yandex.com/maps/">Yandex</a>',
       maxZoom: 18,
       minZoom: 0,
+      updateWhenIdle: false, // Update tiles during movement for smoother experience
+      updateWhenZooming: false, // Don't update while zooming
+      keepBuffer: 2, // Keep more tiles in buffer for smooth panning
     }).addTo(map)
 
     if (showHeatmap) {
@@ -160,11 +169,15 @@ export default function BuildingsMap({ buildings, showHeatmap = false, onBuildin
       const clusterGroup = L.markerClusterGroup({
         disableClusteringAtZoom: 17, // Increased to 17 - keeps clustering longer for better performance
         chunkedLoading: true,
+        chunkInterval: 200, // Faster chunk processing
+        chunkDelay: 50, // Less delay between chunks
         maxClusterRadius: 60, // Increased radius for better grouping
         spiderfyOnMaxZoom: true,
-        showCoverageOnHover: true, // Show cluster coverage area on hover
+        showCoverageOnHover: false, // Disable coverage on hover - improves performance
         spiderfyDistanceMultiplier: 2, // Spread out spiderfied markers more
         removeOutsideVisibleBounds: true, // Remove markers outside viewport for performance
+        animate: true, // Smooth animations
+        animateAddingMarkers: false, // Disable animation when adding markers for speed
         iconCreateFunction: function (cluster: any) {
           const markers = cluster.getAllChildMarkers()
           const count = markers.length
@@ -281,8 +294,9 @@ export default function BuildingsMap({ buildings, showHeatmap = false, onBuildin
 
         clusterGroup.addLayer(marker)
 
-        // Draw polygons with canvas renderer for better performance
-        if (building.geometry && building.geometry.type === "MultiPolygon") {
+        // Draw polygons only at high zoom for performance (zoom 16+)
+        // Comment this out if polygons cause lag
+        if (building.geometry && building.geometry.type === "MultiPolygon" && map.getZoom() >= 16) {
           const latLngPolys: L.LatLngExpression[][] = []
           building.geometry.coordinates.forEach((poly: any) => {
             const ring = poly[0]
@@ -304,6 +318,7 @@ export default function BuildingsMap({ buildings, showHeatmap = false, onBuildin
             fillOpacity: 0.15,
             renderer: canvasRenderer, // Use canvas renderer for better performance
             interactive: false, // Disable interaction to improve performance
+            smoothFactor: 2, // Simplify polygon for performance
           }).addTo(map)
         }
       })

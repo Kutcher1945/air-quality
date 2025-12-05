@@ -1,8 +1,6 @@
-[00:00:01.118] Server  LOG      ✓ Ready in 718ms
-[00:00:04.202] Server  LOG      ○ Compiling / ...
-[00:00:05.680] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:05.680] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
-[00:00:05.680] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1764782475376}
-[16:56:08.144] Server  LOG      ✓ Compiled in 334ms
-[16:56:11.755] Server  LOG      ✓ Compiled in 70ms
-[16:56:19.076] Server  LOG      ✓ Compiled in 61ms
+[00:00:01.138] Server  LOG      ✓ Ready in 720ms
+[00:00:04.292] Server  LOG      ○ Compiling /buildings-without-gas ...
+[00:00:06.350] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:00:06.350] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/buildings-without-gas","route":"/buildings-without-gas"}
+[00:00:06.350] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/buildings-without-gas color: rgb(120, 120, 120) color: inherit {"dp":"/buildings-without-gas","o":"http://localhost:3000/buildings-without-gas","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1764942945777}
+[00:00:06.350] Browser ERROR   Failed to fetch buildings from API: {}

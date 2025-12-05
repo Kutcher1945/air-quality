@@ -112,9 +112,6 @@ function SensorMapYandex({ sensors }) {
                     Number(sensor.latitude),
                     Number(sensor.longitude)
                 ];
-                const sensorKey = sensor.sensor_id.toString();
-                const currentDaily = dailyStats[sensorKey];
-                const isLoadingDaily = loadingIds.has(sensorKey);
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$leaflet$2f$lib$2f$CircleMarker$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CircleMarker"], {
                     center: coords,
                     radius: 10,
@@ -125,8 +122,7 @@ function SensorMapYandex({ sensors }) {
                         weight: 2
                     },
                     eventHandlers: {
-                        click: ()=>fetchDailyStat(sensorKey),
-                        popupopen: ()=>fetchDailyStat(sensorKey)
+                        click: ()=>fetchDailyStat(sensor.sensor_id.toString())
                     },
                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$leaflet$2f$lib$2f$Popup$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Popup"], {
                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -137,7 +133,7 @@ function SensorMapYandex({ sensors }) {
                                     children: sensor.name || "Станция"
                                 }, void 0, false, {
                                     fileName: "[project]/components/sensor-map-yandex.tsx",
-                                    lineNumber: 133,
+                                    lineNumber: 129,
                                     columnNumber: 17
                                 }, this),
                                 sensor.district && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -148,7 +144,7 @@ function SensorMapYandex({ sensors }) {
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/sensor-map-yandex.tsx",
-                                    lineNumber: 134,
+                                    lineNumber: 130,
                                     columnNumber: 37
                                 }, this),
                                 metric ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -161,13 +157,13 @@ function SensorMapYandex({ sensors }) {
                                                     children: metric.pm25
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/sensor-map-yandex.tsx",
-                                                    lineNumber: 139,
+                                                    lineNumber: 135,
                                                     columnNumber: 32
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/components/sensor-map-yandex.tsx",
-                                            lineNumber: 138,
+                                            lineNumber: 134,
                                             columnNumber: 23
                                         }, this),
                                         metric.no2 !== null && metric.no2 !== undefined && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -178,13 +174,13 @@ function SensorMapYandex({ sensors }) {
                                                     children: metric.no2
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/sensor-map-yandex.tsx",
-                                                    lineNumber: 144,
+                                                    lineNumber: 140,
                                                     columnNumber: 30
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/components/sensor-map-yandex.tsx",
-                                            lineNumber: 143,
+                                            lineNumber: 139,
                                             columnNumber: 23
                                         }, this),
                                         metric.datetime && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -195,97 +191,74 @@ function SensorMapYandex({ sensors }) {
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/components/sensor-map-yandex.tsx",
-                                            lineNumber: 147,
+                                            lineNumber: 143,
                                             columnNumber: 41
                                         }, this)
                                     ]
                                 }, void 0, true) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                     className: "text-muted-foreground",
-                                    children: "Нет свежих измерений (подгружаем суточные)"
+                                    children: "Нет свежих измерений"
                                 }, void 0, false, {
                                     fileName: "[project]/components/sensor-map-yandex.tsx",
-                                    lineNumber: 150,
+                                    lineNumber: 146,
                                     columnNumber: 19
                                 }, this),
-                                isLoadingDaily && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                    className: "text-xs text-muted-foreground",
-                                    children: "Подгружаем суточные данные…"
-                                }, void 0, false, {
+                                dailyStats[sensor.sensor_id]?.pm25 !== undefined && dailyStats[sensor.sensor_id]?.pm25 !== null && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    children: [
+                                        "Текущее (api/stats/daily): ",
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "font-semibold",
+                                            children: dailyStats[sensor.sensor_id]?.pm25
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/sensor-map-yandex.tsx",
+                                            lineNumber: 150,
+                                            columnNumber: 48
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
                                     fileName: "[project]/components/sensor-map-yandex.tsx",
-                                    lineNumber: 152,
-                                    columnNumber: 36
+                                    lineNumber: 149,
+                                    columnNumber: 19
                                 }, this),
-                                !isLoadingDaily && currentDaily === null && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                    className: "text-muted-foreground",
-                                    children: "Суточные данные отсутствуют"
-                                }, void 0, false, {
+                                dailyStats[sensor.sensor_id]?.no2 !== undefined && dailyStats[sensor.sensor_id]?.no2 !== null && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    children: [
+                                        "NO2 (суточн.): ",
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "font-semibold",
+                                            children: dailyStats[sensor.sensor_id]?.no2
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/sensor-map-yandex.tsx",
+                                            lineNumber: 155,
+                                            columnNumber: 36
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
                                     fileName: "[project]/components/sensor-map-yandex.tsx",
                                     lineNumber: 154,
                                     columnNumber: 19
                                 }, this),
-                                !isLoadingDaily && currentDaily && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
-                                    children: [
-                                        currentDaily.pm25 !== undefined && currentDaily.pm25 !== null && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                            children: [
-                                                "Текущее (api/stats/daily): ",
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                    className: "font-semibold",
-                                                    children: currentDaily.pm25
-                                                }, void 0, false, {
-                                                    fileName: "[project]/components/sensor-map-yandex.tsx",
-                                                    lineNumber: 160,
-                                                    columnNumber: 52
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/components/sensor-map-yandex.tsx",
-                                            lineNumber: 159,
-                                            columnNumber: 23
-                                        }, this),
-                                        currentDaily.no2 !== undefined && currentDaily.no2 !== null && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                            children: [
-                                                "NO2 (суточн.): ",
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                    className: "font-semibold",
-                                                    children: currentDaily.no2
-                                                }, void 0, false, {
-                                                    fileName: "[project]/components/sensor-map-yandex.tsx",
-                                                    lineNumber: 165,
-                                                    columnNumber: 40
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/components/sensor-map-yandex.tsx",
-                                            lineNumber: 164,
-                                            columnNumber: 23
-                                        }, this),
-                                        currentDaily.datetime && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                            className: "text-xs text-muted-foreground",
-                                            children: [
-                                                "Обновлено (api/stats/daily): ",
-                                                new Date(currentDaily.datetime).toLocaleString()
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/components/sensor-map-yandex.tsx",
-                                            lineNumber: 169,
-                                            columnNumber: 23
-                                        }, this)
-                                    ]
-                                }, void 0, true)
+                                loadingIds.has(sensor.sensor_id.toString()) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    className: "text-xs text-muted-foreground",
+                                    children: "Обновляем..."
+                                }, void 0, false, {
+                                    fileName: "[project]/components/sensor-map-yandex.tsx",
+                                    lineNumber: 158,
+                                    columnNumber: 65
+                                }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/sensor-map-yandex.tsx",
-                            lineNumber: 132,
+                            lineNumber: 128,
                             columnNumber: 15
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                        lineNumber: 131,
+                        lineNumber: 127,
                         columnNumber: 13
                     }, this)
-                }, sensorKey, false, {
+                }, sensor.sensor_id, false, {
                     fileName: "[project]/components/sensor-map-yandex.tsx",
-                    lineNumber: 116,
+                    lineNumber: 113,
                     columnNumber: 11
                 }, this);
             })

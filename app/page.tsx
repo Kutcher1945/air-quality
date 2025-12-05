@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { HeaderMenu } from "@/components/header-menu"
 import type { Sensor } from "@/components/sensor-map-yandex"
 
 interface AQIData {
@@ -369,8 +370,10 @@ export default function AirQualityDashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-background">
-      <div className="w-full px-4 pb-12 pt-8 md:px-8">
+    <>
+      <HeaderMenu />
+      <main className="min-h-screen bg-background">
+        <div className="w-full px-4 pb-12 pt-8 md:px-8">
         <header className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Air Quality / Алматы</p>
@@ -621,5 +624,6 @@ export default function AirQualityDashboard() {
         </Card>
       </div>
     </main>
+    </>
   )
 }

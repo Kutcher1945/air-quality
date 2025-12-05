@@ -108,13 +108,10 @@ export default function SensorMapYandex({ sensors }: SensorMapProps) {
         const metric = sensor.latest_measurement
         const color = getMarkerColor(metric?.pm25)
         const coords: LatLngExpression = [Number(sensor.latitude), Number(sensor.longitude)]
-        const sensorKey = sensor.sensor_id.toString()
-        const currentDaily = dailyStats[sensorKey]
-        const isLoadingDaily = loadingIds.has(sensorKey)
 
         return (
           <CircleMarker
-            key={sensorKey}
+            key={sensor.sensor_id}
             center={coords}
             radius={10}
             pathOptions={{
@@ -124,8 +121,7 @@ export default function SensorMapYandex({ sensors }: SensorMapProps) {
               weight: 2,
             }}
             eventHandlers={{
-              click: () => fetchDailyStat(sensorKey),
-              popupopen: () => fetchDailyStat(sensorKey),
+              click: () => fetchDailyStat(sensor.sensor_id.toString()),
             }}
           >
             <Popup>
@@ -147,31 +143,19 @@ export default function SensorMapYandex({ sensors }: SensorMapProps) {
                     {metric.datetime && <p className="text-xs text-muted-foreground">Обновлено: {new Date(metric.datetime).toLocaleString()}</p>}
                   </>
                 ) : (
-                  <p className="text-muted-foreground">Нет свежих измерений (подгружаем суточные)</p>
+                  <p className="text-muted-foreground">Нет свежих измерений</p>
                 )}
-                {isLoadingDaily && <p className="text-xs text-muted-foreground">Подгружаем суточные данные…</p>}
-                {!isLoadingDaily && currentDaily === null && (
-                  <p className="text-muted-foreground">Суточные данные отсутствуют</p>
+                {dailyStats[sensor.sensor_id]?.pm25 !== undefined && dailyStats[sensor.sensor_id]?.pm25 !== null && (
+                  <p>
+                    Текущее (api/stats/daily): <span className="font-semibold">{dailyStats[sensor.sensor_id]?.pm25}</span>
+                  </p>
                 )}
-                {!isLoadingDaily && currentDaily && (
-                  <>
-                    {currentDaily.pm25 !== undefined && currentDaily.pm25 !== null && (
-                      <p>
-                        Текущее (api/stats/daily): <span className="font-semibold">{currentDaily.pm25}</span>
-                      </p>
-                    )}
-                    {currentDaily.no2 !== undefined && currentDaily.no2 !== null && (
-                      <p>
-                        NO2 (суточн.): <span className="font-semibold">{currentDaily.no2}</span>
-                      </p>
-                    )}
-                    {currentDaily.datetime && (
-                      <p className="text-xs text-muted-foreground">
-                        Обновлено (api/stats/daily): {new Date(currentDaily.datetime).toLocaleString()}
-                      </p>
-                    )}
-                  </>
+                {dailyStats[sensor.sensor_id]?.no2 !== undefined && dailyStats[sensor.sensor_id]?.no2 !== null && (
+                  <p>
+                    NO2 (суточн.): <span className="font-semibold">{dailyStats[sensor.sensor_id]?.no2}</span>
+                  </p>
                 )}
+                {loadingIds.has(sensor.sensor_id.toString()) && <p className="text-xs text-muted-foreground">Обновляем...</p>}
               </div>
             </Popup>
           </CircleMarker>

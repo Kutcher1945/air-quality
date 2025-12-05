@@ -160,3 +160,32 @@
   background: transparent;
   border: none;
 }
+
+/* Custom cluster styles */
+.custom-cluster-icon:hover .cluster-label {
+  display: block !important;
+}
+
+.custom-cluster-icon {
+  transition: transform 0.2s ease;
+}
+
+.custom-cluster-icon:hover {
+  transform: scale(1.1);
+}
+
+/* Cluster tooltip styles */
+.cluster-tooltip {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.cluster-tooltip::before {
+  display: none !important;
+}
+
+.leaflet-tooltip-top::before {
+  border-top-color: white !important;
+}

@@ -870,10 +870,6 @@
     width: calc(var(--spacing) * 12);
   }
 
-  .w-\[150px\] {
-    width: 150px;
-  }
-
   .w-\[170px\] {
     width: 170px;
   }
@@ -1453,10 +1449,6 @@
 
   .text-\[2\.75rem\] {
     font-size: 2.75rem;
-  }
-
-  .text-\[3\.25rem\] {
-    font-size: 3.25rem;
   }
 
   .text-\[7\.5px\] {

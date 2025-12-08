@@ -522,8 +522,8 @@ export default function BuildingsWithoutGasPage() {
                     >
                       <option value="all">Все типы</option>
                       <option value="general">ALSECO</option>
-                      <option value="izhs">ИЖС</option>
-                      <option value="susn">СУСН</option>
+                      <option value="izhs">Данные Районных акиматов</option>
+                      <option value="susn">Данные ДЧС</option>
                     </select>
                   </div>
 
@@ -572,15 +572,15 @@ export default function BuildingsWithoutGasPage() {
                 </div>
 
                 <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-4 px-5 shadow-sm border-r-[3px] border-blue-500">
-                  <p className="text-[9px] uppercase tracking-[0.15em] text-gray-500 mb-1.5 font-medium">ИЖС</p>
+                  <p className="text-[9px] uppercase tracking-[0.15em] text-gray-500 mb-1.5 font-medium">Данные Районных акиматов</p>
                   <p className="text-[2.5rem] font-bold text-blue-600 leading-none tabular-nums">{stats.byCategory.izhs}</p>
-                  <p className="text-[8px] text-blue-400 mt-2 leading-tight">частных домов</p>
+                  <p className="text-[8px] text-blue-400 mt-2 leading-tight">домов</p>
                 </div>
 
                 <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-4 px-5 shadow-sm border-r-[3px] border-red-500">
-                  <p className="text-[9px] uppercase tracking-[0.15em] text-gray-500 mb-1.5 font-medium">СУСН</p>
+                  <p className="text-[9px] uppercase tracking-[0.15em] text-gray-500 mb-1.5 font-medium">Данные ДЧС</p>
                   <p className="text-[2.5rem] font-bold text-red-600 leading-none tabular-nums">{stats.byCategory.susn}</p>
-                  <p className="text-[8px] text-red-400 mt-2 leading-tight">многоквартирных</p>
+                  <p className="text-[8px] text-red-400 mt-2 leading-tight">домов</p>
                 </div>
               </>
             ) : (

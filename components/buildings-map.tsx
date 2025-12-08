@@ -263,6 +263,9 @@ export default function BuildingsMap({ buildings, showHeatmap = false, onBuildin
         },
       })
 
+      console.log(`🗺️ Creating markers for ${buildings.length} buildings`)
+
+      let markersCreated = 0
       buildings.forEach((building) => {
         // Use different colored icon based on building category
         const icon = createMarkerIcon(building.building_category)
@@ -293,6 +296,7 @@ export default function BuildingsMap({ buildings, showHeatmap = false, onBuildin
         })
 
         clusterGroup.addLayer(marker)
+        markersCreated++
 
         // Draw polygons only at high zoom for performance (zoom 16+)
         // Comment this out if polygons cause lag
@@ -389,6 +393,8 @@ export default function BuildingsMap({ buildings, showHeatmap = false, onBuildin
 
       clusterGroup.addTo(map)
       clusterGroupRef.current = clusterGroup
+
+      console.log(`✅ Successfully created ${markersCreated} markers on the map`)
     }
 
     // Auto-fit bounds if there are buildings

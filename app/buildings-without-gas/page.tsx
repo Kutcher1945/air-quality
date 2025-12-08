@@ -5,7 +5,7 @@ import dynamic from "next/dynamic"
 import { HeaderMenu } from "@/components/header-menu"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Building2, MapPin, AlertCircle, CheckCircle, Flame, Download, X, Calendar, Layers, Home, HelpCircle } from "lucide-react"
+import { Building2, MapPin, AlertCircle, CheckCircle, Flame, Download, X, Calendar, Layers, Home, HelpCircle, RefreshCw } from "lucide-react"
 import { getBuildingsFromCache, saveBuildingsToCache, clearBuildingsCache } from "@/lib/buildingsCache"
 
 // Динамически загружаем карту для избежания SSR проблем
@@ -76,8 +76,16 @@ export default function BuildingsWithoutGasPage() {
       if (!forceRefresh) {
         const cachedData = await getBuildingsFromCache()
         if (cachedData && cachedData.length > 0) {
-          console.log("✅ Loading from cache - instant load!")
+          console.log("💾 Loading from cache:", cachedData.length, "buildings")
           const buildingsData = transformBuildingsData(cachedData)
+          console.log("🏢 Transformed from cache:", {
+            total: buildingsData.length,
+            byCategory: {
+              general: buildingsData.filter(b => b.building_category === "general").length,
+              izhs: buildingsData.filter(b => b.building_category === "izhs").length,
+              susn: buildingsData.filter(b => b.building_category === "susn").length,
+            }
+          })
           setBuildings(buildingsData)
           setLoading(false)
           return
@@ -95,11 +103,29 @@ export default function BuildingsWithoutGasPage() {
       const data = await response.json()
       const apiBuildings = data.data || data
 
+      console.log("📊 API Response:", {
+        totalFromAPI: apiBuildings?.length || 0,
+        sampleData: apiBuildings?.[0],
+      })
+
       // Save raw API data to cache for next time
       await saveBuildingsToCache(apiBuildings)
 
       // Transform API response to match component interface
       const buildingsData = transformBuildingsData(apiBuildings)
+
+      console.log("🏢 Transformed Buildings:", {
+        total: buildingsData.length,
+        withCoordinates: buildingsData.filter(b => b.latitude && b.longitude).length,
+        byCategory: {
+          general: buildingsData.filter(b => b.building_category === "general").length,
+          izhs: buildingsData.filter(b => b.building_category === "izhs").length,
+          susn: buildingsData.filter(b => b.building_category === "susn").length,
+        }
+      })
+
+      console.log("📍 Map will display:", buildingsData.length, "markers")
+
       setBuildings(buildingsData)
     } catch (error) {
       console.error("Failed to fetch buildings from API:", error)
@@ -133,8 +159,8 @@ export default function BuildingsWithoutGasPage() {
           address: b.address || "Без адреса",
           district: districtLabel,
           district_id: b.district_id,
-          latitude: b.lat ?? b.latitude,
-          longitude: b.lon ?? b.longitude,
+          latitude: b.lat ?? b.latitude ?? null,
+          longitude: b.lon ?? b.longitude ?? null,
           has_gas: false,
           building_type:
             category === "izhs"
@@ -146,7 +172,7 @@ export default function BuildingsWithoutGasPage() {
           geometry: b.geometry || null,
         }
       })
-      .filter((b: Building) => b.latitude && b.longitude) // Only buildings with coordinates
+      // Don't filter out buildings without coordinates - keep ALL buildings for stats
   }
 
   // Тестовые данные для демонстрации
@@ -299,10 +325,14 @@ export default function BuildingsWithoutGasPage() {
   }
 
   const uniqueMarkerCount = new Set(buildings.map((b) => `${b.latitude},${b.longitude}`)).size
+  const withCoordinates = buildings.filter((b) => b.latitude && b.longitude).length
+  const withoutCoordinates = buildings.length - withCoordinates
 
   const stats = {
     total: buildings.length,
     uniqueMarkers: uniqueMarkerCount,
+    withCoordinates,
+    withoutCoordinates,
     byCategory: {
       general: categoryCounts.general,
       izhs: categoryCounts.izhs,
@@ -332,7 +362,7 @@ export default function BuildingsWithoutGasPage() {
             </div>
           ) : (
             <BuildingsMap
-              buildings={filteredBuildings}
+              buildings={filteredBuildings.filter(b => b.latitude && b.longitude)}
               showHeatmap={showHeatmap}
               onBuildingClick={handleBuildingClick}
             />
@@ -361,6 +391,16 @@ export default function BuildingsWithoutGasPage() {
 
                   {/* Buttons */}
                   <div className="flex gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => fetchBuildings(true)}
+                      disabled={loading}
+                      className="h-8 px-3 rounded-lg text-xs font-medium bg-white text-gray-700 border border-gray-200 hover:border-gray-300 transition-all disabled:opacity-50"
+                      title="Обновить данные из API"
+                    >
+                      <RefreshCw className={`inline-block mr-1.5 h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+                      Обновить
+                    </button>
+
                     <button
                       onClick={() => setShowHeatmap(!showHeatmap)}
                       className={`h-8 px-3 rounded-lg text-xs font-medium transition-all ${
@@ -497,32 +537,50 @@ export default function BuildingsWithoutGasPage() {
           </div>
 
           {/* Left Sidebar - Statistics Cards Stacked Vertically */}
-          <div className="absolute top-[70px] left-0 w-[150px] flex flex-col gap-2.5 pointer-events-auto z-10">
+          <div className="absolute top-[70px] left-0 w-[170px] flex flex-col gap-2.5 pointer-events-auto z-10">
             {/* Show all category cards when "Все типы" is selected */}
             {buildingTypeFilter === "all" ? (
               <>
-                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-gray-400">
-                  <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ВСЕГО</p>
-                  <p className="text-[2.75rem] font-bold text-gray-900 leading-none tabular-nums">{stats.uniqueMarkers}</p>
-                  <p className="text-[7.5px] text-gray-400 mt-1.5 leading-tight">уникальных объектов</p>
+                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-4 px-5 shadow-sm border-r-[3px] border-gray-400">
+                  <p className="text-[9px] uppercase tracking-[0.15em] text-gray-500 mb-1.5 font-medium">ВСЕГО</p>
+                  <p className="text-[2.5rem] font-bold text-gray-900 leading-none tabular-nums">{stats.total}</p>
+                  <p className="text-[8px] text-gray-400 mt-2 leading-tight">объектов</p>
                 </div>
 
-                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-orange-500">
-                  <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO</p>
-                  <p className="text-[2.75rem] font-bold text-orange-600 leading-none tabular-nums">{stats.byCategory.general}</p>
-                  <p className="text-[7.5px] text-orange-400 mt-1.5 leading-tight">жилых зданий</p>
+                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-4 px-5 shadow-sm border-r-[3px] border-green-500">
+                  <p className="text-[9px] uppercase tracking-[0.15em] text-gray-500 mb-1.5 font-medium">С КООРДИНАТАМИ</p>
+                  <p className="text-[2.5rem] font-bold text-green-600 leading-none tabular-nums">{stats.withCoordinates}</p>
+                  <p className="text-[8px] text-green-400 mt-2 leading-tight">на карте</p>
                 </div>
 
-                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-blue-500">
-                  <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ИЖС</p>
-                  <p className="text-[2.75rem] font-bold text-blue-600 leading-none tabular-nums">{stats.byCategory.izhs}</p>
-                  <p className="text-[7.5px] text-blue-400 mt-1.5 leading-tight">частных домов</p>
+                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-4 px-5 shadow-sm border-r-[3px] border-amber-500">
+                  <p className="text-[9px] uppercase tracking-[0.15em] text-gray-500 mb-1.5 font-medium">БЕЗ КООРДИНАТ</p>
+                  <p className="text-[2.5rem] font-bold text-amber-600 leading-none tabular-nums">{stats.withoutCoordinates}</p>
+                  <p className="text-[8px] text-amber-400 mt-2 leading-tight">не на карте</p>
                 </div>
 
-                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-red-500">
-                  <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">СУСН</p>
-                  <p className="text-[2.75rem] font-bold text-red-600 leading-none tabular-nums">{stats.byCategory.susn}</p>
-                  <p className="text-[7.5px] text-red-400 mt-1.5 leading-tight">многоквартирных</p>
+                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-4 px-5 shadow-sm border-r-[3px] border-purple-500">
+                  <p className="text-[9px] uppercase tracking-[0.15em] text-gray-500 mb-1.5 font-medium">УНИКАЛЬНЫХ</p>
+                  <p className="text-[2.5rem] font-bold text-purple-600 leading-none tabular-nums">{stats.uniqueMarkers}</p>
+                  <p className="text-[8px] text-purple-400 mt-2 leading-tight">координат</p>
+                </div>
+
+                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-4 px-5 shadow-sm border-r-[3px] border-orange-500">
+                  <p className="text-[9px] uppercase tracking-[0.15em] text-gray-500 mb-1.5 font-medium">ALSECO</p>
+                  <p className="text-[2.5rem] font-bold text-orange-600 leading-none tabular-nums">{stats.byCategory.general}</p>
+                  <p className="text-[8px] text-orange-400 mt-2 leading-tight">жилых зданий</p>
+                </div>
+
+                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-4 px-5 shadow-sm border-r-[3px] border-blue-500">
+                  <p className="text-[9px] uppercase tracking-[0.15em] text-gray-500 mb-1.5 font-medium">ИЖС</p>
+                  <p className="text-[2.5rem] font-bold text-blue-600 leading-none tabular-nums">{stats.byCategory.izhs}</p>
+                  <p className="text-[8px] text-blue-400 mt-2 leading-tight">частных домов</p>
+                </div>
+
+                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-4 px-5 shadow-sm border-r-[3px] border-red-500">
+                  <p className="text-[9px] uppercase tracking-[0.15em] text-gray-500 mb-1.5 font-medium">СУСН</p>
+                  <p className="text-[2.5rem] font-bold text-red-600 leading-none tabular-nums">{stats.byCategory.susn}</p>
+                  <p className="text-[8px] text-red-400 mt-2 leading-tight">многоквартирных</p>
                 </div>
               </>
             ) : (

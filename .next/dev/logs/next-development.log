@@ -5,3 +5,202 @@
 [00:00:06.674] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
 [00:00:06.674] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/buildings-without-gas","route":"/buildings-without-gas"}
 [00:00:06.674] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/buildings-without-gas color: rgb(120, 120, 120) color: inherit {"dp":"/buildings-without-gas","o":"http://localhost:3000/buildings-without-gas","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1764972937676}
+[00:00:26.910] Server  LOG      ○ Compiling / ...
+[00:00:28.972] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:00:28.972] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:00:28.972] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765190896117}
+[00:00:33.211] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/buildings-without-gas color: rgb(120, 120, 120) color: inherit {"dp":"/buildings-without-gas","o":"http://localhost:3000/buildings-without-gas","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765190899954}
+[00:00:33.211] Browser LOG     Cache hit! Data is 106 minutes old
+[00:00:33.211] Browser LOG     ✅ Loading from cache - instant load!
+[00:00:33.211] Browser LOG     Cache hit! Data is 106 minutes old
+[00:00:33.211] Browser LOG     ✅ Loading from cache - instant load!
+[00:02:53.424] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:02:53.424] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/buildings-without-gas","route":"/buildings-without-gas"}
+[00:02:53.424] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/buildings-without-gas color: rgb(120, 120, 120) color: inherit {"dp":"/buildings-without-gas","o":"http://localhost:3000/buildings-without-gas","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765191032186}
+[00:02:53.424] Browser LOG     Cache hit! Data is 109 minutes old
+[00:02:53.424] Browser LOG     ✅ Loading from cache - instant load!
+[00:06:30.313] Server  LOG      ✓ Compiled in 69ms
+[00:06:52.855] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:06:52.855] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/buildings-without-gas","route":"/buildings-without-gas"}
+[00:06:52.855] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/buildings-without-gas color: rgb(120, 120, 120) color: inherit {"dp":"/buildings-without-gas","o":"http://localhost:3000/buildings-without-gas","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765191258953}
+[00:06:52.855] Browser LOG     Cache hit! Data is 112 minutes old
+[00:06:52.855] Browser LOG     ✅ Loading from cache - instant load!
+[00:09:50.499] Server  LOG      ✓ Compiled in 47ms
+[00:09:55.853] Server  LOG      ✓ Compiled in 41ms
+[00:10:01.837] Server  LOG      ✓ Compiled in 40ms
+[00:13:15.784] Server  LOG      ✓ Compiled in 44ms
+[00:13:16.627] Browser LOG     🗺️ Creating markers for 10411 buildings
+[00:13:16.627] Browser LOG     ✅ Successfully created 10411 markers on the map
+[00:13:16.627] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 10411 buildings
+[00:13:16.627] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 10411 markers on the map
+[00:13:51.638] Server  LOG      ✓ Compiled in 108ms
+[00:13:52.386] Browser LOG     🗺️ Creating markers for 10411 buildings
+[00:13:52.386] Browser LOG     ✅ Successfully created 10411 markers on the map
+[00:13:52.386] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 10411 buildings
+[00:13:52.386] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 10411 markers on the map
+[00:14:44.784] Server  LOG      ✓ Compiled in 75ms
+[00:14:45.580] Browser LOG     🗺️ Creating markers for 10411 buildings
+[00:14:45.581] Browser LOG     ✅ Successfully created 10411 markers on the map
+[00:14:45.581] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 10411 buildings
+[00:14:45.581] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 10411 markers on the map
+[00:15:35.403] Server  LOG      ✓ Compiled in 76ms
+[00:15:36.209] Browser LOG     🗺️ Creating markers for 10411 buildings
+[00:15:36.209] Browser LOG     ✅ Successfully created 10411 markers on the map
+[00:15:36.209] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 10411 buildings
+[00:15:36.209] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 10411 markers on the map
+[00:16:53.135] Server  LOG      ✓ Compiled in 47ms
+[00:16:54.018] Browser LOG     🗺️ Creating markers for 10411 buildings
+[00:16:54.018] Browser LOG     ✅ Successfully created 10411 markers on the map
+[00:16:54.018] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 10411 buildings
+[00:16:54.018] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 10411 markers on the map
+[00:17:03.295] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:17:03.295] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/buildings-without-gas","route":"/buildings-without-gas"}
+[00:17:03.295] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/buildings-without-gas color: rgb(120, 120, 120) color: inherit {"dp":"/buildings-without-gas","o":"http://localhost:3000/buildings-without-gas","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765191839375}
+[00:17:03.295] Browser LOG     Cache hit! Data is 122 minutes old
+[00:17:03.295] Browser LOG     ✅ Loading from cache - instant load!
+[00:17:03.994] Browser LOG     🗺️ Creating markers for 10411 buildings
+[00:17:03.994] Browser LOG     ✅ Successfully created 10411 markers on the map
+[00:17:03.994] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 10411 buildings
+[00:17:03.994] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 10411 markers on the map
+[00:17:34.056] Server  LOG      ✓ Compiled in 64ms
+[00:17:34.880] Browser LOG     🗺️ Creating markers for 10411 buildings
+[00:17:34.880] Browser LOG     ✅ Successfully created 10411 markers on the map
+[00:17:34.880] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 10411 buildings
+[00:17:34.880] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 10411 markers on the map
+[00:17:36.956] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:17:36.956] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/buildings-without-gas","route":"/buildings-without-gas"}
+[00:17:36.956] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/buildings-without-gas color: rgb(120, 120, 120) color: inherit {"dp":"/buildings-without-gas","o":"http://localhost:3000/buildings-without-gas","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765191871239}
+[00:17:36.956] Browser LOG     Cache hit! Data is 123 minutes old
+[00:17:36.956] Browser LOG     💾 Loading from cache: 10411 buildings
+[00:17:36.956] Browser LOG     🏢 Transformed from cache: {"byCategory":{"general":9486,"izhs":329,"susn":596},"total":10411}
+[00:17:37.584] Browser LOG     🗺️ Creating markers for 10411 buildings
+[00:17:37.584] Browser LOG     ✅ Successfully created 10411 markers on the map
+[00:17:37.584] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 10411 buildings
+[00:17:37.584] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 10411 markers on the map
+[00:18:03.309] Server  LOG      ✓ Compiled in 75ms
+[00:18:03.463] Browser ERROR   uncaughtError: ReferenceError: RefreshCw is not defined
+[00:18:14.474] Server  LOG      ✓ Compiled in 77ms
+[00:18:14.475] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:18:14.856] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/buildings-without-gas color: rgb(120, 120, 120) color: inherit {"dp":"/buildings-without-gas","o":"http://localhost:3000/buildings-without-gas","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765191907139}
+[00:18:14.856] Browser LOG     Cache hit! Data is 123 minutes old
+[00:18:14.856] Browser LOG     💾 Loading from cache: 10411 buildings
+[00:18:14.856] Browser LOG     🏢 Transformed from cache: {"byCategory":{"general":9486,"izhs":329,"susn":596},"total":10411}
+[00:18:15.896] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:18:15.896] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/buildings-without-gas","route":"/buildings-without-gas"}
+[00:18:15.897] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/buildings-without-gas color: rgb(120, 120, 120) color: inherit {"dp":"/buildings-without-gas","o":"http://localhost:3000/buildings-without-gas","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765191908122}
+[00:18:15.897] Browser LOG     Cache hit! Data is 123 minutes old
+[00:18:15.897] Browser LOG     💾 Loading from cache: 10411 buildings
+[00:18:15.897] Browser LOG     🏢 Transformed from cache: {"byCategory":{"general":9486,"izhs":329,"susn":596},"total":10411}
+[00:18:16.619] Browser LOG     🗺️ Creating markers for 10411 buildings
+[00:18:16.619] Browser LOG     ✅ Successfully created 10411 markers on the map
+[00:18:16.619] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 10411 buildings
+[00:18:16.619] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 10411 markers on the map
+[00:18:35.259] Browser LOG     📡 Fetching from API...
+[00:18:42.901] Browser LOG     📊 API Response: {"sampleData":{"address":"Алатауский район, ул. Бобруйская, 2","category":"general","district_id":1,"geometry":{"coordinates":[["[Array]"]],"type":"MultiPolygon"},"id":1997,"lat":43.252563,"lon":76.851358,"source":"address_without_gas"},"totalFromAPI":21891}
+[00:18:42.902] Browser LOG     🏢 Transformed Buildings: {"byCategory":{"general":20966,"izhs":329,"susn":596},"total":21891,"withCoordinates":21891}
+[00:18:42.902] Browser LOG     📍 Map will display: 21891 markers
+[00:18:42.902] Browser LOG     🗺️ Creating markers for 21891 buildings
+[00:18:42.902] Browser LOG     ✅ Successfully created 21891 markers on the map
+[00:18:42.902] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 21891 buildings
+[00:18:42.902] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 21891 markers on the map
+[00:22:01.127] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:22:01.128] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/buildings-without-gas","route":"/buildings-without-gas"}
+[00:22:01.128] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/buildings-without-gas color: rgb(120, 120, 120) color: inherit {"dp":"/buildings-without-gas","o":"http://localhost:3000/buildings-without-gas","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765192121618}
+[00:22:01.128] Browser LOG     Cache hit! Data is 3 minutes old
+[00:22:01.128] Browser LOG     💾 Loading from cache: 21891 buildings
+[00:22:01.128] Browser LOG     🏢 Transformed from cache: {"byCategory":{"general":20966,"izhs":329,"susn":596},"total":21891}
+[00:22:02.065] Browser LOG     🗺️ Creating markers for 21891 buildings
+[00:22:02.065] Browser LOG     ✅ Successfully created 21891 markers on the map
+[00:22:02.065] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 21891 buildings
+[00:22:02.065] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 21891 markers on the map
+[00:22:03.066] Browser LOG     📡 Fetching from API...
+[00:22:10.020] Browser LOG     📊 API Response: {"sampleData":{"address":"Алатауский район, ул. Бобруйская, 2","category":"general","district_id":1,"geometry":{"coordinates":[["[Array]"]],"type":"MultiPolygon"},"id":1997,"lat":43.252563,"lon":76.851358,"source":"address_without_gas"},"totalFromAPI":21866}
+[00:22:10.020] Browser LOG     🏢 Transformed Buildings: {"byCategory":{"general":20941,"izhs":329,"susn":596},"total":21866,"withCoordinates":21866}
+[00:22:10.020] Browser LOG     📍 Map will display: 21866 markers
+[00:22:10.020] Browser LOG     🗺️ Creating markers for 21866 buildings
+[00:22:10.020] Browser LOG     ✅ Successfully created 21866 markers on the map
+[00:22:10.020] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 21866 buildings
+[00:22:10.020] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 21866 markers on the map
+[00:24:09.728] Browser LOG     📡 Fetching from API...
+[00:24:16.706] Browser LOG     📊 API Response: {"sampleData":{"address":"Алатауский район, ул. Бобруйская, 2","category":"general","district_id":1,"geometry":{"coordinates":[["[Array]"]],"type":"MultiPolygon"},"id":1997,"lat":43.252563,"lon":76.851358,"source":"address_without_gas"},"totalFromAPI":21767}
+[00:24:16.706] Browser LOG     🏢 Transformed Buildings: {"byCategory":{"general":20842,"izhs":329,"susn":596},"total":21767,"withCoordinates":21767}
+[00:24:16.706] Browser LOG     📍 Map will display: 21767 markers
+[00:24:16.706] Browser LOG     🗺️ Creating markers for 21767 buildings
+[00:24:16.706] Browser LOG     ✅ Successfully created 21767 markers on the map
+[00:24:16.706] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 21767 buildings
+[00:24:16.706] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 21767 markers on the map
+[00:25:38.969] Server  LOG      ✓ Compiled in 63ms
+[00:25:40.133] Browser LOG     🗺️ Creating markers for 21767 buildings
+[00:25:40.133] Browser LOG     ✅ Successfully created 21767 markers on the map
+[00:25:40.133] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 21767 buildings
+[00:25:40.133] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 21767 markers on the map
+[00:25:54.960] Server  LOG      ✓ Compiled in 116ms
+[00:25:56.151] Browser LOG     🗺️ Creating markers for 21767 buildings
+[00:25:56.151] Browser LOG     ✅ Successfully created 21767 markers on the map
+[00:25:56.151] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 21767 buildings
+[00:25:56.151] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 21767 markers on the map
+[00:26:06.408] Browser LOG     📡 Fetching from API...
+[00:26:12.584] Browser LOG     📊 API Response: {"sampleData":{"address":"Алатауский район, ул. Бобруйская, 2","category":"general","district_id":1,"geometry":{"coordinates":[["[Array]"]],"type":"MultiPolygon"},"id":1997,"lat":43.252563,"lon":76.851358,"source":"address_without_gas"},"totalFromAPI":21767}
+[00:26:13.231] Browser LOG     🏢 Transformed Buildings: {"byCategory":{"general":20842,"izhs":329,"susn":596},"total":21767,"withCoordinates":21767}
+[00:26:13.231] Browser LOG     📍 Map will display: 21767 markers
+[00:26:13.231] Browser LOG     🗺️ Creating markers for 21767 buildings
+[00:26:13.231] Browser LOG     ✅ Successfully created 21767 markers on the map
+[00:26:13.231] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 21767 buildings
+[00:26:13.231] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 21767 markers on the map
+[00:26:15.823] Browser LOG     📡 Fetching from API...
+[00:26:21.850] Browser LOG     📊 API Response: {"sampleData":{"address":"Алатауский район, ул. Бобруйская, 2","category":"general","district_id":1,"geometry":{"coordinates":[["[Array]"]],"type":"MultiPolygon"},"id":1997,"lat":43.252563,"lon":76.851358,"source":"address_without_gas"},"totalFromAPI":21767}
+[00:26:22.574] Browser LOG     🏢 Transformed Buildings: {"byCategory":{"general":20842,"izhs":329,"susn":596},"total":21767,"withCoordinates":21767}
+[00:26:22.574] Browser LOG     📍 Map will display: 21767 markers
+[00:26:22.574] Browser LOG     🗺️ Creating markers for 21767 buildings
+[00:26:22.574] Browser LOG     ✅ Successfully created 21767 markers on the map
+[00:26:22.574] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 21767 buildings
+[00:26:22.574] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 21767 markers on the map
+[00:29:23.417] Server  LOG      ✓ Compiled in 78ms
+[00:29:24.520] Browser LOG     🗺️ Creating markers for 21767 buildings
+[00:29:24.520] Browser LOG     ✅ Successfully created 21767 markers on the map
+[00:29:24.520] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 21767 buildings
+[00:29:24.520] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 21767 markers on the map
+[00:29:33.589] Browser LOG     📡 Fetching from API...
+[00:29:35.254] Server  LOG      ✓ Compiled in 54ms
+[00:29:39.913] Browser LOG     📊 API Response: {"sampleData":{"address":"Алатауский район, ул. Бобруйская, 2","category":"general","district_id":1,"geometry":{"coordinates":[["[Array]"]],"type":"MultiPolygon"},"id":1997,"lat":43.252563,"lon":76.851358,"source":"address_without_gas"},"totalFromAPI":21767}
+[00:29:39.913] Browser LOG     🏢 Transformed Buildings: {"byCategory":{"general":20842,"izhs":329,"susn":596},"total":21767,"withCoordinates":21767}
+[00:29:39.913] Browser LOG     📍 Map will display: 21767 markers
+[00:29:40.797] Browser LOG     🗺️ Creating markers for 21767 buildings
+[00:29:40.797] Browser LOG     ✅ Successfully created 21767 markers on the map
+[00:29:40.797] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 21767 buildings
+[00:29:40.797] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 21767 markers on the map
+[00:29:47.201] Browser LOG     📡 Fetching from API...
+[00:29:53.891] Browser LOG     📊 API Response: {"sampleData":{"address":"Алатауский район, ул. Бобруйская, 2","category":"general","district_id":1,"geometry":{"coordinates":[["[Array]"]],"type":"MultiPolygon"},"id":1997,"lat":43.252563,"lon":76.851358,"source":"address_without_gas"},"totalFromAPI":21767}
+[00:29:53.891] Browser LOG     🏢 Transformed Buildings: {"byCategory":{"general":20842,"izhs":329,"susn":596},"total":21767,"withCoordinates":21767}
+[00:29:53.891] Browser LOG     📍 Map will display: 21767 markers
+[00:29:53.891] Browser LOG     🗺️ Creating markers for 21767 buildings
+[00:29:53.891] Browser LOG     ✅ Successfully created 21767 markers on the map
+[00:29:53.891] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 21767 buildings
+[00:29:53.891] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 21767 markers on the map
+[00:30:48.196] Server  LOG      ✓ Compiled in 46ms
+[00:30:49.532] Browser LOG     🗺️ Creating markers for 21767 buildings
+[00:30:49.532] Browser LOG     ✅ Successfully created 21767 markers on the map
+[00:30:49.532] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 21767 buildings
+[00:30:49.532] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 21767 markers on the map
+[00:30:49.532] Browser ERROR   uncaughtError: TypeError: Cannot read properties of null (reading 'getMinZoom')
+[00:30:50.315] Browser LOG     📡 Fetching from API...
+[00:30:59.462] Browser LOG     📊 API Response: {"sampleData":{"address":"Алатауский район, ул. Бобруйская, 2","category":"general","district_id":1,"geometry":{"coordinates":[["[Array]"]],"type":"MultiPolygon"},"id":1997,"lat":43.252563,"lon":76.851358,"source":"address_without_gas"},"totalFromAPI":21767}
+[00:30:59.462] Browser LOG     🏢 Transformed Buildings: {"byCategory":{"general":20842,"izhs":329,"susn":596},"total":21767,"withCoordinates":21767}
+[00:30:59.462] Browser LOG     📍 Map will display: 21767 markers
+[00:30:59.462] Browser LOG     🗺️ Creating markers for 21767 buildings
+[00:30:59.462] Browser LOG     ✅ Successfully created 21767 markers on the map
+[00:30:59.462] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 21767 buildings
+[00:30:59.462] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 21767 markers on the map
+[00:32:55.972] Browser LOG     📡 Fetching from API...
+[00:33:05.115] Browser LOG     📊 API Response: {"sampleData":{"address":"г.Алматы, ул. Навои, 1","category":"general","district_id":null,"geometry":null,"id":12944,"lat":null,"lon":null,"source":"address_without_gas"},"totalFromAPI":28223}
+[00:33:05.115] Browser LOG     🏢 Transformed Buildings: {"byCategory":{"general":26865,"izhs":687,"susn":671},"total":28223,"withCoordinates":21767}
+[00:33:05.115] Browser LOG     📍 Map will display: 28223 markers
+[00:33:05.115] Browser LOG     🗺️ Creating markers for 21767 buildings
+[00:33:05.115] Browser LOG     ✅ Successfully created 21767 markers on the map
+[00:33:05.115] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 21767 buildings
+[00:33:05.115] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 21767 markers on the map
+[00:36:18.681] Server  LOG      ✓ Compiled in 52ms
+[00:36:19.757] Browser LOG     🗺️ Creating markers for 21767 buildings
+[00:36:19.757] Browser LOG     ✅ Successfully created 21767 markers on the map
+[00:36:19.757] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 21767 buildings
+[00:36:19.757] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 21767 markers on the map

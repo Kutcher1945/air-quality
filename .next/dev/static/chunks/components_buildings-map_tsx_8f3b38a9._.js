@@ -260,6 +260,8 @@ function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
                         }
                     }["BuildingsMap.useEffect.clusterGroup"]
                 });
+                console.log(`🗺️ Creating markers for ${buildings.length} buildings`);
+                let markersCreated = 0;
                 buildings.forEach({
                     "BuildingsMap.useEffect": (building)=>{
                         // Use different colored icon based on building category
@@ -291,6 +293,7 @@ function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
                             }
                         }["BuildingsMap.useEffect"]);
                         clusterGroup.addLayer(marker);
+                        markersCreated++;
                         // Draw polygons only at high zoom for performance (zoom 16+)
                         // Comment this out if polygons cause lag
                         if (building.geometry && building.geometry.type === "MultiPolygon" && map.getZoom() >= 16) {
@@ -401,6 +404,7 @@ function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
                 }["BuildingsMap.useEffect"]);
                 clusterGroup.addTo(map);
                 clusterGroupRef.current = clusterGroup;
+                console.log(`✅ Successfully created ${markersCreated} markers on the map`);
             }
             // Auto-fit bounds if there are buildings
             if (buildings.length > 0) {
@@ -438,7 +442,7 @@ function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
         className: "h-full w-full"
     }, void 0, false, {
         fileName: "[project]/components/buildings-map.tsx",
-        lineNumber: 412,
+        lineNumber: 418,
         columnNumber: 10
     }, this);
 }

@@ -355,13 +355,13 @@ export default function BuildingsMap({ buildings, showHeatmap = false, onBuildin
               ` : ""}
               ${categories.izhs > 0 ? `
                 <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 8px; background: #eff6ff; border-left: 3px solid #3b82f6; border-radius: 4px;">
-                  <span style="font-size: 11px; color: #1e3a8a;">🏡 ИЖС</span>
+                  <span style="font-size: 11px; color: #1e3a8a;">🏡 Данные Районных акиматов</span>
                   <span style="font-size: 13px; font-weight: bold; color: #3b82f6;">${categories.izhs}</span>
                 </div>
               ` : ""}
               ${categories.susn > 0 ? `
                 <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 8px; background: #fef2f2; border-left: 3px solid #ef4444; border-radius: 4px;">
-                  <span style="font-size: 11px; color: #7f1d1d;">🏢 СУСН</span>
+                  <span style="font-size: 11px; color: #7f1d1d;">🏢 Данные ДЧС</span>
                   <span style="font-size: 13px; font-weight: bold; color: #ef4444;">${categories.susn}</span>
                 </div>
               ` : ""}

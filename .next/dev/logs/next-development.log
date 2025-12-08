@@ -1,33 +1,12 @@
-[00:00:01.909] Server  LOG      ✓ Ready in 1338ms
-[00:00:06.072] Server  LOG      ○ Compiling / ...
-[00:00:07.659] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:07.659] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
-[00:00:07.659] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765197499196}
-[00:00:11.020] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/buildings-without-gas color: rgb(120, 120, 120) color: inherit {"dp":"/buildings-without-gas","o":"http://localhost:3000/buildings-without-gas","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765197502051}
-[00:00:11.021] Browser LOG     Cache hit! Data is 79 minutes old
-[00:00:11.021] Browser LOG     💾 Loading from cache: 28223 buildings
-[00:00:11.021] Browser LOG     🏢 Transformed from cache: {"byCategory":{"general":26865,"izhs":687,"susn":671},"total":28223}
-[00:00:11.021] Browser LOG     Cache hit! Data is 79 minutes old
-[00:00:11.021] Browser LOG     💾 Loading from cache: 28223 buildings
-[00:00:11.021] Browser LOG     🏢 Transformed from cache: {"byCategory":{"general":26865,"izhs":687,"susn":671},"total":28223}
-[00:00:11.742] Browser LOG     🗺️ Creating markers for 21767 buildings
-[00:00:11.742] Browser LOG     ✅ Successfully created 21767 markers on the map
-[00:00:11.742] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 21767 buildings
-[00:00:11.742] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 21767 markers on the map
-[00:00:55.715] Server  LOG      ✓ Compiled in 48ms
-[00:00:58.421] Browser LOG     🗺️ Creating markers for 21767 buildings
-[00:00:58.421] Browser LOG     ✅ Successfully created 21767 markers on the map
-[00:00:58.421] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 21767 buildings
-[00:00:58.421] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 21767 markers on the map
-[00:00:58.422] Browser ERROR   uncaughtError: TypeError: Cannot read properties of null (reading 'getMinZoom')
-[00:01:13.697] Server  LOG      ✓ Compiled in 51ms
-[00:01:16.175] Browser LOG     🗺️ Creating markers for 21767 buildings
-[00:01:16.175] Browser LOG     ✅ Successfully created 21767 markers on the map
-[00:01:16.175] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 21767 buildings
-[00:01:16.175] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 21767 markers on the map
-[00:01:16.175] Browser ERROR   uncaughtError: TypeError: Cannot read properties of null (reading 'getMinZoom')
-[00:01:35.219] Server  LOG      ✓ Compiled in 49ms
-[00:01:36.278] Browser LOG     🗺️ Creating markers for 21767 buildings
-[00:01:36.278] Browser LOG     ✅ Successfully created 21767 markers on the map
-[00:01:36.278] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 21767 buildings
-[00:01:36.278] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 21767 markers on the map
+[00:00:01.106] Server  LOG      ✓ Ready in 720ms
+[00:00:56.859] Server  LOG      ○ Compiling /buildings-without-gas ...
+[00:00:58.217] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:00:58.217] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/buildings-without-gas","route":"/buildings-without-gas"}
+[00:00:58.217] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/buildings-without-gas color: rgb(120, 120, 120) color: inherit {"dp":"/buildings-without-gas","o":"http://localhost:3000/buildings-without-gas","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765197732523}
+[00:00:58.217] Browser LOG     Cache hit! Data is 83 minutes old
+[00:00:58.217] Browser LOG     💾 Loading from cache: 28223 buildings
+[00:00:58.217] Browser LOG     🏢 Transformed from cache: {"byCategory":{"general":26865,"izhs":687,"susn":671},"total":28223}
+[00:00:59.105] Browser LOG     🗺️ Creating markers for 21767 buildings
+[00:00:59.105] Browser LOG     ✅ Successfully created 21767 markers on the map
+[00:00:59.105] Browser LOG     [2;38;2;124;124;124m%s[0m 🗺️ Creating markers for 21767 buildings
+[00:00:59.105] Browser LOG     [2;38;2;124;124;124m%s[0m ✅ Successfully created 21767 markers on the map

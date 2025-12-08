@@ -87,6 +87,8 @@ function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
     const heatLayerRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const clusterGroupRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const onBuildingClickRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(onBuildingClick);
+    const hasAutoFitted = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(false);
+    const canvasRendererRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     // Keep the ref updated with the latest callback
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "BuildingsMap.useEffect": ()=>{
@@ -95,21 +97,17 @@ function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
     }["BuildingsMap.useEffect"], [
         onBuildingClick
     ]);
+    // Initialize map only once
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "BuildingsMap.useEffect": ()=>{
-            if (("TURBOPACK compile-time value", "object") === "undefined" || !mapRef.current) return;
-            // Clear previous map instance
-            if (mapInstanceRef.current) {
-                mapInstanceRef.current.remove();
-                mapInstanceRef.current = null;
-            }
+            if (("TURBOPACK compile-time value", "object") === "undefined" || !mapRef.current || mapInstanceRef.current) return;
             // Center of Almaty
             const mapCenter = [
                 43.238293,
                 76.945465
             ];
             // Create canvas renderer for better performance with many markers
-            const canvasRenderer = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].canvas({
+            canvasRendererRef.current = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].canvas({
                 padding: 0.5
             });
             // Create Leaflet map with EPSG:3395 CRS for Yandex tiles
@@ -118,7 +116,7 @@ function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
                 center: mapCenter,
                 zoom: 11,
                 preferCanvas: true,
-                renderer: canvasRenderer,
+                renderer: canvasRendererRef.current,
                 zoomAnimation: true,
                 markerZoomAnimation: true,
                 fadeAnimation: true,
@@ -135,6 +133,31 @@ function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
                 updateWhenZooming: false,
                 keepBuffer: 2
             }).addTo(map);
+            mapInstanceRef.current = map;
+            return ({
+                "BuildingsMap.useEffect": ()=>{
+                    if (mapInstanceRef.current) {
+                        mapInstanceRef.current.remove();
+                        mapInstanceRef.current = null;
+                    }
+                }
+            })["BuildingsMap.useEffect"];
+        }
+    }["BuildingsMap.useEffect"], []);
+    // Update markers and layers when buildings or showHeatmap changes
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "BuildingsMap.useEffect": ()=>{
+            if (!mapInstanceRef.current || ("TURBOPACK compile-time value", "object") === "undefined") return;
+            const map = mapInstanceRef.current;
+            // Clear existing layers
+            if (heatLayerRef.current) {
+                map.removeLayer(heatLayerRef.current);
+                heatLayerRef.current = null;
+            }
+            if (clusterGroupRef.current) {
+                map.removeLayer(clusterGroupRef.current);
+                clusterGroupRef.current = null;
+            }
             if (showHeatmap) {
                 // Create heatmap layer
                 const heatData = buildings.map({
@@ -317,7 +340,7 @@ function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
                                 color: polygonColor,
                                 weight: 1,
                                 fillOpacity: 0.15,
-                                renderer: canvasRenderer,
+                                renderer: canvasRendererRef.current || undefined,
                                 interactive: false,
                                 smoothFactor: 2
                             }).addTo(map);
@@ -406,8 +429,8 @@ function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
                 clusterGroupRef.current = clusterGroup;
                 console.log(`✅ Successfully created ${markersCreated} markers on the map`);
             }
-            // Auto-fit bounds if there are buildings
-            if (buildings.length > 0) {
+            // Auto-fit bounds only on first load, not on subsequent re-renders
+            if (buildings.length > 0 && !hasAutoFitted.current) {
                 const bounds = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].latLngBounds(buildings.map({
                     "BuildingsMap.useEffect.bounds": (b)=>[
                             b.latitude,
@@ -420,18 +443,8 @@ function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
                         50
                     ]
                 });
+                hasAutoFitted.current = true;
             }
-            mapInstanceRef.current = map;
-            return ({
-                "BuildingsMap.useEffect": ()=>{
-                    if (mapInstanceRef.current) {
-                        mapInstanceRef.current.remove();
-                        mapInstanceRef.current = null;
-                    }
-                    heatLayerRef.current = null;
-                    clusterGroupRef.current = null;
-                }
-            })["BuildingsMap.useEffect"];
         }
     }["BuildingsMap.useEffect"], [
         buildings,
@@ -442,11 +455,11 @@ function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
         className: "h-full w-full"
     }, void 0, false, {
         fileName: "[project]/components/buildings-map.tsx",
-        lineNumber: 418,
+        lineNumber: 431,
         columnNumber: 10
     }, this);
 }
-_s(BuildingsMap, "Lkl6tI2/oEJaiYlVNxKv8jkQa8M=");
+_s(BuildingsMap, "Sr9ANAc2IcOldoZUaiw15uvc+RQ=");
 _c = BuildingsMap;
 var _c;
 __turbopack_context__.k.register(_c, "BuildingsMap");

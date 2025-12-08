@@ -1,10 +1,11 @@
 "use client"
 
-import { useMemo, useState } from "react"
-import { CircleMarker, MapContainer, Popup, TileLayer } from "react-leaflet"
-import { CRS } from "leaflet"
-import type { LatLngExpression } from "leaflet"
+import { useEffect, useRef } from "react"
+import L from "leaflet"
 import "leaflet/dist/leaflet.css"
+import "leaflet.markercluster/dist/leaflet.markercluster"
+import "leaflet.markercluster/dist/MarkerCluster.css"
+import "leaflet.markercluster/dist/MarkerCluster.Default.css"
 
 export interface SensorMetric {
   pm25?: number | null
@@ -28,139 +29,430 @@ interface SensorMapProps {
   sensors: Sensor[]
 }
 
-type DailyStat = {
-  pm25?: number
-  no2?: number
-  datetime?: string
-}
+const DEFAULT_CENTER: [number, number] = [43.238949, 76.889709] // Almaty
+const YANDEX_TILE_URL = "https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&lang=ru_RU"
 
-const DEFAULT_CENTER: LatLngExpression = [43.238949, 76.889709] // Almaty
+// Fix Leaflet default marker icon issue
+delete (L.Icon.Default.prototype as any)._getIconUrl
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+})
 
-const YANDEX_TILE_URL =
-  "https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&lang=ru_RU"
+// Color mapping for different suppliers (Поставщик)
+const getSupplierColor = (district?: string | null) => {
+  if (!district) return "#6b7280" // Gray for unknown
 
-const getMarkerColor = (pm25?: number | null) => {
-  if (pm25 === null || pm25 === undefined) return "#6b7280"
-  if (pm25 <= 15) return "#1BA97C"
-  if (pm25 <= 35) return "#f59e0b"
-  if (pm25 <= 55) return "#f97316"
-  if (pm25 <= 150) return "#ef4444"
-  if (pm25 <= 250) return "#a855f7"
-  return "#581c87"
-}
+  // Create consistent colors based on district name
+  const colors: Record<string, string> = {
+    "Алатауский район": "#3b82f6",      // Blue
+    "Алмалинский район": "#10b981",     // Green
+    "Ауэзовский район": "#f59e0b",      // Amber
+    "Бостандыкский район": "#8b5cf6",   // Violet
+    "Жетысуский район": "#ef4444",      // Red
+    "Медеуский район": "#ec4899",       // Pink
+    "Наурызбайский район": "#f97316",   // Orange
+    "Турксибский район": "#06b6d4",     // Cyan
+    "АО АЛМАТЫ": "#14b8a6",             // Teal
+    "ГУ Алатауский район": "#3b82f6",   // Blue
+    "ГУ Алмалинский район": "#10b981",  // Green
+    "ГУ Ауэзовский район": "#f59e0b",   // Amber
+    "ГУ Бостандыкский район": "#8b5cf6", // Violet
+    "ГУ Жетысуский район": "#ef4444",   // Red
+    "ГУ Медеуский район": "#ec4899",    // Pink
+    "ГУ Наурызбайский район": "#f97316", // Orange
+    "ГУ Турксибский район": "#06b6d4",  // Cyan
+  }
 
-export default function SensorMapYandex({ sensors }: SensorMapProps) {
-  const [dailyStats, setDailyStats] = useState<Record<string, DailyStat | null>>({})
-  const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set())
+  // Check for exact match
+  if (colors[district]) return colors[district]
 
-  const markers = useMemo(
-    () => sensors.filter((sensor) => sensor.latitude !== null && sensor.latitude !== undefined && sensor.longitude !== null && sensor.longitude !== undefined),
-    [sensors],
-  )
-
-  const fetchDailyStat = async (sensorId: string) => {
-    if (!sensorId) return
-    if (dailyStats[sensorId] !== undefined) return
-    if (loadingIds.has(sensorId)) return
-
-    const nextLoading = new Set(loadingIds)
-    nextLoading.add(sensorId)
-    setLoadingIds(nextLoading)
-
-    try {
-      const resp = await fetch(`https://api.air.org.kz/api/stats/daily?station_id=${sensorId}`)
-      if (!resp.ok) throw new Error(`Failed ${resp.status}`)
-      const data = await resp.json()
-      const first = Array.isArray(data) ? data[0] : data?.[0] || data
-      const stat: DailyStat = {
-        pm25: first?.pm25 ?? first?.avg_pm25 ?? first?.value,
-        no2: first?.no2,
-        datetime: first?.datetime || first?.date,
-      }
-      setDailyStats((prev) => ({ ...prev, [sensorId]: stat }))
-    } catch (_err) {
-      setDailyStats((prev) => ({ ...prev, [sensorId]: null }))
-    } finally {
-      const updated = new Set(nextLoading)
-      updated.delete(sensorId)
-      setLoadingIds(updated)
+  // Check for partial match (e.g., if district contains a keyword)
+  for (const [key, value] of Object.entries(colors)) {
+    if (district.includes(key) || key.includes(district)) {
+      return value
     }
   }
 
-  if (!markers.length) {
+  // Fallback: generate color from string hash for consistency
+  let hash = 0
+  for (let i = 0; i < district.length; i++) {
+    hash = district.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  const hue = hash % 360
+  return `hsl(${hue}, 70%, 50%)`
+}
+
+// Get PM2.5 quality indicator (for border color or accent)
+const getPM25Quality = (pm25?: number | null): string => {
+  if (pm25 === null || pm25 === undefined) return "gray"
+  if (pm25 <= 15) return "good"
+  if (pm25 <= 35) return "moderate"
+  if (pm25 <= 55) return "sensitive"
+  if (pm25 <= 150) return "unhealthy"
+  if (pm25 <= 250) return "very-unhealthy"
+  return "hazardous"
+}
+
+// Get supplier abbreviation from first letters of each word
+const getSupplierAbbreviation = (district?: string | null): string => {
+  if (!district) return "?"
+
+  // Special cases for known suppliers
+  const specialCases: Record<string, string> = {
+    "AirGradient": "AG",
+    "AirKaz": "AK",
+    "Citizen Science project sensor.community": "CS",
+    "Clarity Node": "CN",
+    "IQAir": "IQ",
+    "OpenAQ": "OA",
+    "PurpleAir": "PA",
+    "Reference Site": "RS",
+  }
+
+  // Check for exact match in special cases
+  if (specialCases[district]) return specialCases[district]
+
+  // Check for partial match
+  for (const [key, value] of Object.entries(specialCases)) {
+    if (district.includes(key) || key.includes(district)) {
+      return value
+    }
+  }
+
+  // Generate abbreviation from first letters of each word
+  const words = district.split(/[\s-]+/).filter(w => w.length > 0)
+
+  if (words.length === 0) return "?"
+
+  if (words.length === 1) {
+    // Single word: take first 2-3 letters
+    return words[0].substring(0, 2).toUpperCase()
+  }
+
+  // Multiple words: take first letter of each word (max 3 letters)
+  return words
+    .slice(0, 3)
+    .map(w => w[0])
+    .join("")
+    .toUpperCase()
+}
+
+// Create teardrop marker icon colored by supplier
+const createSensorIcon = (sensor: Sensor) => {
+  const metric = sensor.latest_measurement
+  const color = getSupplierColor(sensor.district)
+  const abbreviation = getSupplierAbbreviation(sensor.district)
+  const quality = getPM25Quality(metric?.pm25)
+
+  // Border color based on air quality
+  const borderColors: Record<string, string> = {
+    good: "#1BA97C",
+    moderate: "#f59e0b",
+    sensitive: "#f97316",
+    unhealthy: "#ef4444",
+    "very-unhealthy": "#a855f7",
+    hazardous: "#581c87",
+    gray: "#ffffff",
+  }
+  const borderColor = borderColors[quality] || "#ffffff"
+
+  // Adjust font size based on abbreviation length
+  const fontSize = abbreviation.length <= 2 ? "12px" : "10px"
+
+  return L.divIcon({
+    className: "custom-sensor-marker-icon",
+    html: `
+      <div style="
+        background-color: ${color};
+        width: 36px;
+        height: 36px;
+        border-radius: 50% 50% 50% 0;
+        transform: rotate(-45deg);
+        border: 3px solid ${borderColor};
+        box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      ">
+        <div style="
+          transform: rotate(45deg);
+          color: white;
+          font-size: ${fontSize};
+          font-weight: bold;
+          line-height: 1;
+          text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+          letter-spacing: -0.5px;
+        ">${abbreviation}</div>
+      </div>
+    `,
+    iconSize: [36, 36],
+    iconAnchor: [18, 36],
+    popupAnchor: [0, -36],
+  })
+}
+
+export default function SensorMapYandex({ sensors }: SensorMapProps) {
+  const mapRef = useRef<HTMLDivElement>(null)
+  const mapInstanceRef = useRef<L.Map | null>(null)
+  const clusterGroupRef = useRef<any>(null)
+  const hasAutoFitted = useRef(false)
+
+  // Filter sensors with valid coordinates
+  const validSensors = sensors.filter(
+    (sensor) => sensor.latitude !== null && sensor.latitude !== undefined &&
+                sensor.longitude !== null && sensor.longitude !== undefined
+  )
+
+  // Initialize map only once
+  useEffect(() => {
+    if (typeof window === "undefined" || !mapRef.current || mapInstanceRef.current) return
+
+    // Create Leaflet map with EPSG:3395 CRS for Yandex tiles
+    const map = L.map(mapRef.current, {
+      crs: L.CRS.EPSG3395,
+      center: DEFAULT_CENTER,
+      zoom: 11,
+      preferCanvas: true,
+      zoomAnimation: true,
+    })
+
+    // Add Yandex tiles layer
+    L.tileLayer(YANDEX_TILE_URL, {
+      attribution: '&copy; <a href="https://yandex.com/maps/">Yandex</a>',
+      maxZoom: 18,
+      minZoom: 0,
+    }).addTo(map)
+
+    mapInstanceRef.current = map
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove()
+        mapInstanceRef.current = null
+      }
+    }
+  }, [])
+
+  // Update markers when sensors change
+  useEffect(() => {
+    if (!mapInstanceRef.current || typeof window === "undefined") return
+
+    const map = mapInstanceRef.current
+
+    // Clear existing cluster group
+    if (clusterGroupRef.current) {
+      map.removeLayer(clusterGroupRef.current)
+      clusterGroupRef.current = null
+    }
+
+    if (validSensors.length === 0) return
+
+    // Create marker cluster group with custom styling
+    // @ts-ignore markercluster is attached to L by side-effect import
+    const clusterGroup = L.markerClusterGroup({
+      disableClusteringAtZoom: 16,
+      chunkedLoading: true,
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: false,
+      maxClusterRadius: 60,
+      removeOutsideVisibleBounds: true,
+      animate: true,
+      animateAddingMarkers: false,
+      iconCreateFunction: function (cluster: any) {
+        const markers = cluster.getAllChildMarkers()
+        const count = markers.length
+
+        // Count sensors by supplier and calculate avg PM2.5
+        const supplierCounts: Record<string, number> = {}
+        let totalPM25 = 0
+        let validPM25Count = 0
+
+        markers.forEach((marker: any) => {
+          const sensor = marker.options.sensorData
+          const supplier = sensor?.district || "Unknown"
+          supplierCounts[supplier] = (supplierCounts[supplier] || 0) + 1
+
+          if (sensor?.latest_measurement?.pm25 != null) {
+            totalPM25 += sensor.latest_measurement.pm25
+            validPM25Count++
+          }
+        })
+
+        // Find dominant supplier
+        let dominantSupplier = "Unknown"
+        let maxCount = 0
+        for (const [supplier, count] of Object.entries(supplierCounts)) {
+          if (count > maxCount) {
+            dominantSupplier = supplier
+            maxCount = count
+          }
+        }
+
+        const color = getSupplierColor(dominantSupplier)
+        const avgPM25 = validPM25Count > 0 ? totalPM25 / validPM25Count : undefined
+        const quality = getPM25Quality(avgPM25)
+
+        // Border color based on air quality
+        const borderColors: Record<string, string> = {
+          good: "#1BA97C",
+          moderate: "#f59e0b",
+          sensitive: "#f97316",
+          unhealthy: "#ef4444",
+          "very-unhealthy": "#a855f7",
+          hazardous: "#581c87",
+          gray: "#ffffff",
+        }
+        const borderColor = borderColors[quality] || "#ffffff"
+
+        // Size based on count
+        let size = "small"
+        if (count >= 50) size = "large"
+        else if (count >= 20) size = "medium"
+
+        const sizeMap = {
+          small: "44px",
+          medium: "54px",
+          large: "64px",
+        }
+
+        return L.divIcon({
+          html: `
+            <div style="
+              background: ${color};
+              width: ${sizeMap[size]};
+              height: ${sizeMap[size]};
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border: 4px solid ${borderColor};
+              box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+              font-weight: bold;
+              color: white;
+              font-size: ${size === "large" ? "20px" : size === "medium" ? "17px" : "15px"};
+            ">
+              ${count}
+            </div>
+          `,
+          className: "custom-cluster-icon",
+          iconSize: L.point(parseInt(sizeMap[size]), parseInt(sizeMap[size])),
+        })
+      },
+    })
+
+    // Add markers to cluster group
+    validSensors.forEach((sensor) => {
+      const icon = createSensorIcon(sensor)
+      const metric = sensor.latest_measurement
+      const supplierColor = getSupplierColor(sensor.district)
+      const quality = getPM25Quality(metric?.pm25)
+
+      // PM2.5 quality colors
+      const qualityColors: Record<string, string> = {
+        good: "#1BA97C",
+        moderate: "#f59e0b",
+        sensitive: "#f97316",
+        unhealthy: "#ef4444",
+        "very-unhealthy": "#a855f7",
+        hazardous: "#581c87",
+        gray: "#6b7280",
+      }
+      const pm25Color = qualityColors[quality] || "#6b7280"
+
+      const marker = L.marker([sensor.latitude!, sensor.longitude!], {
+        icon,
+        sensorData: sensor,
+      } as any).bindPopup(`
+        <div style="min-width: 220px; font-family: system-ui;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: #111827;">
+            ${sensor.name || "Станция"}
+          </h3>
+          ${sensor.district ? `
+            <div style="margin: 0 0 10px 0; padding: 6px 10px; background: ${supplierColor}15; border-left: 3px solid ${supplierColor}; border-radius: 4px;">
+              <p style="margin: 0; font-size: 11px; color: #6b7280; font-weight: 500;">Поставщик</p>
+              <p style="margin: 2px 0 0 0; font-size: 13px; color: ${supplierColor}; font-weight: bold;">${sensor.district}</p>
+            </div>
+          ` : ""}
+          ${metric && metric.pm25 != null ? `
+            <div style="margin: 0 0 8px 0; padding: 6px 10px; background: ${pm25Color}10; border-left: 3px solid ${pm25Color}; border-radius: 4px;">
+              <p style="margin: 0; font-size: 11px; color: #6b7280; font-weight: 500;">PM2.5</p>
+              <p style="margin: 2px 0 0 0; font-size: 16px; color: ${pm25Color}; font-weight: bold;">${metric.pm25.toFixed(1)}</p>
+            </div>
+          ` : `
+            <p style="margin: 0 0 6px 0; color: #9ca3af; font-size: 12px;">Нет данных PM2.5</p>
+          `}
+          ${metric && metric.no2 != null ? `
+            <p style="margin: 0 0 6px 0; font-size: 13px; color: #374151;">
+              <strong>NO2:</strong> <span style="font-weight: 600;">${metric.no2.toFixed(1)}</span>
+            </p>
+          ` : ""}
+          ${metric && metric.datetime ? `
+            <p style="margin: 8px 0 0 0; color: #9ca3af; font-size: 11px; padding-top: 6px; border-top: 1px solid #e5e7eb;">
+              Обновлено: ${new Date(metric.datetime).toLocaleString("ru-RU")}
+            </p>
+          ` : ""}
+        </div>
+      `)
+
+      clusterGroup.addLayer(marker)
+    })
+
+    // Add hover tooltips to clusters
+    clusterGroup.on("clustermouseover", function (event: any) {
+      const cluster = event.layer
+      const markers = cluster.getAllChildMarkers()
+
+      let totalPM25 = 0
+      let validCount = 0
+      markers.forEach((marker: any) => {
+        const sensor = marker.options.sensorData
+        if (sensor?.latest_measurement?.pm25 != null) {
+          totalPM25 += sensor.latest_measurement.pm25
+          validCount++
+        }
+      })
+
+      const avgPM25 = validCount > 0 ? (totalPM25 / validCount).toFixed(1) : "—"
+
+      const tooltipContent = `
+        <div style="padding: 8px; background: white; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+          <p style="margin: 0; font-size: 12px; font-weight: bold;">Кластер: ${markers.length} сенсоров</p>
+          <p style="margin: 4px 0 0 0; font-size: 11px; color: #6b7280;">Средний PM2.5: ${avgPM25}</p>
+        </div>
+      `
+
+      cluster.bindTooltip(tooltipContent, {
+        permanent: false,
+        direction: "top",
+        className: "cluster-tooltip",
+        offset: [0, -10],
+      }).openTooltip()
+    })
+
+    clusterGroup.on("clustermouseout", function (event: any) {
+      event.layer.closeTooltip()
+    })
+
+    clusterGroup.addTo(map)
+    clusterGroupRef.current = clusterGroup
+
+    // Auto-fit bounds only on first load
+    if (validSensors.length > 0 && !hasAutoFitted.current) {
+      const bounds = L.latLngBounds(validSensors.map((s) => [s.latitude!, s.longitude!]))
+      map.fitBounds(bounds, { padding: [50, 50] })
+      hasAutoFitted.current = true
+    }
+  }, [validSensors])
+
+  if (validSensors.length === 0) {
     return (
-      <div className="flex h-[480px] items-center justify-center rounded-xl border border-dashed border-border bg-muted/40 text-muted-foreground">
+      <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-border bg-muted/40 text-muted-foreground">
         Нет данных по сенсорам для отображения
       </div>
     )
   }
 
-  return (
-    <MapContainer
-      center={DEFAULT_CENTER}
-      zoom={11}
-      scrollWheelZoom
-      crs={CRS.EPSG3395}
-      className="h-[480px] w-full rounded-xl border border-border"
-    >
-      <TileLayer attribution="&copy; Yandex" url={YANDEX_TILE_URL} maxZoom={18} minZoom={0} />
-      {markers.map((sensor) => {
-        const metric = sensor.latest_measurement
-        const color = getMarkerColor(metric?.pm25)
-        const coords: LatLngExpression = [Number(sensor.latitude), Number(sensor.longitude)]
-
-        return (
-          <CircleMarker
-            key={sensor.sensor_id}
-            center={coords}
-            radius={10}
-            pathOptions={{
-              color,
-              fillColor: color,
-              fillOpacity: 0.85,
-              weight: 2,
-            }}
-            eventHandlers={{
-              click: () => fetchDailyStat(sensor.sensor_id.toString()),
-            }}
-          >
-            <Popup>
-              <div className="space-y-1 text-sm">
-                <p className="font-semibold text-foreground">{sensor.name || "Станция"}</p>
-                {sensor.district && <p className="text-muted-foreground">Поставщик: {sensor.district}</p>}
-                {metric ? (
-                  <>
-                    {metric.pm25 !== null && metric.pm25 !== undefined && (
-                      <p>
-                        PM2.5: <span className="font-semibold">{metric.pm25}</span>
-                      </p>
-                    )}
-                    {metric.no2 !== null && metric.no2 !== undefined && (
-                      <p>
-                        NO2: <span className="font-semibold">{metric.no2}</span>
-                      </p>
-                    )}
-                    {metric.datetime && <p className="text-xs text-muted-foreground">Обновлено: {new Date(metric.datetime).toLocaleString()}</p>}
-                  </>
-                ) : (
-                  <p className="text-muted-foreground">Нет свежих измерений</p>
-                )}
-                {dailyStats[sensor.sensor_id]?.pm25 !== undefined && dailyStats[sensor.sensor_id]?.pm25 !== null && (
-                  <p>
-                    Текущее (api/stats/daily): <span className="font-semibold">{dailyStats[sensor.sensor_id]?.pm25}</span>
-                  </p>
-                )}
-                {dailyStats[sensor.sensor_id]?.no2 !== undefined && dailyStats[sensor.sensor_id]?.no2 !== null && (
-                  <p>
-                    NO2 (суточн.): <span className="font-semibold">{dailyStats[sensor.sensor_id]?.no2}</span>
-                  </p>
-                )}
-                {loadingIds.has(sensor.sensor_id.toString()) && <p className="text-xs text-muted-foreground">Обновляем...</p>}
-              </div>
-            </Popup>
-          </CircleMarker>
-        )
-      })}
-    </MapContainer>
-  )
+  return <div ref={mapRef} className="h-full w-full rounded-xl" />
 }

@@ -143,6 +143,11 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Prevent Tailwind from affecting Leaflet images */
+  img.leaflet-tile {
+    max-width: none !important;
+    height: auto;
+  }
 }
 
 /* Leaflet map styles */
@@ -150,15 +155,84 @@
   height: 100%;
   width: 100%;
   z-index: 1;
+  font-family: inherit;
+}
+
+/* Fix for Leaflet tiles not loading */
+.leaflet-tile-container img {
+  max-width: none !important;
 }
 
 .leaflet-popup-content-wrapper {
   border-radius: 8px;
 }
 
+.leaflet-popup-content {
+  margin: 0;
+}
+
 .custom-marker {
   background: transparent;
   border: none;
+}
+
+.custom-marker-wrapper {
+  background: transparent !important;
+  border: none !important;
+}
+
+.custom-sensor-marker {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.custom-sensor-marker:hover {
+  transform: translate(-50%, -100%) scale(1.1) !important;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.4) !important;
+  z-index: 1000 !important;
+}
+
+/* Ensure map tiles load properly */
+.leaflet-tile {
+  max-width: none !important;
+  max-height: none !important;
+}
+
+/* Fix for map controls */
+.leaflet-control-zoom a,
+.leaflet-control-layers-toggle {
+  width: 30px;
+  height: 30px;
+  text-decoration: none;
+}
+
+/* Ensure proper rendering of map panes */
+.leaflet-pane {
+  z-index: 400;
+}
+
+.leaflet-tile-pane {
+  z-index: 200;
+}
+
+.leaflet-overlay-pane {
+  z-index: 400;
+}
+
+.leaflet-shadow-pane {
+  z-index: 500;
+}
+
+.leaflet-marker-pane {
+  z-index: 600;
+}
+
+.leaflet-tooltip-pane {
+  z-index: 650;
+}
+
+.leaflet-popup-pane {
+  z-index: 700;
 }
 
 /* Custom cluster styles */

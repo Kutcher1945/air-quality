@@ -93,26 +93,23 @@ export default function BuildingsMap({ buildings, showHeatmap = false, onBuildin
   const heatLayerRef = useRef<any>(null)
   const clusterGroupRef = useRef<any>(null)
   const onBuildingClickRef = useRef(onBuildingClick)
+  const hasAutoFitted = useRef(false)
+  const canvasRendererRef = useRef<L.Canvas | null>(null)
 
   // Keep the ref updated with the latest callback
   useEffect(() => {
     onBuildingClickRef.current = onBuildingClick
   }, [onBuildingClick])
 
+  // Initialize map only once
   useEffect(() => {
-    if (typeof window === "undefined" || !mapRef.current) return
-
-    // Clear previous map instance
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.remove()
-      mapInstanceRef.current = null
-    }
+    if (typeof window === "undefined" || !mapRef.current || mapInstanceRef.current) return
 
     // Center of Almaty
     const mapCenter: [number, number] = [43.238293, 76.945465]
 
     // Create canvas renderer for better performance with many markers
-    const canvasRenderer = L.canvas({ padding: 0.5 })
+    canvasRendererRef.current = L.canvas({ padding: 0.5 })
 
     // Create Leaflet map with EPSG:3395 CRS for Yandex tiles
     const map = L.map(mapRef.current, {
@@ -120,7 +117,7 @@ export default function BuildingsMap({ buildings, showHeatmap = false, onBuildin
       center: mapCenter,
       zoom: 11,
       preferCanvas: true, // Use canvas for better performance
-      renderer: canvasRenderer,
+      renderer: canvasRendererRef.current,
       zoomAnimation: true,
       markerZoomAnimation: true,
       fadeAnimation: true,
@@ -138,6 +135,32 @@ export default function BuildingsMap({ buildings, showHeatmap = false, onBuildin
       updateWhenZooming: false, // Don't update while zooming
       keepBuffer: 2, // Keep more tiles in buffer for smooth panning
     }).addTo(map)
+
+    mapInstanceRef.current = map
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove()
+        mapInstanceRef.current = null
+      }
+    }
+  }, [])
+
+  // Update markers and layers when buildings or showHeatmap changes
+  useEffect(() => {
+    if (!mapInstanceRef.current || typeof window === "undefined") return
+
+    const map = mapInstanceRef.current
+
+    // Clear existing layers
+    if (heatLayerRef.current) {
+      map.removeLayer(heatLayerRef.current)
+      heatLayerRef.current = null
+    }
+    if (clusterGroupRef.current) {
+      map.removeLayer(clusterGroupRef.current)
+      clusterGroupRef.current = null
+    }
 
     if (showHeatmap) {
       // Create heatmap layer
@@ -320,7 +343,7 @@ export default function BuildingsMap({ buildings, showHeatmap = false, onBuildin
             color: polygonColor,
             weight: 1,
             fillOpacity: 0.15,
-            renderer: canvasRenderer, // Use canvas renderer for better performance
+            renderer: canvasRendererRef.current || undefined, // Use canvas renderer for better performance
             interactive: false, // Disable interaction to improve performance
             smoothFactor: 2, // Simplify polygon for performance
           }).addTo(map)
@@ -397,21 +420,11 @@ export default function BuildingsMap({ buildings, showHeatmap = false, onBuildin
       console.log(`✅ Successfully created ${markersCreated} markers on the map`)
     }
 
-    // Auto-fit bounds if there are buildings
-    if (buildings.length > 0) {
+    // Auto-fit bounds only on first load, not on subsequent re-renders
+    if (buildings.length > 0 && !hasAutoFitted.current) {
       const bounds = L.latLngBounds(buildings.map((b) => [b.latitude, b.longitude]))
       map.fitBounds(bounds, { padding: [50, 50] })
-    }
-
-    mapInstanceRef.current = map
-
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove()
-        mapInstanceRef.current = null
-      }
-      heatLayerRef.current = null
-      clusterGroupRef.current = null
+      hasAutoFitted.current = true
     }
   }, [buildings, showHeatmap])
 

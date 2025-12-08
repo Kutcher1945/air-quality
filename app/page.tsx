@@ -224,6 +224,67 @@ export default function AirQualityDashboard() {
     return new Date(mostRecent).toISOString()
   }, [sensors])
 
+  const supplierStatistics = useMemo(() => {
+    const supplierMap = new Map<string, { sensors: Sensor[], pm25Values: number[] }>()
+
+    sensors.forEach((sensor) => {
+      const supplier = sensor.district || "Unknown"
+      if (!supplierMap.has(supplier)) {
+        supplierMap.set(supplier, { sensors: [], pm25Values: [] })
+      }
+      const supplierData = supplierMap.get(supplier)!
+      supplierData.sensors.push(sensor)
+
+      if (sensor.latest_measurement?.pm25 !== null && sensor.latest_measurement?.pm25 !== undefined) {
+        supplierData.pm25Values.push(sensor.latest_measurement.pm25)
+      }
+    })
+
+    const stats = Array.from(supplierMap.entries()).map(([supplier, data]) => {
+      const pm25Values = data.pm25Values
+      const avgPM25 = pm25Values.length > 0
+        ? pm25Values.reduce((a, b) => a + b, 0) / pm25Values.length
+        : null
+
+      return {
+        supplier,
+        totalSensors: data.sensors.length,
+        activeSensors: data.sensors.filter(s => s.is_active !== false).length,
+        sensorsWithData: pm25Values.length,
+        avgPM25,
+        goodCount: pm25Values.filter(v => v <= 15).length,
+        moderateCount: pm25Values.filter(v => v > 15 && v <= 35).length,
+        sensitiveCount: pm25Values.filter(v => v > 35 && v <= 55).length,
+        unhealthyCount: pm25Values.filter(v => v > 55 && v <= 150).length,
+        veryUnhealthyCount: pm25Values.filter(v => v > 150 && v <= 250).length,
+        hazardousCount: pm25Values.filter(v => v > 250).length,
+      }
+    })
+
+    return stats.sort((a, b) => b.totalSensors - a.totalSensors)
+  }, [sensors])
+
+  const getSupplierColor = (supplier: string) => {
+    const colors: Record<string, string> = {
+      "AirGradient": "#3b82f6",
+      "AirKaz": "#10b981",
+      "Citizen Science project sensor.community": "#f59e0b",
+      "Clarity Node": "#8b5cf6",
+      "IQAir": "#ef4444",
+      "OpenAQ": "#06b6d4",
+      "PurpleAir": "#ec4899",
+      "Reference Site": "#14b8a6",
+    }
+    if (colors[supplier]) return colors[supplier]
+
+    let hash = 0
+    for (let i = 0; i < supplier.length; i++) {
+      hash = supplier.charCodeAt(i) + ((hash << 5) - hash)
+    }
+    const hue = hash % 360
+    return `hsl(${hue}, 70%, 50%)`
+  }
+
   const resetFilters = () => {
     setSensorSearch("")
     setDistrictFilter("all")
@@ -465,6 +526,29 @@ export default function AirQualityDashboard() {
           </div>
         )}
 
+        {supplierStatistics.length > 0 && (
+          <div className="mb-8">
+            <h2 className="mb-4 text-2xl font-bold text-foreground">Статистика по поставщикам</h2>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+              {supplierStatistics.map((stat) => (
+                <Card key={stat.supplier} className="bg-card border-border">
+                  <CardContent className="pt-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div
+                        className="h-3 w-3 rounded-full"
+                        style={{ backgroundColor: getSupplierColor(stat.supplier) }}
+                      />
+                      <p className="text-sm font-semibold text-foreground">{stat.supplier}</p>
+                    </div>
+                    <p className="text-3xl font-bold text-foreground mb-1">{stat.totalSensors}</p>
+                    <p className="text-xs text-muted-foreground">сенсоров</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
         <Card className="mb-8 bg-card border-border">
           <CardHeader className="border-b border-border">
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -540,9 +624,9 @@ export default function AirQualityDashboard() {
                 </Button>
               </div>
             ) : (
-              <div className="relative">
+              <div className="relative h-[600px]">
                 <SensorMap sensors={filteredSensors} />
-                <div className="absolute right-4 top-4 hidden rounded-lg border border-border bg-background/90 p-3 shadow-lg md:block">
+                <div className="absolute right-4 top-4 z-10 hidden rounded-lg border border-border bg-background/90 p-3 shadow-lg md:block backdrop-blur-sm">
                   <p className="mb-2 text-xs font-semibold text-muted-foreground">PM2.5 легенда</p>
                   <div className="flex flex-col gap-2">
                     {aqiLegend.map((item) => (

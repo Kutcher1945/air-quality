@@ -32,45 +32,10 @@ __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$
     iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
     shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png"
 });
-// Color mapping for different suppliers (Поставщик)
+// Color mapping for different suppliers (Поставщик) - all grey
 const getSupplierColor = (district)=>{
-    if (!district) return "#6b7280" // Gray for unknown
+    return "#6b7280" // Grey for all markers
     ;
-    // Create consistent colors based on district name
-    const colors = {
-        "Алатауский район": "#3b82f6",
-        "Алмалинский район": "#10b981",
-        "Ауэзовский район": "#f59e0b",
-        "Бостандыкский район": "#8b5cf6",
-        "Жетысуский район": "#ef4444",
-        "Медеуский район": "#ec4899",
-        "Наурызбайский район": "#f97316",
-        "Турксибский район": "#06b6d4",
-        "АО АЛМАТЫ": "#14b8a6",
-        "ГУ Алатауский район": "#3b82f6",
-        "ГУ Алмалинский район": "#10b981",
-        "ГУ Ауэзовский район": "#f59e0b",
-        "ГУ Бостандыкский район": "#8b5cf6",
-        "ГУ Жетысуский район": "#ef4444",
-        "ГУ Медеуский район": "#ec4899",
-        "ГУ Наурызбайский район": "#f97316",
-        "ГУ Турксибский район": "#06b6d4"
-    };
-    // Check for exact match
-    if (colors[district]) return colors[district];
-    // Check for partial match (e.g., if district contains a keyword)
-    for (const [key, value] of Object.entries(colors)){
-        if (district.includes(key) || key.includes(district)) {
-            return value;
-        }
-    }
-    // Fallback: generate color from string hash for consistency
-    let hash = 0;
-    for(let i = 0; i < district.length; i++){
-        hash = district.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const hue = hash % 360;
-    return `hsl(${hue}, 70%, 50%)`;
 };
 // Get PM2.5 quality indicator (for border color or accent)
 const getPM25Quality = (pm25)=>{
@@ -433,7 +398,7 @@ function SensorMapYandex({ sensors }) {
             children: "Нет данных по сенсорам для отображения"
         }, void 0, false, {
             fileName: "[project]/components/sensor-map-yandex.tsx",
-            lineNumber: 451,
+            lineNumber: 412,
             columnNumber: 7
         }, this);
     }
@@ -442,7 +407,7 @@ function SensorMapYandex({ sensors }) {
         className: "h-full w-full rounded-xl"
     }, void 0, false, {
         fileName: "[project]/components/sensor-map-yandex.tsx",
-        lineNumber: 457,
+        lineNumber: 418,
         columnNumber: 10
     }, this);
 }

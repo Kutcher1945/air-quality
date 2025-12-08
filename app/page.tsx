@@ -626,7 +626,7 @@ export default function AirQualityDashboard() {
             ) : (
               <div className="relative h-[600px]">
                 <SensorMap sensors={filteredSensors} />
-                <div className="absolute right-4 top-4 z-10 hidden rounded-lg border border-border bg-background/90 p-3 shadow-lg md:block backdrop-blur-sm">
+                {/* <div className="absolute right-4 top-4 z-10 hidden rounded-lg border border-border bg-background/90 p-3 shadow-lg md:block backdrop-blur-sm">
                   <p className="mb-2 text-xs font-semibold text-muted-foreground">PM2.5 легенда</p>
                   <div className="flex flex-col gap-2">
                     {aqiLegend.map((item) => (
@@ -637,7 +637,7 @@ export default function AirQualityDashboard() {
                       </div>
                     ))}
                   </div>
-                </div>
+                </div> */}
               </div>
             )}
           </CardContent>

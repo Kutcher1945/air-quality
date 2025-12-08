@@ -40,48 +40,9 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 })
 
-// Color mapping for different suppliers (Поставщик)
+// Color mapping for different suppliers (Поставщик) - all grey
 const getSupplierColor = (district?: string | null) => {
-  if (!district) return "#6b7280" // Gray for unknown
-
-  // Create consistent colors based on district name
-  const colors: Record<string, string> = {
-    "Алатауский район": "#3b82f6",      // Blue
-    "Алмалинский район": "#10b981",     // Green
-    "Ауэзовский район": "#f59e0b",      // Amber
-    "Бостандыкский район": "#8b5cf6",   // Violet
-    "Жетысуский район": "#ef4444",      // Red
-    "Медеуский район": "#ec4899",       // Pink
-    "Наурызбайский район": "#f97316",   // Orange
-    "Турксибский район": "#06b6d4",     // Cyan
-    "АО АЛМАТЫ": "#14b8a6",             // Teal
-    "ГУ Алатауский район": "#3b82f6",   // Blue
-    "ГУ Алмалинский район": "#10b981",  // Green
-    "ГУ Ауэзовский район": "#f59e0b",   // Amber
-    "ГУ Бостандыкский район": "#8b5cf6", // Violet
-    "ГУ Жетысуский район": "#ef4444",   // Red
-    "ГУ Медеуский район": "#ec4899",    // Pink
-    "ГУ Наурызбайский район": "#f97316", // Orange
-    "ГУ Турксибский район": "#06b6d4",  // Cyan
-  }
-
-  // Check for exact match
-  if (colors[district]) return colors[district]
-
-  // Check for partial match (e.g., if district contains a keyword)
-  for (const [key, value] of Object.entries(colors)) {
-    if (district.includes(key) || key.includes(district)) {
-      return value
-    }
-  }
-
-  // Fallback: generate color from string hash for consistency
-  let hash = 0
-  for (let i = 0; i < district.length; i++) {
-    hash = district.charCodeAt(i) + ((hash << 5) - hash)
-  }
-  const hue = hash % 360
-  return `hsl(${hue}, 70%, 50%)`
+  return "#6b7280" // Grey for all markers
 }
 
 // Get PM2.5 quality indicator (for border color or accent)

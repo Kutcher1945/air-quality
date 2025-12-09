@@ -544,12 +544,12 @@ export default function BuildingsWithoutGasPage() {
                       Фильтры
                     </button>
 
-                    <button
+                    {/* <button
                       onClick={() => fetchBuildings(true)}
                       className="h-8 px-3 rounded-lg text-xs font-medium bg-white text-gray-700 border border-gray-200 hover:border-gray-300 transition-all"
                     >
                       Обновить
-                    </button>
+                    </button> */}
 
                     {/* Help Button */}
                     <div className="relative group">

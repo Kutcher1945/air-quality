@@ -32,6 +32,7 @@ interface Building {
   building_type: string
   building_category: "general" | "izhs" | "susn"
   district_id?: number | null
+  is_not_in_almaty?: boolean
   geometry?: {
     type: string
     coordinates: any
@@ -248,6 +249,7 @@ export default function BuildingsWithoutGasPage() {
                 ? "Социально уязвимые слои населения"
                 : "Жилое здание",
           building_category: category,
+          is_not_in_almaty: b.is_not_in_almaty || false,
           geometry: b.geometry || null,
         }
       })
@@ -419,6 +421,8 @@ export default function BuildingsWithoutGasPage() {
     },
     withoutGas: buildings.filter((b) => !b.has_gas).length,
     totalApartments: buildings.reduce((sum, b) => sum + (b.apartments || 0), 0),
+    notInAlmaty: buildings.filter((b) => b.is_not_in_almaty === true).length,
+    notInAlmatyGeneral: buildings.filter((b) => b.is_not_in_almaty === true && b.building_category === "general").length,
   }
 
   return (
@@ -679,47 +683,79 @@ export default function BuildingsWithoutGasPage() {
             ) : (
               /* Show only the selected category statistics */
               <>
-                <div className={`bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] ${
-                  buildingTypeFilter === "general" ? "border-orange-500" :
-                  buildingTypeFilter === "izhs" ? "border-blue-500" :
-                  "border-red-500"
-                }`}>
-                  <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">
-                    {buildingTypeFilter === "general" ? "ALSECO" :
-                     buildingTypeFilter === "izhs" ? "ИЖС" : "СУСН"}
-                  </p>
-                  <p className={`text-[2.75rem] font-bold leading-none tabular-nums ${
-                    buildingTypeFilter === "general" ? "text-orange-600" :
-                    buildingTypeFilter === "izhs" ? "text-blue-600" :
-                    "text-red-600"
-                  }`}>
-                    {filteredCounts.general + filteredCounts.izhs + filteredCounts.susn}
-                  </p>
-                  <p className={`text-[7.5px] mt-1.5 leading-tight ${
-                    buildingTypeFilter === "general" ? "text-orange-400" :
-                    buildingTypeFilter === "izhs" ? "text-blue-400" :
-                    "text-red-400"
-                  }`}>
-                    {buildingTypeFilter === "general" ? "жилых зданий" :
-                     buildingTypeFilter === "izhs" ? "частных домов" : "многоквартирных"}
-                  </p>
-                </div>
+                {buildingTypeFilter === "general" ? (
+                  /* ALSECO specific cards */
+                  <>
+                    <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-orange-500">
+                      <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ВСЕГО ALSECO</p>
+                      <p className="text-[2.75rem] font-bold text-orange-600 leading-none tabular-nums">
+                        {categoryCounts.general}
+                      </p>
+                      <p className="text-[7.5px] text-orange-400 mt-1.5 leading-tight">жилых зданий</p>
+                    </div>
 
-                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-gray-400">
-                  <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">УНИКАЛЬНЫХ</p>
-                  <p className="text-[2.75rem] font-bold text-gray-900 leading-none tabular-nums">
-                    {new Set(filteredBuildings.map((b) => `${b.latitude},${b.longitude}`)).size}
-                  </p>
-                  <p className="text-[7.5px] text-gray-400 mt-1.5 leading-tight">координат на карте</p>
-                </div>
+                    <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-purple-500">
+                      <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ВСЕГО УНИКАЛЬНЫХ ALSECO</p>
+                      <p className="text-[2.75rem] font-bold text-purple-600 leading-none tabular-nums">
+                        {new Set(buildings.filter((b) => b.building_category === "general").map((b) => `${b.latitude},${b.longitude}`)).size}
+                      </p>
+                      <p className="text-[7.5px] text-purple-400 mt-1.5 leading-tight">координат</p>
+                    </div>
 
-                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-gray-400">
-                  <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">РАЙОНОВ</p>
-                  <p className="text-[2.75rem] font-bold text-gray-900 leading-none tabular-nums">
-                    {new Set(filteredBuildings.map((b) => b.district)).size}
-                  </p>
-                  <p className="text-[7.5px] text-gray-400 mt-1.5 leading-tight">охвачено</p>
-                </div>
+                    <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-red-500">
+                      <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO НЕ В АЛМАТЫ</p>
+                      <p className="text-[2.75rem] font-bold text-red-600 leading-none tabular-nums">
+                        {buildings.filter((b) => b.building_category === "general" && b.is_not_in_almaty === true).length}
+                      </p>
+                      <p className="text-[7.5px] text-red-400 mt-1.5 leading-tight">за пределами</p>
+                    </div>
+
+                    <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-green-500">
+                      <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO В АЛМАТЫ</p>
+                      <p className="text-[2.75rem] font-bold text-green-600 leading-none tabular-nums">
+                        {buildings.filter((b) => b.building_category === "general" && !b.is_not_in_almaty).length}
+                      </p>
+                      <p className="text-[7.5px] text-green-400 mt-1.5 leading-tight">в городе</p>
+                    </div>
+                  </>
+                ) : (
+                  /* Other types (ИЖС, СУСН) */
+                  <>
+                    <div className={`bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] ${
+                      buildingTypeFilter === "izhs" ? "border-blue-500" : "border-red-500"
+                    }`}>
+                      <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">
+                        {buildingTypeFilter === "izhs" ? "ИЖС" : "СУСН"}
+                      </p>
+                      <p className={`text-[2.75rem] font-bold leading-none tabular-nums ${
+                        buildingTypeFilter === "izhs" ? "text-blue-600" : "text-red-600"
+                      }`}>
+                        {filteredCounts.general + filteredCounts.izhs + filteredCounts.susn}
+                      </p>
+                      <p className={`text-[7.5px] mt-1.5 leading-tight ${
+                        buildingTypeFilter === "izhs" ? "text-blue-400" : "text-red-400"
+                      }`}>
+                        {buildingTypeFilter === "izhs" ? "частных домов" : "многоквартирных"}
+                      </p>
+                    </div>
+
+                    <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-gray-400">
+                      <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">УНИКАЛЬНЫХ</p>
+                      <p className="text-[2.75rem] font-bold text-gray-900 leading-none tabular-nums">
+                        {new Set(filteredBuildings.map((b) => `${b.latitude},${b.longitude}`)).size}
+                      </p>
+                      <p className="text-[7.5px] text-gray-400 mt-1.5 leading-tight">координат на карте</p>
+                    </div>
+
+                    <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-gray-400">
+                      <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">РАЙОНОВ</p>
+                      <p className="text-[2.75rem] font-bold text-gray-900 leading-none tabular-nums">
+                        {new Set(filteredBuildings.map((b) => b.district)).size}
+                      </p>
+                      <p className="text-[7.5px] text-gray-400 mt-1.5 leading-tight">охвачено</p>
+                    </div>
+                  </>
+                )}
               </>
             )}
           </div>

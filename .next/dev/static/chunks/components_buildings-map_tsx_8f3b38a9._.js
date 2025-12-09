@@ -80,12 +80,13 @@ const createMarkerIcon = (category)=>{
         ]
     });
 };
-function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
+function BuildingsMap({ buildings, renovationAreas = [], showHeatmap = false, showRenovationAreas = false, onBuildingClick }) {
     _s();
     const mapRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const mapInstanceRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const heatLayerRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const clusterGroupRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const renovationLayerRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const onBuildingClickRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(onBuildingClick);
     const hasAutoFitted = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(false);
     const canvasRendererRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
@@ -157,6 +158,10 @@ function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
             if (clusterGroupRef.current) {
                 map.removeLayer(clusterGroupRef.current);
                 clusterGroupRef.current = null;
+            }
+            if (renovationLayerRef.current) {
+                map.removeLayer(renovationLayerRef.current);
+                renovationLayerRef.current = null;
             }
             if (showHeatmap) {
                 // Create heatmap layer
@@ -317,35 +322,33 @@ function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
                         }["BuildingsMap.useEffect"]);
                         clusterGroup.addLayer(marker);
                         markersCreated++;
-                        // Draw polygons only at high zoom for performance (zoom 16+)
-                        // Comment this out if polygons cause lag
-                        if (building.geometry && building.geometry.type === "MultiPolygon" && map.getZoom() >= 16) {
-                            const latLngPolys = [];
-                            building.geometry.coordinates.forEach({
-                                "BuildingsMap.useEffect": (poly)=>{
-                                    const ring = poly[0];
-                                    const latLngs = ring.map({
-                                        "BuildingsMap.useEffect.latLngs": (coord)=>[
-                                                coord[1],
-                                                coord[0]
-                                            ]
-                                    }["BuildingsMap.useEffect.latLngs"]);
-                                    latLngPolys.push(latLngs);
-                                }
-                            }["BuildingsMap.useEffect"]);
-                            const htmlString = typeof icon.options.html === "string" ? icon.options.html : "";
-                            // Determine color based on building category
-                            const polygonColor = htmlString.includes("#3b82f6") ? "#3b82f6" : htmlString.includes("#ef4444") ? "#ef4444" : "#f97316";
-                            __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].polygon(latLngPolys, {
-                                color: polygonColor,
-                                weight: 1,
-                                fillOpacity: 0.15,
-                                renderer: canvasRendererRef.current || undefined,
-                                interactive: false,
-                                smoothFactor: 2
-                            }).addTo(map);
-                        }
-                    }
+                    // Draw polygons only at high zoom for performance (zoom 16+)
+                    // Commented out to improve performance
+                    /* if (building.geometry && building.geometry.type === "MultiPolygon" && map.getZoom() >= 16) {
+          const latLngPolys: L.LatLngExpression[][] = []
+          building.geometry.coordinates.forEach((poly: any) => {
+            const ring = poly[0]
+            const latLngs = ring.map((coord: [number, number]) => [coord[1], coord[0]])
+            latLngPolys.push(latLngs)
+          })
+          const htmlString = typeof icon.options.html === "string" ? icon.options.html : ""
+
+          // Determine color based on building category
+          const polygonColor = htmlString.includes("#3b82f6")
+            ? "#3b82f6"
+            : htmlString.includes("#ef4444")
+              ? "#ef4444"
+              : "#f97316"
+
+          L.polygon(latLngPolys, {
+            color: polygonColor,
+            weight: 1,
+            fillOpacity: 0.15,
+            renderer: canvasRendererRef.current || undefined, // Use canvas renderer for better performance
+            interactive: false, // Disable interaction to improve performance
+            smoothFactor: 2, // Simplify polygon for performance
+          }).addTo(map)
+        } */ }
                 }["BuildingsMap.useEffect"]);
                 // Add hover tooltip to clusters to show statistics
                 clusterGroup.on("clustermouseover", {
@@ -429,6 +432,59 @@ function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
                 clusterGroupRef.current = clusterGroup;
                 console.log(`✅ Successfully created ${markersCreated} markers on the map`);
             }
+            // Render renovation areas if enabled
+            if (showRenovationAreas && renovationAreas.length > 0) {
+                const renovationLayer = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].layerGroup();
+                renovationAreas.forEach({
+                    "BuildingsMap.useEffect": (area)=>{
+                        if (area.geometry && area.geometry.type === "MultiPolygon") {
+                            const coordinates = area.geometry.coordinates;
+                            // Convert MultiPolygon coordinates to Leaflet format
+                            const latLngPolys = [];
+                            coordinates.forEach({
+                                "BuildingsMap.useEffect": (polygon)=>{
+                                    polygon.forEach({
+                                        "BuildingsMap.useEffect": (ring)=>{
+                                            const latLngs = ring.map({
+                                                "BuildingsMap.useEffect.latLngs": (coord)=>[
+                                                        coord[1],
+                                                        coord[0]
+                                                    ]
+                                            }["BuildingsMap.useEffect.latLngs"]);
+                                            latLngPolys.push(latLngs);
+                                        }
+                                    }["BuildingsMap.useEffect"]);
+                                }
+                            }["BuildingsMap.useEffect"]);
+                            // Create polygon with styling
+                            const renovationPolygon = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].polygon(latLngPolys, {
+                                color: "#8b5cf6",
+                                weight: 2,
+                                fillOpacity: 0.2,
+                                fillColor: "#8b5cf6",
+                                renderer: canvasRendererRef.current || undefined
+                            });
+                            // Add popup with renovation area information
+                            const popupContent = `
+            <div style="padding: 8px; min-width: 200px;">
+              <strong style="font-size: 14px; color: #8b5cf6;">🏗️ ${area.name_ru}</strong>
+              <hr style="margin: 8px 0; border: none; border-top: 1px solid #e5e7eb;">
+              ${area.address ? `<p style="margin: 4px 0; font-size: 12px;"><strong>Адрес:</strong> ${area.address}</p>` : ""}
+              ${area.number_of_houses ? `<p style="margin: 4px 0; font-size: 12px;"><strong>Количество домов:</strong> ${area.number_of_houses}</p>` : ""}
+              ${area.number_of_apartments ? `<p style="margin: 4px 0; font-size: 12px;"><strong>Количество квартир:</strong> ${area.number_of_apartments}</p>` : ""}
+              ${area.plot_area ? `<p style="margin: 4px 0; font-size: 12px;"><strong>Площадь участка:</strong> ${area.plot_area}</p>` : ""}
+              ${area.photo_url ? `<img src="${area.photo_url}" alt="${area.name_ru}" style="width: 100%; margin-top: 8px; border-radius: 4px;" />` : ""}
+            </div>
+          `;
+                            renovationPolygon.bindPopup(popupContent);
+                            renovationLayer.addLayer(renovationPolygon);
+                        }
+                    }
+                }["BuildingsMap.useEffect"]);
+                renovationLayer.addTo(map);
+                renovationLayerRef.current = renovationLayer;
+                console.log(`✅ Successfully rendered ${renovationAreas.length} renovation areas`);
+            }
             // Auto-fit bounds only on first load, not on subsequent re-renders
             if (buildings.length > 0 && !hasAutoFitted.current) {
                 const bounds = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].latLngBounds(buildings.map({
@@ -448,18 +504,20 @@ function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }) {
         }
     }["BuildingsMap.useEffect"], [
         buildings,
-        showHeatmap
+        showHeatmap,
+        showRenovationAreas,
+        renovationAreas
     ]);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         ref: mapRef,
         className: "h-full w-full"
     }, void 0, false, {
         fileName: "[project]/components/buildings-map.tsx",
-        lineNumber: 431,
+        lineNumber: 510,
         columnNumber: 10
     }, this);
 }
-_s(BuildingsMap, "Sr9ANAc2IcOldoZUaiw15uvc+RQ=");
+_s(BuildingsMap, "EjqlhnKswRerO84farJLni8ZV34=");
 _c = BuildingsMap;
 var _c;
 __turbopack_context__.k.register(_c, "BuildingsMap");

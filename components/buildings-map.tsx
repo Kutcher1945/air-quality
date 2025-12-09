@@ -26,9 +26,27 @@ interface Building {
   year_built?: number
 }
 
+interface RenovationArea {
+  id: number
+  name_ru: string
+  name_kz?: string | null
+  address?: string | null
+  number_of_houses?: number | null
+  number_of_apartments?: number | null
+  plot_area?: string | null
+  photo_url?: string | null
+  geometry?: {
+    type: string
+    coordinates: any
+  } | null
+  created_at: string
+}
+
 interface BuildingsMapProps {
   buildings: Building[]
+  renovationAreas?: RenovationArea[]
   showHeatmap?: boolean
+  showRenovationAreas?: boolean
   onBuildingClick?: (building: Building) => void
 }
 
@@ -87,11 +105,18 @@ const createMarkerIcon = (category: "general" | "izhs" | "susn") => {
   })
 }
 
-export default function BuildingsMap({ buildings, showHeatmap = false, onBuildingClick }: BuildingsMapProps) {
+export default function BuildingsMap({
+  buildings,
+  renovationAreas = [],
+  showHeatmap = false,
+  showRenovationAreas = false,
+  onBuildingClick
+}: BuildingsMapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
   const heatLayerRef = useRef<any>(null)
   const clusterGroupRef = useRef<any>(null)
+  const renovationLayerRef = useRef<L.LayerGroup | null>(null)
   const onBuildingClickRef = useRef(onBuildingClick)
   const hasAutoFitted = useRef(false)
   const canvasRendererRef = useRef<L.Canvas | null>(null)
@@ -160,6 +185,10 @@ export default function BuildingsMap({ buildings, showHeatmap = false, onBuildin
     if (clusterGroupRef.current) {
       map.removeLayer(clusterGroupRef.current)
       clusterGroupRef.current = null
+    }
+    if (renovationLayerRef.current) {
+      map.removeLayer(renovationLayerRef.current)
+      renovationLayerRef.current = null
     }
 
     if (showHeatmap) {
@@ -322,8 +351,8 @@ export default function BuildingsMap({ buildings, showHeatmap = false, onBuildin
         markersCreated++
 
         // Draw polygons only at high zoom for performance (zoom 16+)
-        // Comment this out if polygons cause lag
-        if (building.geometry && building.geometry.type === "MultiPolygon" && map.getZoom() >= 16) {
+        // Commented out to improve performance
+        /* if (building.geometry && building.geometry.type === "MultiPolygon" && map.getZoom() >= 16) {
           const latLngPolys: L.LatLngExpression[][] = []
           building.geometry.coordinates.forEach((poly: any) => {
             const ring = poly[0]
@@ -347,7 +376,7 @@ export default function BuildingsMap({ buildings, showHeatmap = false, onBuildin
             interactive: false, // Disable interaction to improve performance
             smoothFactor: 2, // Simplify polygon for performance
           }).addTo(map)
-        }
+        } */
       })
 
       // Add hover tooltip to clusters to show statistics
@@ -420,13 +449,63 @@ export default function BuildingsMap({ buildings, showHeatmap = false, onBuildin
       console.log(`✅ Successfully created ${markersCreated} markers on the map`)
     }
 
+    // Render renovation areas if enabled
+    if (showRenovationAreas && renovationAreas.length > 0) {
+      const renovationLayer = L.layerGroup()
+
+      renovationAreas.forEach((area) => {
+        if (area.geometry && area.geometry.type === "MultiPolygon") {
+          const coordinates = area.geometry.coordinates
+
+          // Convert MultiPolygon coordinates to Leaflet format
+          const latLngPolys: L.LatLngExpression[][] = []
+          coordinates.forEach((polygon: any) => {
+            polygon.forEach((ring: any) => {
+              const latLngs = ring.map((coord: [number, number]) => [coord[1], coord[0]])
+              latLngPolys.push(latLngs)
+            })
+          })
+
+          // Create polygon with styling
+          const renovationPolygon = L.polygon(latLngPolys, {
+            color: "#8b5cf6", // Purple color for renovation areas
+            weight: 2,
+            fillOpacity: 0.2,
+            fillColor: "#8b5cf6",
+            renderer: canvasRendererRef.current || undefined,
+          })
+
+          // Add popup with renovation area information
+          const popupContent = `
+            <div style="padding: 8px; min-width: 200px;">
+              <strong style="font-size: 14px; color: #8b5cf6;">🏗️ ${area.name_ru}</strong>
+              <hr style="margin: 8px 0; border: none; border-top: 1px solid #e5e7eb;">
+              ${area.address ? `<p style="margin: 4px 0; font-size: 12px;"><strong>Адрес:</strong> ${area.address}</p>` : ""}
+              ${area.number_of_houses ? `<p style="margin: 4px 0; font-size: 12px;"><strong>Количество домов:</strong> ${area.number_of_houses}</p>` : ""}
+              ${area.number_of_apartments ? `<p style="margin: 4px 0; font-size: 12px;"><strong>Количество квартир:</strong> ${area.number_of_apartments}</p>` : ""}
+              ${area.plot_area ? `<p style="margin: 4px 0; font-size: 12px;"><strong>Площадь участка:</strong> ${area.plot_area}</p>` : ""}
+              ${area.photo_url ? `<img src="${area.photo_url}" alt="${area.name_ru}" style="width: 100%; margin-top: 8px; border-radius: 4px;" />` : ""}
+            </div>
+          `
+          renovationPolygon.bindPopup(popupContent)
+
+          renovationLayer.addLayer(renovationPolygon)
+        }
+      })
+
+      renovationLayer.addTo(map)
+      renovationLayerRef.current = renovationLayer
+
+      console.log(`✅ Successfully rendered ${renovationAreas.length} renovation areas`)
+    }
+
     // Auto-fit bounds only on first load, not on subsequent re-renders
     if (buildings.length > 0 && !hasAutoFitted.current) {
       const bounds = L.latLngBounds(buildings.map((b) => [b.latitude, b.longitude]))
       map.fitBounds(bounds, { padding: [50, 50] })
       hasAutoFitted.current = true
     }
-  }, [buildings, showHeatmap])
+  }, [buildings, showHeatmap, showRenovationAreas, renovationAreas])
 
   return <div ref={mapRef} className="h-full w-full" />
 }

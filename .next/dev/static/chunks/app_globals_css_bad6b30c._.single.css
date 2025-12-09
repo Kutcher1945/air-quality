@@ -1206,6 +1206,10 @@
     background-color: var(--primary);
   }
 
+  .bg-purple-600 {
+    background-color: var(--color-purple-600);
+  }
+
   .bg-red-100 {
     background-color: var(--color-red-100);
   }

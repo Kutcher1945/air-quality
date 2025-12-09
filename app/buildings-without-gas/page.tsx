@@ -42,14 +42,32 @@ interface Building {
   last_updated?: string
 }
 
+interface RenovationArea {
+  id: number
+  name_ru: string
+  name_kz?: string | null
+  address?: string | null
+  number_of_houses?: number | null
+  number_of_apartments?: number | null
+  plot_area?: string | null
+  photo_url?: string | null
+  geometry?: {
+    type: string
+    coordinates: any
+  } | null
+  created_at: string
+}
+
 export default function BuildingsWithoutGasPage() {
   const [buildings, setBuildings] = useState<Building[]>([])
+  const [renovationAreas, setRenovationAreas] = useState<RenovationArea[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [districtFilter, setDistrictFilter] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [buildingTypeFilter, setBuildingTypeFilter] = useState<string>("all") // all, izhs, susn
   const [showHeatmap, setShowHeatmap] = useState(false)
+  const [showRenovationAreas, setShowRenovationAreas] = useState(true)
   const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null)
   const [showSidePanel, setShowSidePanel] = useState(false)
   const [yearFilter, setYearFilter] = useState<{ min: number; max: number } | null>(null)
@@ -60,6 +78,7 @@ export default function BuildingsWithoutGasPage() {
 
   useEffect(() => {
     fetchBuildings()
+    fetchRenovationAreas()
   }, [])
 
   const handleBuildingClick = useCallback((building: Building) => {
@@ -133,6 +152,66 @@ export default function BuildingsWithoutGasPage() {
       setBuildings(getMockBuildings())
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchRenovationAreas = async () => {
+    try {
+      console.log("📡 Fetching renovation areas...")
+      const response = await fetch("https://admin.smartalmaty.kz/api/v1/address/renovation-areas/")
+
+      if (!response.ok) {
+        throw new Error(`Renovation areas API returned ${response.status}`)
+      }
+
+      const data = await response.json()
+      console.log("🏗️ Renovation areas fetched:", data)
+
+      // Handle GeoJSON FeatureCollection format from DRF GeoFeatureModelSerializer
+      let features = []
+      if (data.results && data.results.type === 'FeatureCollection') {
+        // Paginated GeoJSON response
+        features = data.results.features || []
+      } else if (data.type === 'FeatureCollection') {
+        // Direct GeoJSON FeatureCollection
+        features = data.features || []
+      } else if (Array.isArray(data)) {
+        // Direct array
+        features = data
+      } else if (data.results && Array.isArray(data.results)) {
+        // Paginated array
+        features = data.results
+      }
+
+      console.log("📍 Processing", features.length, "renovation area features")
+
+      // Transform GeoJSON features
+      const transformedAreas = features.map((area: any) => {
+        if (area.type === 'Feature') {
+          // GeoJSON Feature format
+          return {
+            id: area.id || area.properties?.id,
+            name_ru: area.properties?.name_ru,
+            name_kz: area.properties?.name_kz,
+            address: area.properties?.address,
+            number_of_houses: area.properties?.number_of_houses,
+            number_of_apartments: area.properties?.number_of_apartments,
+            plot_area: area.properties?.plot_area,
+            photo_url: area.properties?.photo_url,
+            geometry: area.geometry,
+            created_at: area.properties?.created_at
+          }
+        }
+        // Already in correct format
+        return area
+      })
+
+      console.log("✅ Transformed renovation areas:", transformedAreas)
+      setRenovationAreas(transformedAreas)
+      console.log("✅ Loaded", transformedAreas.length, "renovation areas")
+    } catch (error) {
+      console.error("Failed to fetch renovation areas:", error)
+      // Don't show error to user, just log it
     }
   }
 
@@ -363,7 +442,9 @@ export default function BuildingsWithoutGasPage() {
           ) : (
             <BuildingsMap
               buildings={filteredBuildings.filter(b => b.latitude && b.longitude)}
+              renovationAreas={renovationAreas}
               showHeatmap={showHeatmap}
+              showRenovationAreas={showRenovationAreas}
               onBuildingClick={handleBuildingClick}
             />
           )}
@@ -411,6 +492,18 @@ export default function BuildingsWithoutGasPage() {
                     >
                       <Flame className="inline-block mr-1.5 h-3.5 w-3.5" />
                       {showHeatmap ? "Маркеры" : "Тепловая карта"}
+                    </button>
+
+                    <button
+                      onClick={() => setShowRenovationAreas(!showRenovationAreas)}
+                      className={`h-8 px-3 rounded-lg text-xs font-medium transition-all ${
+                        showRenovationAreas
+                          ? "bg-purple-600 text-white shadow-sm"
+                          : "bg-white text-gray-700 border border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <Layers className="inline-block mr-1.5 h-3.5 w-3.5" />
+                      Реновация
                     </button>
 
                     {/* Export Dropdown */}

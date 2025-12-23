@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Menu, X, Home, Map, BarChart3, Info, Building2 } from "lucide-react"
+import { Menu, X, Home, Map, BarChart3, Info, Building2, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function HeaderMenu() {
@@ -25,6 +25,11 @@ export function HeaderMenu() {
       name: "Карта зданий без газа",
       href: "/buildings-without-gas",
       icon: Building2,
+    },
+    {
+      name: "Исходящие звонки",
+      href: "/outgoing-calls",
+      icon: Phone,
     },
     {
       name: "Календарь",

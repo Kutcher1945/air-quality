@@ -114,7 +114,7 @@ export default function BuildingsWithoutGasPage() {
 
       console.log("📡 Fetching from API...")
       // ✅ Fetch from combined all-sources endpoint (returns all categories pre-labeled)
-      const response = await fetch("https://admin.smartalmaty.kz/api/v1/address/buildings-without-gas/all-sources/")
+      const response = await fetch("http://localhost:8000/api/v1/address/buildings-without-gas/all-sources/")
 
       if (!response.ok) {
         throw new Error(`API returned ${response.status}`)

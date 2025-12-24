@@ -1248,10 +1248,6 @@
     }
   }
 
-  .bg-black {
-    background-color: var(--color-black);
-  }
-
   .bg-black\/30 {
     background-color: #0000004d;
   }
@@ -1614,10 +1610,6 @@
 
   .whitespace-nowrap {
     white-space: nowrap;
-  }
-
-  .whitespace-pre-wrap {
-    white-space: pre-wrap;
   }
 
   .text-amber-400 {

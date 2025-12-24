@@ -12,13 +12,8 @@ export function HeaderMenu() {
 
   const menuItems = [
     {
-      name: "Главная",
-      href: "/",
-      icon: Home,
-    },
-    {
       name: "Карта датчиков",
-      href: "#map",
+      href: "/",
       icon: Map,
     },
     {
@@ -30,16 +25,6 @@ export function HeaderMenu() {
       name: "Исходящие звонки",
       href: "/outgoing-calls",
       icon: Phone,
-    },
-    {
-      name: "Календарь",
-      href: "#calendar",
-      icon: BarChart3,
-    },
-    {
-      name: "О проекте",
-      href: "#about",
-      icon: Info,
     },
   ]
 

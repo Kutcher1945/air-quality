@@ -142,6 +142,42 @@ export default function OutgoingCallsPage() {
     })).sort((a, b) => b.value - a.value)
   }
 
+  // Check if filters are active
+  const hasActiveFilters = searchQuery !== "" || subjectFilter !== "all" || subcategoryFilter !== "all"
+
+  // Enhanced stats with highlighting for filtered items
+  const enhancedStats = useMemo(() => {
+    const filteredSubjectIds = new Set(filteredCalls.map((c) => c.request_subject?.id).filter(Boolean))
+    const filteredSubcategoryIds = new Set(filteredCalls.map((c) => c.request_subcategory?.id).filter(Boolean))
+
+    return {
+      bySubject: stats.bySubject.map(item => {
+        const subjectId = subjects.find(s => s.name === item.name)?.id
+        const isHighlighted = !hasActiveFilters || (subjectId && filteredSubjectIds.has(subjectId))
+        const filteredValue = subjectId ? filteredCalls.filter(c => c.request_subject?.id === subjectId).length : 0
+
+        return {
+          ...item,
+          isHighlighted,
+          filteredValue,
+          opacity: isHighlighted ? 1 : 0.3
+        }
+      }),
+      bySubcategory: stats.bySubcategory.map(item => {
+        const subcategoryId = subcategories.find(s => s.name === item.name)?.id
+        const isHighlighted = !hasActiveFilters || (subcategoryId && filteredSubcategoryIds.has(subcategoryId))
+        const filteredValue = subcategoryId ? filteredCalls.filter(c => c.request_subcategory?.id === subcategoryId).length : 0
+
+        return {
+          ...item,
+          isHighlighted,
+          filteredValue,
+          opacity: isHighlighted ? 1 : 0.3
+        }
+      })
+    }
+  }, [stats, filteredCalls, hasActiveFilters, subjects, subcategories])
+
   const exportToCSV = () => {
     const csvData = filteredCalls.map((call) => ({
       "Номер записи": call.record_number,
@@ -263,89 +299,6 @@ export default function OutgoingCallsPage() {
           </Card>
         </div>
 
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Subjects Pie Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Распределение по темам обращений</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <PieChart>
-                  <Pie
-                    data={stats.bySubject}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={120}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {stats.bySubject.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Subcategories Pie Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Распределение по типам объектов</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <PieChart>
-                  <Pie
-                    data={stats.bySubcategory}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
-                    outerRadius={120}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {stats.bySubcategory.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Bar Chart - Full Width */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Количество обращений по темам</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={400}>
-              <BarChart data={stats.bySubject}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" angle={-45} textAnchor="end" height={150} />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="value" fill="#8884d8">
-                  {stats.bySubject.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
         {/* Filters */}
         <Card className="mb-6">
           <CardContent className="pt-6">
@@ -415,8 +368,247 @@ export default function OutgoingCallsPage() {
           </CardContent>
         </Card>
 
+        {/* Fuel Consumption by Business Type */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Структура потребления топлива по типам предприятий</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {subcategories.map((subcategory) => {
+              const subcategoryCalls = filteredCalls.filter(c => c.request_subcategory?.id === subcategory.id)
+
+              if (subcategoryCalls.length === 0) return null
+
+              const fuelDistribution = subjects.map(subject => ({
+                name: subject.name,
+                value: subcategoryCalls.filter(c => c.request_subject?.id === subject.id).length,
+                percentage: (subcategoryCalls.filter(c => c.request_subject?.id === subject.id).length / subcategoryCalls.length * 100).toFixed(1)
+              })).filter(item => item.value > 0)
+
+              return (
+                <Card key={subcategory.id}>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">{subcategory.name}</CardTitle>
+                    <p className="text-sm text-gray-500">Всего: {subcategoryCalls.length} объектов</p>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <PieChart>
+                        <Pie
+                          data={fuelDistribution}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={40}
+                          outerRadius={80}
+                          dataKey="value"
+                          label={({ percentage }) => `${percentage}%`}
+                        >
+                          {fuelDistribution.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          formatter={(value, name) => [`${value} шт (${fuelDistribution.find(f => f.name === name)?.percentage}%)`, 'Количество']}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="mt-4 space-y-2">
+                      {fuelDistribution.map((item, index) => (
+                        <div key={index} className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                            />
+                            <span className="text-gray-700">{item.name}</span>
+                          </div>
+                          <span className="font-semibold">{item.value} ({item.percentage}%)</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Charts Section */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Общая статистика по обращениям</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Subjects Pie Chart */}
+            <Card>
+            <CardHeader>
+              <CardTitle>Распределение по темам обращений</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={500}>
+                <PieChart>
+                  <Pie
+                    data={enhancedStats.bySubject}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={true}
+                    label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, name, isHighlighted, index }) => {
+                      if (!isHighlighted) return null
+                      const RADIAN = Math.PI / 180
+                      const radius = outerRadius + 30
+                      const x = cx + radius * Math.cos(-midAngle * RADIAN)
+                      const y = cy + radius * Math.sin(-midAngle * RADIAN)
+                      const color = COLORS[index % COLORS.length]
+
+                      return (
+                        <text
+                          x={x}
+                          y={y}
+                          fill={color}
+                          textAnchor={x > cx ? 'start' : 'end'}
+                          dominantBaseline="central"
+                          style={{ fontSize: '12px', fontWeight: '600' }}
+                        >
+                          {`${name}: ${(percent * 100).toFixed(0)}%`}
+                        </text>
+                      )
+                    }}
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {enhancedStats.bySubject.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                        opacity={entry.opacity}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value, name, props) => {
+                      const { payload } = props
+                      if (hasActiveFilters && payload.filteredValue !== undefined) {
+                        return [`${payload.filteredValue} (из ${value})`, 'Обращений']
+                      }
+                      return [value, 'Обращений']
+                    }}
+                  />
+                  <Legend
+                    layout="horizontal"
+                    verticalAlign="bottom"
+                    align="center"
+                    wrapperStyle={{ paddingTop: '20px' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Subcategories Pie Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Распределение по типам объектов</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={500}>
+                <PieChart>
+                  <Pie
+                    data={enhancedStats.bySubcategory}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={true}
+                    label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, name, isHighlighted, index }) => {
+                      if (!isHighlighted) return null
+                      const RADIAN = Math.PI / 180
+                      const radius = outerRadius + 30
+                      const x = cx + radius * Math.cos(-midAngle * RADIAN)
+                      const y = cy + radius * Math.sin(-midAngle * RADIAN)
+                      const color = COLORS[index % COLORS.length]
+
+                      return (
+                        <text
+                          x={x}
+                          y={y}
+                          fill={color}
+                          textAnchor={x > cx ? 'start' : 'end'}
+                          dominantBaseline="central"
+                          style={{ fontSize: '12px', fontWeight: '600' }}
+                        >
+                          {`${name}: ${(percent * 100).toFixed(0)}%`}
+                        </text>
+                      )
+                    }}
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {enhancedStats.bySubcategory.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                        opacity={entry.opacity}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value, name, props) => {
+                      const { payload } = props
+                      if (hasActiveFilters && payload.filteredValue !== undefined) {
+                        return [`${payload.filteredValue} (из ${value})`, 'Обращений']
+                      }
+                      return [value, 'Обращений']
+                    }}
+                  />
+                  <Legend
+                    layout="horizontal"
+                    verticalAlign="bottom"
+                    align="center"
+                    wrapperStyle={{ paddingTop: '20px' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Bar Chart - Full Width */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Детальная статистика по темам обращений</h2>
+          <Card>
+            <CardHeader>
+              <CardTitle>Количество обращений по темам</CardTitle>
+            </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart data={enhancedStats.bySubject}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" angle={-45} textAnchor="end" height={150} />
+                <YAxis />
+                <Tooltip
+                  formatter={(value, name, props) => {
+                    const { payload } = props
+                    if (hasActiveFilters && payload.filteredValue !== undefined) {
+                      return [`${payload.filteredValue} (из ${value})`, 'Обращений']
+                    }
+                    return [value, 'Обращений']
+                  }}
+                />
+                <Bar dataKey="value" fill="#8884d8">
+                  {enhancedStats.bySubject.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                      opacity={entry.opacity}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+        </div>
+
         {/* Calls Table with Pagination */}
-        <Card>
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Список всех обращений</h2>
+          <Card>
           <CardHeader>
             <CardTitle>
               Список обращений ({filteredCalls.length}) - Страница {currentPage} из {totalPages}
@@ -527,81 +719,107 @@ export default function OutgoingCallsPage() {
             </div>
           </CardContent>
         </Card>
+        </div>
 
-        {/* Detail Side Panel */}
+        {/* Detail Side Panel - Drawer */}
         {showDetailPanel && selectedCall && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
-            <div className="bg-white w-full md:w-1/2 lg:w-1/3 h-full overflow-y-auto p-6">
-              <div className="flex justify-between items-start mb-6">
-                <h2 className="text-2xl font-bold">Детали обращения</h2>
-                <Button variant="ghost" onClick={() => setShowDetailPanel(false)}>
-                  ✕
-                </Button>
-              </div>
+          <>
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 bg-black/30 z-40 transition-opacity duration-300"
+              onClick={() => setShowDetailPanel(false)}
+            />
 
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Номер записи</label>
-                  <p className="text-lg font-mono">{selectedCall.record_number}</p>
+            {/* Drawer */}
+            <div className="fixed inset-y-0 right-0 w-full md:w-1/2 lg:w-1/3 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-6 sticky top-0 bg-white pb-4 border-b">
+                  <h2 className="text-2xl font-bold">Детали обращения</h2>
+                  <Button variant="ghost" size="icon" onClick={() => setShowDetailPanel(false)}>
+                    ✕
+                  </Button>
                 </div>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Заявитель</label>
-                  <p className="text-lg">
-                    {selectedCall.applicant_last_name} {selectedCall.applicant_first_name}
-                  </p>
-                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Номер записи</label>
+                    <p className="text-lg font-mono">{selectedCall.record_number}</p>
+                  </div>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Телефон</label>
-                  <p className="text-lg font-mono">{selectedCall.phone_number}</p>
-                </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Заявитель</label>
+                    <p className="text-lg">
+                      {selectedCall.applicant_last_name} {selectedCall.applicant_first_name}
+                    </p>
+                  </div>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Адрес проблемы</label>
-                  <p className="text-lg">{selectedCall.problem_address}</p>
-                </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Телефон</label>
+                    <p className="text-lg font-mono">{selectedCall.phone_number}</p>
+                  </div>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Категория</label>
-                  <p className="text-lg">{selectedCall.request_category?.name}</p>
-                </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Адрес проблемы</label>
+                    <p className="text-lg">{selectedCall.problem_address}</p>
+                  </div>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Подкатегория</label>
-                  <p className="text-lg">{selectedCall.request_subcategory?.name}</p>
-                </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Категория</label>
+                    <p className="text-lg">{selectedCall.request_category?.name}</p>
+                  </div>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Тема обращения</label>
-                  <p className="text-lg">
-                    <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
-                      {selectedCall.request_subject?.name}
-                    </span>
-                  </p>
-                </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Подкатегория</label>
+                    <p className="text-lg">{selectedCall.request_subcategory?.name}</p>
+                  </div>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Дата регистрации</label>
-                  <p className="text-lg">{selectedCall.request_registration_date}</p>
-                </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Тема обращения</label>
+                    <p className="text-lg">
+                      <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
+                        {selectedCall.request_subject?.name}
+                      </span>
+                    </p>
+                  </div>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Дата разрешения</label>
-                  <p className="text-lg">{selectedCall.actual_resolution_time}</p>
-                </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Дата регистрации</label>
+                    <p className="text-lg">{selectedCall.request_registration_date}</p>
+                  </div>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Текст обращения</label>
-                  <div className="mt-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <p className="text-sm whitespace-pre-wrap">{selectedCall.request_text}</p>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Дата разрешения</label>
+                    <p className="text-lg">{selectedCall.actual_resolution_time}</p>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Текст обращения</label>
+                    <div className="mt-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <div
+                        className="text-sm leading-relaxed"
+                        dangerouslySetInnerHTML={{
+                          __html: selectedCall.request_text
+                            .replace(/&quot;/g, '"')
+                            .replace(/&amp;/g, '&')
+                            .replace(/&lt;/g, '<')
+                            .replace(/&gt;/g, '>')
+                            .replace(/Наименование объекта:/g, '<strong>Наименование объекта:</strong><br/>')
+                            .replace(/Тип объекта:/g, '<br/><strong>Тип объекта:</strong><br/>')
+                            .replace(/Район:/g, '<br/><strong>Район:</strong><br/>')
+                            .replace(/Основной вид топлива:/g, '<br/><strong>Основной вид топлива:</strong><br/>')
+                            .replace(/Для тех\.нужд:/g, '<br/><strong>Для тех.нужд:</strong><br/>')
+                            .replace(/Должность:/g, '<br/><strong>Должность:</strong><br/>')
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </>
         )}
       </div>
-    </div>
+      </div>
+      </div>
   )
 }

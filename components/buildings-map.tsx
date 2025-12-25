@@ -238,8 +238,9 @@ export default function BuildingsMap({
           const categories = { general: 0, izhs: 0, susn: 0 }
           markers.forEach((marker: any) => {
             const building = marker.options.buildingData
-            if (building) {
-              categories[building.building_category]++
+            if (building && building.building_category) {
+              const cat = building.building_category as keyof typeof categories
+              categories[cat]++
             }
           })
 
@@ -263,7 +264,7 @@ export default function BuildingsMap({
           const color = colors[dominantCategory]
 
           // Size based on count
-          let size = "small"
+          let size: "small" | "medium" | "large" = "small"
           if (count >= 100) size = "large"
           else if (count >= 50) size = "medium"
 
@@ -388,8 +389,9 @@ export default function BuildingsMap({
         const categories = { general: 0, izhs: 0, susn: 0 }
         markers.forEach((marker: any) => {
           const building = marker.options.buildingData
-          if (building) {
-            categories[building.building_category]++
+          if (building && building.building_category) {
+            const cat = building.building_category as keyof typeof categories
+            categories[cat]++
           }
         })
 

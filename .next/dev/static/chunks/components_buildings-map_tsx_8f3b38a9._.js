@@ -215,8 +215,9 @@ function BuildingsMap({ buildings, renovationAreas = [], showHeatmap = false, sh
                             markers.forEach({
                                 "BuildingsMap.useEffect.clusterGroup": (marker)=>{
                                     const building = marker.options.buildingData;
-                                    if (building) {
-                                        categories[building.building_category]++;
+                                    if (building && building.building_category) {
+                                        const cat = building.building_category;
+                                        categories[cat]++;
                                     }
                                 }
                             }["BuildingsMap.useEffect.clusterGroup"]);
@@ -364,8 +365,9 @@ function BuildingsMap({ buildings, renovationAreas = [], showHeatmap = false, sh
                         markers.forEach({
                             "BuildingsMap.useEffect": (marker)=>{
                                 const building = marker.options.buildingData;
-                                if (building) {
-                                    categories[building.building_category]++;
+                                if (building && building.building_category) {
+                                    const cat = building.building_category;
+                                    categories[cat]++;
                                 }
                             }
                         }["BuildingsMap.useEffect"]);
@@ -513,7 +515,7 @@ function BuildingsMap({ buildings, renovationAreas = [], showHeatmap = false, sh
         className: "h-full w-full"
     }, void 0, false, {
         fileName: "[project]/components/buildings-map.tsx",
-        lineNumber: 510,
+        lineNumber: 512,
         columnNumber: 10
     }, this);
 }

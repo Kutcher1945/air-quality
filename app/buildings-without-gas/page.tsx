@@ -33,6 +33,7 @@ interface Building {
   building_category: "general" | "izhs" | "susn"
   district_id?: number | null
   is_not_in_almaty?: boolean
+  is_seasonal_or_unused?: boolean
   geometry?: {
     type: string
     coordinates: any
@@ -250,6 +251,7 @@ export default function BuildingsWithoutGasPage() {
                 : "Жилое здание",
           building_category: category,
           is_not_in_almaty: b.is_not_in_almaty || false,
+          is_seasonal_or_unused: b.is_seasonal_or_unused || false,
           geometry: b.geometry || null,
         }
       })
@@ -423,6 +425,7 @@ export default function BuildingsWithoutGasPage() {
     totalApartments: buildings.reduce((sum, b) => sum + (b.apartments || 0), 0),
     notInAlmaty: buildings.filter((b) => b.is_not_in_almaty === true).length,
     notInAlmatyGeneral: buildings.filter((b) => b.is_not_in_almaty === true && b.building_category === "general").length,
+    seasonalOrUnused: buildings.filter((b) => b.is_seasonal_or_unused === true).length,
   }
 
   return (
@@ -678,6 +681,12 @@ export default function BuildingsWithoutGasPage() {
                   <p className="text-[9px] uppercase tracking-[0.15em] text-gray-500 mb-1.5 font-medium">Данные ДЧС</p>
                   <p className="text-[2.5rem] font-bold text-red-600 leading-none tabular-nums">{stats.byCategory.susn}</p>
                   <p className="text-[8px] text-red-400 mt-2 leading-tight">домов</p>
+                </div>
+
+                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-4 px-5 shadow-sm border-r-[3px] border-yellow-500">
+                  <p className="text-[9px] uppercase tracking-[0.15em] text-gray-500 mb-1.5 font-medium">НЕТ ПОТРЕБЛЕНИЯ ЭЭ</p>
+                  <p className="text-[2.5rem] font-bold text-yellow-600 leading-none tabular-nums">{stats.seasonalOrUnused}</p>
+                  <p className="text-[8px] text-yellow-400 mt-2 leading-tight">объектов</p>
                 </div>
               </>
             ) : (

@@ -64,6 +64,7 @@ export default function BuildingsWithoutGasPage() {
   const [buildings, setBuildings] = useState<Building[]>([])
   const [renovationAreas, setRenovationAreas] = useState<RenovationArea[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingProgress, setLoadingProgress] = useState({ loaded: 0, total: 0, status: "" })
   const [error, setError] = useState<string | null>(null)
   const [districtFilter, setDistrictFilter] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
@@ -92,12 +93,19 @@ export default function BuildingsWithoutGasPage() {
     try {
       setLoading(true)
       setError(null)
+      setLoadingProgress({ loaded: 0, total: 0, status: "Проверка кэша..." })
 
       // Try to get data from cache first (unless force refresh)
       if (!forceRefresh) {
         const cachedData = await getBuildingsFromCache()
         if (cachedData && cachedData.length > 0) {
           console.log("💾 Loading from cache:", cachedData.length, "buildings")
+          setLoadingProgress({ loaded: 0, total: cachedData.length, status: "Загрузка из кэша..." })
+
+          // Show progress animation
+          await new Promise(resolve => setTimeout(resolve, 300))
+          setLoadingProgress({ loaded: cachedData.length, total: cachedData.length, status: "Обработка данных..." })
+
           const buildingsData = transformBuildingsData(cachedData)
           console.log("🏢 Transformed from cache:", {
             total: buildingsData.length,
@@ -107,20 +115,45 @@ export default function BuildingsWithoutGasPage() {
               susn: buildingsData.filter(b => b.building_category === "susn").length,
             }
           })
+
+          await new Promise(resolve => setTimeout(resolve, 200))
+          setLoadingProgress({ loaded: buildingsData.length, total: buildingsData.length, status: "Готово!" })
           setBuildings(buildingsData)
+
+          await new Promise(resolve => setTimeout(resolve, 300))
           setLoading(false)
           return
         }
       }
 
       console.log("📡 Fetching from API...")
+      setLoadingProgress({ loaded: 0, total: 0, status: "Подключение к серверу..." })
+
+      // Show intermediate messages and simulate progress for long fetch
+      const updateMessages = [
+        { delay: 1500, status: "Отправка запроса..." },
+        { delay: 3000, status: "Загрузка данных (~50,000 объектов)..." },
+        { delay: 5000, status: "Получение данных с сервера..." },
+        { delay: 7000, status: "Обработка большого объема данных..." },
+        { delay: 10000, status: "Почти готово, еще немного..." },
+        { delay: 13000, status: "Завершение загрузки..." },
+      ]
+
+      const timeouts = updateMessages.map(({ delay, status }) =>
+        setTimeout(() => setLoadingProgress({ loaded: 0, total: 0, status }), delay)
+      )
+
       // ✅ Fetch from combined all-sources endpoint (returns all categories pre-labeled)
-      const response = await fetch("http://localhost:8000/api/v1/address/buildings-without-gas/all-sources/")
+      const response = await fetch("https://admin.smartalmaty.kz/api/v1/address/buildings-without-gas/all-sources/")
+
+      // Clear all timeouts
+      timeouts.forEach(clearTimeout)
 
       if (!response.ok) {
         throw new Error(`API returned ${response.status}`)
       }
 
+      setLoadingProgress({ loaded: 0, total: 0, status: "Получение данных..." })
       const data = await response.json()
       const apiBuildings = data.data || data
 
@@ -129,9 +162,14 @@ export default function BuildingsWithoutGasPage() {
         sampleData: apiBuildings?.[0],
       })
 
+      await new Promise(resolve => setTimeout(resolve, 200))
+      setLoadingProgress({ loaded: apiBuildings.length, total: apiBuildings.length, status: "Обработка данных..." })
+
       // Save raw API data to cache for next time
       await saveBuildingsToCache(apiBuildings)
 
+      await new Promise(resolve => setTimeout(resolve, 200))
+      setLoadingProgress({ loaded: apiBuildings.length, total: apiBuildings.length, status: "Трансформация данных..." })
       // Transform API response to match component interface
       const buildingsData = transformBuildingsData(apiBuildings)
 
@@ -147,13 +185,18 @@ export default function BuildingsWithoutGasPage() {
 
       console.log("📍 Map will display:", buildingsData.length, "markers")
 
+      await new Promise(resolve => setTimeout(resolve, 200))
+      setLoadingProgress({ loaded: buildingsData.length, total: buildingsData.length, status: "Готово!" })
       setBuildings(buildingsData)
+
+      await new Promise(resolve => setTimeout(resolve, 300))
     } catch (error) {
       console.error("Failed to fetch buildings from API:", error)
       setError("Не удалось загрузить данные из API")
       setBuildings(getMockBuildings())
     } finally {
       setLoading(false)
+      setLoadingProgress({ loaded: 0, total: 0, status: "" })
     }
   }
 
@@ -434,8 +477,28 @@ export default function BuildingsWithoutGasPage() {
         {/* Full-screen Map Background */}
         <div className="absolute inset-0 z-0">
           {loading ? (
-            <div className="flex h-full items-center justify-center bg-background text-muted-foreground">
-              Загрузка карты...
+            <div className="flex h-full items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+              <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full mx-4">
+                <div className="flex items-center justify-center mb-6">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 text-center mb-2">
+                  {loadingProgress.status || "Загрузка..."}
+                </h3>
+                {loadingProgress.total > 0 && (
+                  <>
+                    <div className="w-full bg-gray-200 rounded-full h-3 mb-2 overflow-hidden">
+                      <div
+                        className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-300 ease-out"
+                        style={{ width: `${(loadingProgress.loaded / loadingProgress.total) * 100}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-sm text-gray-600 text-center">
+                      {loadingProgress.loaded.toLocaleString()} / {loadingProgress.total.toLocaleString()} объектов
+                    </p>
+                  </>
+                )}
+              </div>
             </div>
           ) : error ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 bg-background">

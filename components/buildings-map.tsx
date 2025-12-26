@@ -90,6 +90,9 @@ const createMarkerIcon = (category: "general" | "izhs" | "susn") => {
         display: flex;
         align-items: center;
         justify-content: center;
+        opacity: 0.85;
+        backdrop-filter: blur(2px);
+        transition: opacity 0.2s ease;
       ">
         <div style="
           transform: rotate(45deg);
@@ -154,7 +157,7 @@ export default function BuildingsMap({
     // Add Yandex tiles layer (no API key needed!)
     L.tileLayer("https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&lang=ru_RU", {
       attribution: '&copy; <a href="https://yandex.com/maps/">Yandex</a>',
-      maxZoom: 18,
+      maxZoom: 21, // Increased max zoom for closer inspection
       minZoom: 0,
       updateWhenIdle: false, // Update tiles during movement for smoother experience
       updateWhenZooming: false, // Don't update while zooming
@@ -289,6 +292,9 @@ export default function BuildingsMap({
                 font-weight: bold;
                 color: white;
                 font-size: ${size === "large" ? "18px" : size === "medium" ? "16px" : "14px"};
+                opacity: 0.85;
+                backdrop-filter: blur(2px);
+                transition: opacity 0.2s ease;
               ">
                 ${count}
               </div>
@@ -509,5 +515,17 @@ export default function BuildingsMap({
     }
   }, [buildings, showHeatmap, showRenovationAreas, renovationAreas])
 
-  return <div ref={mapRef} className="h-full w-full" />
+  return (
+    <>
+      <style jsx global>{`
+        .custom-marker > div:hover {
+          opacity: 1 !important;
+        }
+        .leaflet-marker-icon:hover {
+          z-index: 1000 !important;
+        }
+      `}</style>
+      <div ref={mapRef} className="h-full w-full" />
+    </>
+  )
 }

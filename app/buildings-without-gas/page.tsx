@@ -615,174 +615,193 @@ export default function BuildingsWithoutGasPage() {
 
         {/* Floating UI Elements */}
         <div className="relative z-10 h-full w-full pointer-events-none">
-          {/* Left Sidebar - Controls & Filters */}
-          <div className="absolute top-0 left-0 bottom-0 w-[280px] pointer-events-auto z-20">
-            <div className="h-full bg-white border-r border-gray-200/80 backdrop-blur-xl bg-white/95 shadow-lg flex flex-col">
-              {/* Header */}
-              <div className="px-4 py-4 border-b border-gray-200">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-gray-900 to-gray-700 shadow-md">
-                    <Building2 className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-[8px] uppercase tracking-[0.2em] text-gray-400 font-semibold leading-tight">
-                      ИНФРАСТРУКТУРА / АЛМАТЫ
-                    </p>
-                    <h1 className="text-base font-bold text-gray-900 leading-tight mt-0.5">Здания без газа</h1>
-                  </div>
-                </div>
-              </div>
+        {/* Left Sidebar - Controls & Filters */}
+        <div className="absolute top-0 left-0 bottom-0 w-[300px] pointer-events-auto z-20 flex flex-col bg-white/95 backdrop-blur-md border-r border-slate-200 shadow-xl">
+          {/* Unified Header */}
+          <div className="h-[72px] px-5 flex items-center gap-3 border-b border-slate-200 shrink-0">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 shadow-lg shadow-slate-200">
+              <Building2 className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold tracking-[0.1em] text-slate-400 uppercase leading-tight">ИНФРАСТРУКТУРА / АЛМАТЫ</p>
+              <h1 className="text-sm font-bold text-slate-900 leading-tight">Здания без газа</h1>
+            </div>
+          </div>
 
-              {/* Results Counter */}
-              <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-600 font-medium">Результаты:</span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-lg font-bold text-blue-600 tabular-nums">
-                      {filteredBuildings.length.toLocaleString()}
-                    </span>
-                    <span className="text-xs text-gray-400">/</span>
-                    <span className="text-sm text-gray-500 tabular-nums">
-                      {generalBuildings.length.toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Controls Section */}
-              <div className="flex-1 overflow-y-auto">
-                <div className="p-4 space-y-4">
-                  {/* Search */}
-                  <div>
-                    <label className="text-[10px] font-semibold text-gray-700 uppercase tracking-wider mb-2 block">
-                      🔍 Поиск
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Введите адрес..."
-                        className="h-9 w-full rounded-lg border-2 border-gray-200 bg-white pl-3 pr-8 text-xs focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
-                      />
-                      {searchQuery && (
-                        <button
-                          onClick={() => setSearchQuery("")}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* District Filter */}
-                  <div>
-                    <label className="text-[10px] font-semibold text-gray-700 uppercase tracking-wider mb-2 block">
-                      📍 Район
-                    </label>
-                    <select
-                      value={districtFilter}
-                      onChange={(e) => handleDistrictFilterChange(e.target.value)}
-                      className="h-9 w-full rounded-lg border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white px-3 text-xs font-semibold text-blue-700 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all shadow-sm cursor-pointer"
-                    >
-                      <option value="all">Все районы</option>
-                      {districtNames.map((district) => (
-                        <option key={district} value={district}>
-                          {district}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="pt-2">
-                    <label className="text-[10px] font-semibold text-gray-700 uppercase tracking-wider mb-2 block">
-                      ⚙️ Действия
-                    </label>
-                    <div className="space-y-2">
-                      <button
-                        onClick={() => fetchBuildings(true)}
-                        disabled={loading}
-                        className="w-full h-9 rounded-lg text-xs font-medium bg-white text-gray-700 border border-gray-200 hover:border-gray-300 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                      >
-                        <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-                        Обновить данные
-                      </button>
-
-                      <button
-                        onClick={() => setShowHeatmap(!showHeatmap)}
-                        className={`w-full h-9 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-2 ${
-                          showHeatmap
-                            ? "bg-gray-900 text-white shadow-sm"
-                            : "bg-white text-gray-700 border border-gray-200 hover:border-gray-300"
-                        }`}
-                      >
-                        <Flame className="h-3.5 w-3.5" />
-                        {showHeatmap ? "Показать маркеры" : "Тепловая карта"}
-                      </button>
-
-                      <button
-                        onClick={() => setShowRenovationAreas(!showRenovationAreas)}
-                        className={`w-full h-9 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-2 ${
-                          showRenovationAreas
-                            ? "bg-purple-600 text-white shadow-sm"
-                            : "bg-white text-gray-700 border border-gray-200 hover:border-gray-300"
-                        }`}
-                      >
-                        <Layers className="h-3.5 w-3.5" />
-                        Реновация {showRenovationAreas ? "✓" : ""}
-                      </button>
-
-                      <button
-                        onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                        className={`w-full h-9 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-2 ${
-                          showAdvancedFilters
-                            ? "bg-gray-900 text-white shadow-sm"
-                            : "bg-white text-gray-700 border border-gray-200 hover:border-gray-300"
-                        }`}
-                      >
-                        <Layers className="h-3.5 w-3.5" />
-                        Доп. фильтры {showAdvancedFilters ? "✓" : ""}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Export Section */}
-                  <div className="pt-2">
-                    <label className="text-[10px] font-semibold text-gray-700 uppercase tracking-wider mb-2 block">
-                      📥 Экспорт
-                    </label>
-                    <div className="space-y-2">
-                      <button
-                        onClick={exportToCSV}
-                        className="w-full h-9 rounded-lg text-xs font-medium bg-white text-gray-700 border border-gray-200 hover:border-gray-300 transition-all flex items-center justify-center gap-2"
-                      >
-                        <Download className="h-3.5 w-3.5" />
-                        Экспорт в CSV
-                      </button>
-                      <button
-                        onClick={exportToJSON}
-                        className="w-full h-9 rounded-lg text-xs font-medium bg-white text-gray-700 border border-gray-200 hover:border-gray-300 transition-all flex items-center justify-center gap-2"
-                      >
-                        <Download className="h-3.5 w-3.5" />
-                        Экспорт в JSON
-                      </button>
-                      <button
-                        onClick={async () => {
-                          await clearBuildingsCache()
-                          fetchBuildings(true)
-                        }}
-                        className="w-full h-9 rounded-lg text-xs font-medium bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-all flex items-center justify-center gap-2"
-                      >
-                        Очистить кэш
-                      </button>
-                    </div>
-                  </div>
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
+            {/* Stats Summary Section - Color matched to theme */}
+            <div className="p-5 bg-slate-50/50 border-b border-slate-100">
+              <div className="flex items-end justify-between">
+                <span className="text-[10px] font-bold text-slate-500 uppercase">Найдено объектов</span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-xl font-black text-slate-900 tabular-nums leading-none">
+                    {filteredBuildings.length.toLocaleString()}
+                  </span>
+                  <span className="text-xs font-medium text-slate-400">/ {generalBuildings.length.toLocaleString()}</span>
                 </div>
               </div>
             </div>
+
+            <div className="p-5 space-y-6">
+              {/* Search Section */}
+              <section>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Поиск по адресу</label>
+                <div className="relative group">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Название улицы, номер..."
+                    className="h-10 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none"
+                  />
+                  {searchQuery && (
+                    <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              </section>
+
+              {/* District Section */}
+              <section>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Район города</label>
+                <select
+                  value={districtFilter}
+                  onChange={(e) => handleDistrictFilterChange(e.target.value)}
+                  className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 cursor-pointer focus:border-blue-500 outline-none"
+                >
+                  <option value="all">Все районы</option>
+                  {districtNames.map((district) => <option key={district} value={district}>{district}</option>)}
+                </select>
+              </section>
+
+              {/* Layer Controls */}
+              <section>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Управление картой</label>
+                <div className="grid grid-cols-1 gap-2">
+                  <button onClick={() => fetchBuildings(true)} disabled={loading} className="flex items-center gap-3 px-4 h-10 rounded-xl text-xs font-semibold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200">
+                    <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Обновить данные
+                  </button>
+                  
+                  <button onClick={() => setShowHeatmap(!showHeatmap)} className={`flex items-center gap-3 px-4 h-10 rounded-xl text-xs font-semibold transition-all ${showHeatmap ? "bg-orange-500 text-white shadow-md shadow-orange-200" : "bg-slate-100 text-slate-600"}`}>
+                    <Flame className="h-4 w-4" /> Тепловая карта
+                  </button>
+                  
+                  <button onClick={() => setShowRenovationAreas(!showRenovationAreas)} className={`flex items-center gap-3 px-4 h-10 rounded-xl text-xs font-semibold transition-all ${showRenovationAreas ? "bg-purple-600 text-white shadow-md shadow-purple-200" : "bg-slate-100 text-slate-600"}`}>
+                    <Layers className="h-4 w-4" /> Зоны реновации
+                  </button>
+
+                  <button onClick={() => setShowAdvancedFilters(!showAdvancedFilters)} className={`flex items-center justify-between px-4 h-10 rounded-xl text-xs font-semibold transition-all ${showAdvancedFilters ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}>
+                    <div className="flex items-center gap-3"><Calendar className="h-4 w-4" /> Доп. фильтры</div>
+                    {showAdvancedFilters && <X className="h-3 w-3" />}
+                  </button>
+                </div>
+              </section>
+
+              {/* Advanced Filters (Inline) */}
+              {showAdvancedFilters && (
+                <section className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                  {/* Year Filter */}
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase mb-2 flex items-center gap-2">
+                      <Calendar className="h-3 w-3" /> Год постройки
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        placeholder="От"
+                        value={yearFilter?.min || ""}
+                        onChange={(e) => setYearFilter(prev => ({ min: Number(e.target.value), max: prev?.max || 2025 }))}
+                        className="w-1/2 h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs focus:border-blue-500 outline-none"
+                      />
+                      <input
+                        type="number"
+                        placeholder="До"
+                        value={yearFilter?.max || ""}
+                        onChange={(e) => setYearFilter(prev => ({ min: prev?.min || 1900, max: Number(e.target.value) }))}
+                        className="w-1/2 h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs focus:border-blue-500 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Floors Filter */}
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase mb-2 flex items-center gap-2">
+                      <Layers className="h-3 w-3" /> Этажность
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        placeholder="От"
+                        value={floorsFilter?.min || ""}
+                        onChange={(e) => setFloorsFilter(prev => ({ min: Number(e.target.value), max: prev?.max || 100 }))}
+                        className="w-1/2 h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs focus:border-blue-500 outline-none"
+                      />
+                      <input
+                        type="number"
+                        placeholder="До"
+                        value={floorsFilter?.max || ""}
+                        onChange={(e) => setFloorsFilter(prev => ({ min: prev?.min || 1, max: Number(e.target.value) }))}
+                        className="w-1/2 h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs focus:border-blue-500 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Apartments Filter */}
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase mb-2 flex items-center gap-2">
+                      <Home className="h-3 w-3" /> Квартир
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        placeholder="От"
+                        value={apartmentsFilter?.min || ""}
+                        onChange={(e) => setApartmentsFilter(prev => ({ min: Number(e.target.value), max: prev?.max || 1000 }))}
+                        className="w-1/2 h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs focus:border-blue-500 outline-none"
+                      />
+                      <input
+                        type="number"
+                        placeholder="До"
+                        value={apartmentsFilter?.max || ""}
+                        onChange={(e) => setApartmentsFilter(prev => ({ min: prev?.min || 1, max: Number(e.target.value) }))}
+                        className="w-1/2 h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs focus:border-blue-500 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setYearFilter(null);
+                      setFloorsFilter(null);
+                      setApartmentsFilter(null);
+                    }}
+                    className="w-full h-8 rounded-lg text-[10px] font-bold bg-white text-slate-500 border border-slate-200 hover:bg-slate-100 transition-all uppercase tracking-wider"
+                  >
+                    Сбросить фильтры
+                  </button>
+                </section>
+              )}
+
+              {/* Export Section */}
+              <section className="pt-4 border-t border-slate-100 space-y-3">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Экспорт и кэш</label>
+                <div className="flex gap-2">
+                  <button onClick={exportToCSV} className="flex-1 h-10 rounded-xl border border-slate-200 bg-white text-[10px] font-bold text-slate-600 uppercase flex items-center justify-center gap-2">
+                    <Download className="h-3 w-3" /> CSV
+                  </button>
+                  <button onClick={exportToJSON} className="flex-1 h-10 rounded-xl border border-slate-200 bg-white text-[10px] font-bold text-slate-600 uppercase flex items-center justify-center gap-2">
+                    <Download className="h-3 w-3" /> JSON
+                  </button>
+                </div>
+                <button onClick={async () => { await clearBuildingsCache(); fetchBuildings(true); }} className="w-full h-9 rounded-xl bg-red-50 text-red-600 text-[10px] font-bold border border-red-100 uppercase transition-colors hover:bg-red-100">
+                  Очистить кэш
+                </button>
+              </section>
+            </div>
           </div>
+        </div>
 
           {/* Statistics Cards - Right Side */}
           <div className="absolute top-4 right-0 w-[170px] flex flex-col gap-2.5 pointer-events-auto z-10">
@@ -865,217 +884,95 @@ export default function BuildingsWithoutGasPage() {
             </div>
           </div> */}
 
-          {/* Advanced Filters Panel - Top Right */}
-          {showAdvancedFilters && (
-            <div className="absolute top-[70px] right-4 w-[280px] pointer-events-auto z-20">
-              <div className="bg-white/95 backdrop-blur-xl rounded-xl p-4 shadow-lg border border-gray-200">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-semibold text-gray-900">Расширенные фильтры</h3>
-                  <button
-                    onClick={() => setShowAdvancedFilters(false)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-
-                <div className="space-y-3">
-                  {/* Year Filter */}
-                  <div>
-                    <label className="text-[10px] font-medium text-gray-700 mb-1.5 flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      Год постройки
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        placeholder="От"
-                        value={yearFilter?.min || ""}
-                        onChange={(e) => setYearFilter(prev => ({ min: Number(e.target.value), max: prev?.max || 2025 }))}
-                        className="w-1/2 h-7 rounded border border-gray-200 px-2 text-xs focus:outline-none focus:border-gray-400"
-                      />
-                      <input
-                        type="number"
-                        placeholder="До"
-                        value={yearFilter?.max || ""}
-                        onChange={(e) => setYearFilter(prev => ({ min: prev?.min || 1900, max: Number(e.target.value) }))}
-                        className="w-1/2 h-7 rounded border border-gray-200 px-2 text-xs focus:outline-none focus:border-gray-400"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Floors Filter */}
-                  <div>
-                    <label className="text-[10px] font-medium text-gray-700 mb-1.5 flex items-center gap-1">
-                      <Layers className="h-3 w-3" />
-                      Количество этажей
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        placeholder="От"
-                        value={floorsFilter?.min || ""}
-                        onChange={(e) => setFloorsFilter(prev => ({ min: Number(e.target.value), max: prev?.max || 100 }))}
-                        className="w-1/2 h-7 rounded border border-gray-200 px-2 text-xs focus:outline-none focus:border-gray-400"
-                      />
-                      <input
-                        type="number"
-                        placeholder="До"
-                        value={floorsFilter?.max || ""}
-                        onChange={(e) => setFloorsFilter(prev => ({ min: prev?.min || 1, max: Number(e.target.value) }))}
-                        className="w-1/2 h-7 rounded border border-gray-200 px-2 text-xs focus:outline-none focus:border-gray-400"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Apartments Filter */}
-                  <div>
-                    <label className="text-[10px] font-medium text-gray-700 mb-1.5 flex items-center gap-1">
-                      <Home className="h-3 w-3" />
-                      Количество квартир
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        placeholder="От"
-                        value={apartmentsFilter?.min || ""}
-                        onChange={(e) => setApartmentsFilter(prev => ({ min: Number(e.target.value), max: prev?.max || 1000 }))}
-                        className="w-1/2 h-7 rounded border border-gray-200 px-2 text-xs focus:outline-none focus:border-gray-400"
-                      />
-                      <input
-                        type="number"
-                        placeholder="До"
-                        value={apartmentsFilter?.max || ""}
-                        onChange={(e) => setApartmentsFilter(prev => ({ min: prev?.min || 1, max: Number(e.target.value) }))}
-                        className="w-1/2 h-7 rounded border border-gray-200 px-2 text-xs focus:outline-none focus:border-gray-400"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Clear Filters Button */}
-                  <button
-                    onClick={() => {
-                      setYearFilter(null)
-                      setFloorsFilter(null)
-                      setApartmentsFilter(null)
-                    }}
-                    className="w-full h-7 rounded-lg text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all"
-                  >
-                    Сбросить фильтры
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          
 
           {/* Side Panel for Building Details */}
           {showSidePanel && selectedBuilding && (
-            <div className="absolute top-0 right-0 h-full w-[380px] pointer-events-auto z-30">
-              <div className="h-full bg-white shadow-2xl border-l border-gray-200 overflow-y-auto">
-                {/* Header */}
-                <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between z-10">
-                  <div className="flex items-center gap-2">
-                    <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
-                      selectedBuilding.building_category === "general" ? "bg-orange-100" :
-                      selectedBuilding.building_category === "izhs" ? "bg-blue-100" : "bg-red-100"
-                    }`}>
-                      <Building2 className={`h-4 w-4 ${
-                        selectedBuilding.building_category === "general" ? "text-orange-600" :
-                        selectedBuilding.building_category === "izhs" ? "text-blue-600" : "text-red-600"
-                      }`} />
-                    </div>
-                    <div>
-                      <p className="text-[9px] uppercase tracking-wider text-gray-400 font-medium">Детали здания</p>
-                      <h2 className="text-xs font-semibold text-gray-900">
-                        {selectedBuilding.building_category === "general" ? "ALSECO" :
-                         selectedBuilding.building_category === "izhs" ? "ИЖС" : "СУСН"}
-                      </h2>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setShowSidePanel(false)
-                      setSelectedBuilding(null)
-                    }}
-                    className="text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
+          <div className="absolute top-0 left-[300px] h-full w-[320px] pointer-events-auto z-10 flex flex-col bg-white/95 backdrop-blur-md border-r border-slate-200 shadow-[15px_0_30px_-5px_rgba(0,0,0,0.1)] animate-in slide-in-from-left duration-300">
+            {/* Unified Header */}
+            <div className="h-[72px] px-5 flex items-center justify-between border-b border-slate-200 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className={`h-10 w-10 flex items-center justify-center rounded-xl ${
+                  selectedBuilding.building_category === "general" ? "bg-orange-100 text-orange-600" : "bg-blue-100 text-blue-600"
+                }`}>
+                  <MapPin className="h-5 w-5" />
                 </div>
+                <div>
+                  <p className="text-[10px] font-bold tracking-[0.1em] text-slate-400 uppercase">Карточка объекта</p>
+                  <h2 className="text-sm font-bold text-slate-900 leading-tight">Информация</h2>
+                </div>
+              </div>
+              <button 
+                onClick={() => { setShowSidePanel(false); setSelectedBuilding(null); }}
+                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X className="h-5 w-5 text-slate-400" />
+              </button>
+            </div>
 
-                {/* Content */}
-                <div className="p-4 space-y-4">
-                  {/* Address */}
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1">Адрес</p>
-                    <p className="text-sm font-medium text-gray-900">{selectedBuilding.address}</p>
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-6">
+              {/* Main Address Card */}
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Адрес и район</label>
+                <h3 className="text-m font-bold text-slate-900 leading-snug">{selectedBuilding.address}</h3>
+                <p className="text-sm text-slate-500 mt-1 flex items-center gap-1.5">
+                  <MapPin className="h-3.5 w-3.5 text-blue-500" /> {selectedBuilding.district}
+                </p>
+              </div>
+
+              {/* Statistics Section */}
+              {/* <div className="grid grid-cols-2 gap-2">
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                  <p className="text-[9px] font-bold text-slate-400 uppercase">Этажность</p>
+                  <p className="text-lg font-bold text-slate-900">{selectedBuilding.floors || "—"}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                  <p className="text-[9px] font-bold text-slate-400 uppercase">Квартиры</p>
+                  <p className="text-lg font-bold text-slate-900">{selectedBuilding.apartments || "—"}</p>
+                </div>
+                <div className="col-span-2 p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                  <p className="text-[9px] font-bold text-slate-400 uppercase">Год постройки</p>
+                  <p className="text-sm font-bold text-slate-900">{selectedBuilding.year_built || "Не указан"}</p>
+                </div>
+              </div> */}
+
+              {/* Technical Category */}
+              <section className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1">Тип здания</p>
+                <p className="text-sm font-semibold text-gray-700 leading-relaxed">
+                  {selectedBuilding.building_type}
+                </p>
+              </section>
+
+              {/* Status Alert */}
+              <div className="p-4 rounded-2xl bg-orange-50 border border-orange-100 flex gap-3">
+                <div className="h-8 w-8 shrink-0 rounded-full bg-orange-500 flex items-center justify-center shadow-sm">
+                  <AlertCircle className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-orange-900 uppercase tracking-tight">Газ отсутствует</h4>
+                  <p className="text-[11px] text-orange-700 leading-relaxed mt-0.5">
+                    Объект числится в списках на газификацию или использует альтернативные источники.
+                  </p>
+                </div>
+              </div>
+
+              {/* Geolocation Section */}
+              <div className="pt-4 border-t border-slate-100">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Геолокация</label>
+                <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 font-mono text-[10px] text-slate-500 space-y-1">
+                  <div className="flex justify-between">
+                    <span>Широта:</span> <span className="font-bold">{selectedBuilding.latitude.toFixed(6)}</span>
                   </div>
-
-                  {/* District */}
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1">Район</p>
-                    <p className="text-sm text-gray-700">{selectedBuilding.district}</p>
-                  </div>
-
-                  {/* Building Info Grid */}
-                  <div className="grid grid-cols-2 gap-3">
-                    {selectedBuilding.floors && (
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1">Этажей</p>
-                        <p className="text-xl font-bold text-gray-900">{selectedBuilding.floors}</p>
-                      </div>
-                    )}
-                    {selectedBuilding.apartments && (
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1">Квартир</p>
-                        <p className="text-xl font-bold text-gray-900">{selectedBuilding.apartments}</p>
-                      </div>
-                    )}
-                    {selectedBuilding.year_built && (
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1">Год постройки</p>
-                        <p className="text-xl font-bold text-gray-900">{selectedBuilding.year_built}</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Coordinates */}
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-2">Координаты</p>
-                    <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-xs font-mono">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Широта:</span>
-                        <span className="text-gray-900">{selectedBuilding.latitude.toFixed(6)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Долгота:</span>
-                        <span className="text-gray-900">{selectedBuilding.longitude.toFixed(6)}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Building Type */}
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1">Тип здания</p>
-                    <p className="text-sm text-gray-700">{selectedBuilding.building_type}</p>
-                  </div>
-
-                  {/* Gas Status */}
-                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                    <div className="flex items-start gap-2">
-                      <AlertCircle className="h-4 w-4 text-orange-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-xs font-medium text-orange-900">Отсутствует газоснабжение</p>
-                        <p className="text-[10px] text-orange-700 mt-0.5">
-                          Здание использует альтернативные источники отопления
-                        </p>
-                      </div>
-                    </div>
+                  <div className="flex justify-between">
+                    <span>Долгота:</span> <span className="font-bold">{selectedBuilding.longitude.toFixed(6)}</span>
                   </div>
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
         </div>
       </main>
     </>

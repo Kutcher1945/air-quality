@@ -85,12 +85,13 @@ const createMarkerIcon = (category)=>{
         ]
     });
 };
-function BuildingsMap({ buildings, renovationAreas = [], showHeatmap = false, showRenovationAreas = false, onBuildingClick }) {
+function BuildingsMap({ buildings, renovationAreas = [], districts = [], selectedDistrictId = null, showHeatmap = false, showRenovationAreas = false, onBuildingClick }) {
     _s();
     const mapRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const mapInstanceRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const heatLayerRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const clusterGroupRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const districtLayerRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const renovationLayerRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const onBuildingClickRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(onBuildingClick);
     const hasAutoFitted = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(false);
@@ -163,6 +164,10 @@ function BuildingsMap({ buildings, renovationAreas = [], showHeatmap = false, sh
             if (clusterGroupRef.current) {
                 map.removeLayer(clusterGroupRef.current);
                 clusterGroupRef.current = null;
+            }
+            if (districtLayerRef.current) {
+                map.removeLayer(districtLayerRef.current);
+                districtLayerRef.current = null;
             }
             if (renovationLayerRef.current) {
                 map.removeLayer(renovationLayerRef.current);
@@ -442,6 +447,102 @@ function BuildingsMap({ buildings, renovationAreas = [], showHeatmap = false, sh
                 clusterGroupRef.current = clusterGroup;
                 console.log(`✅ Successfully created ${markersCreated} markers on the map`);
             }
+            // Render district polygons (filter by selectedDistrictId if specified)
+            if (districts.length > 0) {
+                const districtLayer = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].layerGroup();
+                // Filter districts: show only selected one if specified, otherwise show all
+                const districtsToRender = selectedDistrictId !== null ? districts.filter({
+                    "BuildingsMap.useEffect": (d)=>d.id === selectedDistrictId
+                }["BuildingsMap.useEffect"]) : districts;
+                let selectedDistrictBounds = null;
+                districtsToRender.forEach({
+                    "BuildingsMap.useEffect": (district)=>{
+                        if (district.geometry && (district.geometry.type === "Polygon" || district.geometry.type === "MultiPolygon")) {
+                            const coordinates = district.geometry.coordinates;
+                            const isSelected = district.id === selectedDistrictId;
+                            if (district.geometry.type === "Polygon") {
+                                // Single polygon
+                                const latLngs = coordinates[0].map({
+                                    "BuildingsMap.useEffect.latLngs": (coord)=>[
+                                            coord[1],
+                                            coord[0]
+                                        ]
+                                }["BuildingsMap.useEffect.latLngs"]);
+                                const districtPolygon = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].polygon([
+                                    latLngs
+                                ], {
+                                    color: isSelected ? "#3b82f6" : "#64748b",
+                                    weight: isSelected ? 3 : 2,
+                                    fillOpacity: isSelected ? 0.15 : 0.05,
+                                    fillColor: isSelected ? "#3b82f6" : "#94a3b8",
+                                    renderer: canvasRendererRef.current || undefined
+                                });
+                                const popupContent = `
+              <div style="padding: 8px; min-width: 150px;">
+                <strong style="font-size: 14px; color: ${isSelected ? '#3b82f6' : '#64748b'};">📍 ${district.name}</strong>
+              </div>
+            `;
+                                districtPolygon.bindPopup(popupContent);
+                                districtLayer.addLayer(districtPolygon);
+                                // Store bounds for zooming if this is the selected district
+                                if (isSelected) {
+                                    selectedDistrictBounds = districtPolygon.getBounds();
+                                }
+                            } else if (district.geometry.type === "MultiPolygon") {
+                                // Multiple polygons
+                                const latLngPolys = [];
+                                coordinates.forEach({
+                                    "BuildingsMap.useEffect": (polygon)=>{
+                                        polygon.forEach({
+                                            "BuildingsMap.useEffect": (ring)=>{
+                                                const latLngs = ring.map({
+                                                    "BuildingsMap.useEffect.latLngs": (coord)=>[
+                                                            coord[1],
+                                                            coord[0]
+                                                        ]
+                                                }["BuildingsMap.useEffect.latLngs"]);
+                                                latLngPolys.push(latLngs);
+                                            }
+                                        }["BuildingsMap.useEffect"]);
+                                    }
+                                }["BuildingsMap.useEffect"]);
+                                const districtPolygon = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].polygon(latLngPolys, {
+                                    color: isSelected ? "#3b82f6" : "#64748b",
+                                    weight: isSelected ? 3 : 2,
+                                    fillOpacity: isSelected ? 0.15 : 0.05,
+                                    fillColor: isSelected ? "#3b82f6" : "#94a3b8",
+                                    renderer: canvasRendererRef.current || undefined
+                                });
+                                const popupContent = `
+              <div style="padding: 8px; min-width: 150px;">
+                <strong style="font-size: 14px; color: ${isSelected ? '#3b82f6' : '#64748b'};">📍 ${district.name}</strong>
+              </div>
+            `;
+                                districtPolygon.bindPopup(popupContent);
+                                districtLayer.addLayer(districtPolygon);
+                                // Store bounds for zooming if this is the selected district
+                                if (isSelected) {
+                                    selectedDistrictBounds = districtPolygon.getBounds();
+                                }
+                            }
+                        }
+                    }
+                }["BuildingsMap.useEffect"]);
+                districtLayer.addTo(map);
+                districtLayerRef.current = districtLayer;
+                // Zoom to selected district if one is selected
+                if (selectedDistrictId !== null && selectedDistrictBounds) {
+                    map.fitBounds(selectedDistrictBounds, {
+                        padding: [
+                            50,
+                            50
+                        ],
+                        maxZoom: 14 // Don't zoom in too close
+                    });
+                    console.log(`🎯 Zoomed to district ID ${selectedDistrictId}`);
+                }
+                console.log(`✅ Successfully rendered ${districtsToRender.length} district polygon(s)`);
+            }
             // Render renovation areas if enabled
             if (showRenovationAreas && renovationAreas.length > 0) {
                 const renovationLayer = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].layerGroup();
@@ -516,7 +617,9 @@ function BuildingsMap({ buildings, renovationAreas = [], showHeatmap = false, sh
         buildings,
         showHeatmap,
         showRenovationAreas,
-        renovationAreas
+        renovationAreas,
+        districts,
+        selectedDistrictId
     ]);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
         children: [
@@ -529,13 +632,13 @@ function BuildingsMap({ buildings, renovationAreas = [], showHeatmap = false, sh
                 className: "jsx-8c726aafc29b0ebc" + " " + "h-full w-full"
             }, void 0, false, {
                 fileName: "[project]/components/buildings-map.tsx",
-                lineNumber: 528,
+                lineNumber: 635,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true);
 }
-_s(BuildingsMap, "EjqlhnKswRerO84farJLni8ZV34=");
+_s(BuildingsMap, "TuJuVZNCan6c91qsUZJz2szsHhY=");
 _c = BuildingsMap;
 var _c;
 __turbopack_context__.k.register(_c, "BuildingsMap");

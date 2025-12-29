@@ -44,6 +44,12 @@
       "regex": "^/buildings\\-without\\-gas(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/buildings\\-without\\-gas(?:/)?$"
+    },
+    {
+      "page": "/outgoing-calls",
+      "regex": "^/outgoing\\-calls(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/outgoing\\-calls(?:/)?$"
     }
   ],
   "dataRoutes": [],

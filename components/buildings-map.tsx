@@ -42,9 +42,20 @@ interface RenovationArea {
   created_at: string
 }
 
+interface District {
+  id: number
+  name: string
+  geometry?: {
+    type: string
+    coordinates: any
+  } | null
+}
+
 interface BuildingsMapProps {
   buildings: Building[]
   renovationAreas?: RenovationArea[]
+  districts?: District[]
+  selectedDistrictId?: number | null
   showHeatmap?: boolean
   showRenovationAreas?: boolean
   onBuildingClick?: (building: Building) => void
@@ -111,6 +122,8 @@ const createMarkerIcon = (category: "general" | "izhs" | "susn") => {
 export default function BuildingsMap({
   buildings,
   renovationAreas = [],
+  districts = [],
+  selectedDistrictId = null,
   showHeatmap = false,
   showRenovationAreas = false,
   onBuildingClick
@@ -119,6 +132,7 @@ export default function BuildingsMap({
   const mapInstanceRef = useRef<L.Map | null>(null)
   const heatLayerRef = useRef<any>(null)
   const clusterGroupRef = useRef<any>(null)
+  const districtLayerRef = useRef<L.LayerGroup | null>(null)
   const renovationLayerRef = useRef<L.LayerGroup | null>(null)
   const onBuildingClickRef = useRef(onBuildingClick)
   const hasAutoFitted = useRef(false)
@@ -188,6 +202,10 @@ export default function BuildingsMap({
     if (clusterGroupRef.current) {
       map.removeLayer(clusterGroupRef.current)
       clusterGroupRef.current = null
+    }
+    if (districtLayerRef.current) {
+      map.removeLayer(districtLayerRef.current)
+      districtLayerRef.current = null
     }
     if (renovationLayerRef.current) {
       map.removeLayer(renovationLayerRef.current)
@@ -457,6 +475,95 @@ export default function BuildingsMap({
       console.log(`✅ Successfully created ${markersCreated} markers on the map`)
     }
 
+    // Render district polygons (filter by selectedDistrictId if specified)
+    if (districts.length > 0) {
+      const districtLayer = L.layerGroup()
+
+      // Filter districts: show only selected one if specified, otherwise show all
+      const districtsToRender = selectedDistrictId !== null
+        ? districts.filter(d => d.id === selectedDistrictId)
+        : districts
+
+      let selectedDistrictBounds: L.LatLngBounds | null = null
+
+      districtsToRender.forEach((district) => {
+        if (district.geometry && (district.geometry.type === "Polygon" || district.geometry.type === "MultiPolygon")) {
+          const coordinates = district.geometry.coordinates
+          const isSelected = district.id === selectedDistrictId
+
+          if (district.geometry.type === "Polygon") {
+            // Single polygon
+            const latLngs = coordinates[0].map((coord: [number, number]) => [coord[1], coord[0]])
+
+            const districtPolygon = L.polygon([latLngs], {
+              color: isSelected ? "#3b82f6" : "#64748b", // Blue for selected, slate gray for others
+              weight: isSelected ? 3 : 2,
+              fillOpacity: isSelected ? 0.15 : 0.05,
+              fillColor: isSelected ? "#3b82f6" : "#94a3b8",
+              renderer: canvasRendererRef.current || undefined,
+            })
+
+            const popupContent = `
+              <div style="padding: 8px; min-width: 150px;">
+                <strong style="font-size: 14px; color: ${isSelected ? '#3b82f6' : '#64748b'};">📍 ${district.name}</strong>
+              </div>
+            `
+            districtPolygon.bindPopup(popupContent)
+            districtLayer.addLayer(districtPolygon)
+
+            // Store bounds for zooming if this is the selected district
+            if (isSelected) {
+              selectedDistrictBounds = districtPolygon.getBounds()
+            }
+          } else if (district.geometry.type === "MultiPolygon") {
+            // Multiple polygons
+            const latLngPolys: L.LatLngExpression[][] = []
+            coordinates.forEach((polygon: any) => {
+              polygon.forEach((ring: any) => {
+                const latLngs = ring.map((coord: [number, number]) => [coord[1], coord[0]])
+                latLngPolys.push(latLngs)
+              })
+            })
+
+            const districtPolygon = L.polygon(latLngPolys, {
+              color: isSelected ? "#3b82f6" : "#64748b", // Blue for selected, slate gray for others
+              weight: isSelected ? 3 : 2,
+              fillOpacity: isSelected ? 0.15 : 0.05,
+              fillColor: isSelected ? "#3b82f6" : "#94a3b8",
+              renderer: canvasRendererRef.current || undefined,
+            })
+
+            const popupContent = `
+              <div style="padding: 8px; min-width: 150px;">
+                <strong style="font-size: 14px; color: ${isSelected ? '#3b82f6' : '#64748b'};">📍 ${district.name}</strong>
+              </div>
+            `
+            districtPolygon.bindPopup(popupContent)
+            districtLayer.addLayer(districtPolygon)
+
+            // Store bounds for zooming if this is the selected district
+            if (isSelected) {
+              selectedDistrictBounds = districtPolygon.getBounds()
+            }
+          }
+        }
+      })
+
+      districtLayer.addTo(map)
+      districtLayerRef.current = districtLayer
+
+      // Zoom to selected district if one is selected
+      if (selectedDistrictId !== null && selectedDistrictBounds) {
+        map.fitBounds(selectedDistrictBounds, {
+          padding: [50, 50],
+          maxZoom: 14 // Don't zoom in too close
+        })
+        console.log(`🎯 Zoomed to district ID ${selectedDistrictId}`)
+      }
+
+      console.log(`✅ Successfully rendered ${districtsToRender.length} district polygon(s)`)
+    }
+
     // Render renovation areas if enabled
     if (showRenovationAreas && renovationAreas.length > 0) {
       const renovationLayer = L.layerGroup()
@@ -513,7 +620,7 @@ export default function BuildingsMap({
       map.fitBounds(bounds, { padding: [50, 50] })
       hasAutoFitted.current = true
     }
-  }, [buildings, showHeatmap, showRenovationAreas, renovationAreas])
+  }, [buildings, showHeatmap, showRenovationAreas, renovationAreas, districts, selectedDistrictId])
 
   return (
     <>

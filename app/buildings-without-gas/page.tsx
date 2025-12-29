@@ -60,9 +60,19 @@ interface RenovationArea {
   created_at: string
 }
 
+interface District {
+  id: number
+  name: string
+  geometry?: {
+    type: string
+    coordinates: any
+  } | null
+}
+
 export default function BuildingsWithoutGasPage() {
   const [buildings, setBuildings] = useState<Building[]>([])
   const [renovationAreas, setRenovationAreas] = useState<RenovationArea[]>([])
+  const [districts, setDistricts] = useState<District[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingProgress, setLoadingProgress] = useState({ loaded: 0, total: 0, status: "" })
   const [error, setError] = useState<string | null>(null)
@@ -78,15 +88,34 @@ export default function BuildingsWithoutGasPage() {
   const [apartmentsFilter, setApartmentsFilter] = useState<{ min: number; max: number } | null>(null)
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
+  const [selectedDistrictId, setSelectedDistrictId] = useState<number | null>(null)
 
   useEffect(() => {
     fetchBuildings()
     fetchRenovationAreas()
+    fetchDistricts()
   }, [])
 
   const handleBuildingClick = useCallback((building: Building) => {
     setSelectedBuilding(building)
     setShowSidePanel(true)
+  }, [])
+
+  const handleDistrictFilterChange = useCallback((districtName: string) => {
+    setDistrictFilter(districtName)
+
+    // Find the district ID from the name
+    if (districtName === "all") {
+      setSelectedDistrictId(null)
+    } else {
+      // Find district ID by matching name in DISTRICT_LABELS
+      const districtId = Object.entries(DISTRICT_LABELS).find(([_, name]) => name === districtName)?.[0]
+      if (districtId) {
+        setSelectedDistrictId(parseInt(districtId))
+      } else {
+        setSelectedDistrictId(null)
+      }
+    }
   }, [])
 
   const fetchBuildings = async (forceRefresh = false) => {
@@ -260,6 +289,59 @@ export default function BuildingsWithoutGasPage() {
     }
   }
 
+  const fetchDistricts = async () => {
+    try {
+      console.log("📡 Fetching districts...")
+      const response = await fetch("https://admin.smartalmaty.kz/api/v1/address/districts/")
+
+      if (!response.ok) {
+        throw new Error(`Districts API returned ${response.status}`)
+      }
+
+      const data = await response.json()
+      console.log("🗺️ Districts fetched:", data)
+
+      // Handle GeoJSON FeatureCollection format
+      let features = []
+      if (data.results && data.results.type === 'FeatureCollection') {
+        features = data.results.features || []
+      } else if (data.type === 'FeatureCollection') {
+        features = data.features || []
+      } else if (Array.isArray(data)) {
+        features = data
+      } else if (data.results && Array.isArray(data.results)) {
+        features = data.results
+      }
+
+      console.log("📍 Processing", features.length, "district features")
+
+      // Transform and filter districts (exclude id 0 and 9)
+      const transformedDistricts = features
+        .map((district: any) => {
+          if (district.type === 'Feature') {
+            return {
+              id: district.id || district.properties?.id,
+              name: district.properties?.name || district.properties?.name_ru || `District ${district.id}`,
+              geometry: district.geometry,
+            }
+          }
+          return {
+            id: district.id,
+            name: district.name || district.name_ru || `District ${district.id}`,
+            geometry: district.geometry,
+          }
+        })
+        .filter((d: District) => d.id !== 0 && d.id !== 9) // Exclude districts with id 0 and 9
+
+      console.log("✅ Transformed districts:", transformedDistricts)
+      setDistricts(transformedDistricts)
+      console.log("✅ Loaded", transformedDistricts.length, "districts (excluded id 0 and 9)")
+    } catch (error) {
+      console.error("Failed to fetch districts:", error)
+      // Don't show error to user, just log it
+    }
+  }
+
   // Helper function to transform API data
   const transformBuildingsData = (apiBuildings: any[]): Building[] => {
     return (apiBuildings || [])
@@ -420,13 +502,17 @@ export default function BuildingsWithoutGasPage() {
 
   const filteredBuildings = useMemo(() => {
     return buildings.filter((building) => {
+      // ONLY SHOW GENERAL (ALSECO) BUILDINGS
+      const isGeneral = building.building_category === "general"
+      if (!isGeneral) return false
+
       const matchesDistrict = districtFilter === "all" || building.district === districtFilter
       const matchesSearch =
         searchQuery === "" ||
         building.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
         building.district.toLowerCase().includes(searchQuery.toLowerCase())
 
-      // Filter by building type
+      // Filter by building type (keeping for backward compatibility, but always "general" now)
       const matchesType = buildingTypeFilter === "all" || building.building_category === buildingTypeFilter
 
       // Advanced filters
@@ -438,9 +524,13 @@ export default function BuildingsWithoutGasPage() {
     })
   }, [buildings, districtFilter, searchQuery, buildingTypeFilter, yearFilter, floorsFilter, apartmentsFilter])
 
-  const districts = Array.from(new Set(buildings.map((b) => b.district))).sort()
+  // Only show districts from general (ALSECO) buildings
+  const generalBuildings = buildings.filter((b) => b.building_category === "general")
+  const districtNames = Array.from(new Set(generalBuildings.map((b) => b.district)))
+    .filter((name) => name !== "Район 9" && name !== "Не указан")
+    .sort()
   const categoryCounts = {
-    general: buildings.filter((b) => b.building_category === "general").length,
+    general: generalBuildings.length,
     izhs: buildings.filter((b) => b.building_category === "izhs").length,
     susn: buildings.filter((b) => b.building_category === "susn").length,
   }
@@ -450,12 +540,13 @@ export default function BuildingsWithoutGasPage() {
     susn: filteredBuildings.filter((b) => b.building_category === "susn").length,
   }
 
-  const uniqueMarkerCount = new Set(buildings.map((b) => `${b.latitude},${b.longitude}`)).size
-  const withCoordinates = buildings.filter((b) => b.latitude && b.longitude).length
-  const withoutCoordinates = buildings.length - withCoordinates
+  // Calculate stats only for general (ALSECO) buildings
+  const uniqueMarkerCount = new Set(generalBuildings.map((b) => `${b.latitude},${b.longitude}`)).size
+  const withCoordinates = generalBuildings.filter((b) => b.latitude && b.longitude).length
+  const withoutCoordinates = generalBuildings.length - withCoordinates
 
   const stats = {
-    total: buildings.length,
+    total: generalBuildings.length,
     uniqueMarkers: uniqueMarkerCount,
     withCoordinates,
     withoutCoordinates,
@@ -464,11 +555,11 @@ export default function BuildingsWithoutGasPage() {
       izhs: categoryCounts.izhs,
       susn: categoryCounts.susn,
     },
-    withoutGas: buildings.filter((b) => !b.has_gas).length,
-    totalApartments: buildings.reduce((sum, b) => sum + (b.apartments || 0), 0),
-    notInAlmaty: buildings.filter((b) => b.is_not_in_almaty === true).length,
-    notInAlmatyGeneral: buildings.filter((b) => b.is_not_in_almaty === true && b.building_category === "general").length,
-    seasonalOrUnused: buildings.filter((b) => b.is_seasonal_or_unused === true).length,
+    withoutGas: generalBuildings.filter((b) => !b.has_gas).length,
+    totalApartments: generalBuildings.reduce((sum, b) => sum + (b.apartments || 0), 0),
+    notInAlmaty: generalBuildings.filter((b) => b.is_not_in_almaty === true).length,
+    notInAlmatyGeneral: generalBuildings.filter((b) => b.is_not_in_almaty === true && b.building_category === "general").length,
+    seasonalOrUnused: generalBuildings.filter((b) => b.is_seasonal_or_unused === true).length,
   }
 
   return (
@@ -513,6 +604,8 @@ export default function BuildingsWithoutGasPage() {
             <BuildingsMap
               buildings={filteredBuildings.filter(b => b.latitude && b.longitude)}
               renovationAreas={renovationAreas}
+              districts={districts}
+              selectedDistrictId={selectedDistrictId}
               showHeatmap={showHeatmap}
               showRenovationAreas={showRenovationAreas}
               onBuildingClick={handleBuildingClick}
@@ -522,314 +615,225 @@ export default function BuildingsWithoutGasPage() {
 
         {/* Floating UI Elements */}
         <div className="relative z-10 h-full w-full pointer-events-none">
-          {/* Top Header Bar - Title + Buttons + Search + Filters */}
-          <div className="absolute top-0 left-0 right-0 pointer-events-auto z-20">
-            <div className="bg-white border-b border-gray-200/80 backdrop-blur-xl bg-white/90">
-              <div className="px-4 py-3">
-                <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center">
-                  {/* Title Section */}
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-900">
-                      <Building2 className="h-4 w-4 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-[9px] uppercase tracking-[0.15em] text-gray-400 font-medium leading-tight">
-                        ИНФРАСТРУКТУРА / АЛМАТЫ
-                      </p>
-                      <h1 className="text-sm font-semibold text-gray-900 leading-tight mt-0.5">Здания без газа</h1>
+          {/* Left Sidebar - Controls & Filters */}
+          <div className="absolute top-0 left-0 bottom-0 w-[280px] pointer-events-auto z-20">
+            <div className="h-full bg-white border-r border-gray-200/80 backdrop-blur-xl bg-white/95 shadow-lg flex flex-col">
+              {/* Header */}
+              <div className="px-4 py-4 border-b border-gray-200">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-gray-900 to-gray-700 shadow-md">
+                    <Building2 className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-[8px] uppercase tracking-[0.2em] text-gray-400 font-semibold leading-tight">
+                      ИНФРАСТРУКТУРА / АЛМАТЫ
+                    </p>
+                    <h1 className="text-base font-bold text-gray-900 leading-tight mt-0.5">Здания без газа</h1>
+                  </div>
+                </div>
+              </div>
+
+              {/* Results Counter */}
+              <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-600 font-medium">Результаты:</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-lg font-bold text-blue-600 tabular-nums">
+                      {filteredBuildings.length.toLocaleString()}
+                    </span>
+                    <span className="text-xs text-gray-400">/</span>
+                    <span className="text-sm text-gray-500 tabular-nums">
+                      {generalBuildings.length.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Controls Section */}
+              <div className="flex-1 overflow-y-auto">
+                <div className="p-4 space-y-4">
+                  {/* Search */}
+                  <div>
+                    <label className="text-[10px] font-semibold text-gray-700 uppercase tracking-wider mb-2 block">
+                      🔍 Поиск
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Введите адрес..."
+                        className="h-9 w-full rounded-lg border-2 border-gray-200 bg-white pl-3 pr-8 text-xs focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+                      />
+                      {searchQuery && (
+                        <button
+                          onClick={() => setSearchQuery("")}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
                   </div>
 
-                  {/* Buttons */}
-                  <div className="flex gap-2 flex-shrink-0">
-                    <button
-                      onClick={() => fetchBuildings(true)}
-                      disabled={loading}
-                      className="h-8 px-3 rounded-lg text-xs font-medium bg-white text-gray-700 border border-gray-200 hover:border-gray-300 transition-all disabled:opacity-50"
-                      title="Обновить данные из API"
-                    >
-                      <RefreshCw className={`inline-block mr-1.5 h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-                      Обновить
-                    </button>
-
-                    <button
-                      onClick={() => setShowHeatmap(!showHeatmap)}
-                      className={`h-8 px-3 rounded-lg text-xs font-medium transition-all ${
-                        showHeatmap
-                          ? "bg-gray-900 text-white shadow-sm"
-                          : "bg-white text-gray-700 border border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      <Flame className="inline-block mr-1.5 h-3.5 w-3.5" />
-                      {showHeatmap ? "Маркеры" : "Тепловая карта"}
-                    </button>
-
-                    <button
-                      onClick={() => setShowRenovationAreas(!showRenovationAreas)}
-                      className={`h-8 px-3 rounded-lg text-xs font-medium transition-all ${
-                        showRenovationAreas
-                          ? "bg-purple-600 text-white shadow-sm"
-                          : "bg-white text-gray-700 border border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      <Layers className="inline-block mr-1.5 h-3.5 w-3.5" />
-                      Реновация
-                    </button>
-
-                    {/* Export Dropdown */}
-                    <div className="relative group">
-                      <button className="h-8 px-3 rounded-lg text-xs font-medium bg-white text-gray-700 border border-gray-200 hover:border-gray-300 transition-all">
-                        <Download className="inline-block mr-1.5 h-3.5 w-3.5" />
-                        Экспорт
-                      </button>
-                      <div className="absolute top-full mt-1 right-0 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 min-w-[140px]">
-                        <button
-                          onClick={exportToCSV}
-                          className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50 first:rounded-t-lg"
-                        >
-                          CSV формат
-                        </button>
-                        <button
-                          onClick={exportToJSON}
-                          className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50 last:rounded-b-lg"
-                        >
-                          JSON формат
-                        </button>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                      className={`h-8 px-3 rounded-lg text-xs font-medium transition-all ${
-                        showAdvancedFilters
-                          ? "bg-gray-900 text-white shadow-sm"
-                          : "bg-white text-gray-700 border border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      <Layers className="inline-block mr-1.5 h-3.5 w-3.5" />
-                      Фильтры
-                    </button>
-
-                    {/* <button
-                      onClick={() => fetchBuildings(true)}
-                      className="h-8 px-3 rounded-lg text-xs font-medium bg-white text-gray-700 border border-gray-200 hover:border-gray-300 transition-all"
-                    >
-                      Обновить
-                    </button> */}
-
-                    {/* Help Button */}
-                    <div className="relative group">
-                      <button className="h-8 w-8 rounded-lg text-xs font-medium bg-white text-gray-700 border border-gray-200 hover:border-gray-300 transition-all flex items-center justify-center">
-                        <HelpCircle className="h-4 w-4" />
-                      </button>
-                      <div className="absolute top-full mt-1 right-0 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 w-[240px] p-3">
-                        <p className="text-[9px] uppercase tracking-wider text-gray-400 font-medium mb-2">Инструкция:</p>
-                        <ul className="space-y-1.5 text-[10px] text-gray-600">
-                          <li className="flex items-start gap-1.5">
-                            <span className="text-gray-400 mt-0.5">•</span>
-                            <span>Нажмите на маркер для просмотра деталей здания</span>
-                          </li>
-                          <li className="flex items-start gap-1.5">
-                            <span className="text-gray-400 mt-0.5">•</span>
-                            <span>Используйте фильтры для поиска по параметрам</span>
-                          </li>
-                          <li className="flex items-start gap-1.5">
-                            <span className="text-gray-400 mt-0.5">•</span>
-                            <span>Экспортируйте данные в CSV или JSON формате</span>
-                          </li>
-                          <li className="flex items-start gap-1.5">
-                            <span className="text-gray-400 mt-0.5">•</span>
-                            <span>Переключайтесь между маркерами и тепловой картой</span>
-                          </li>
-                        </ul>
-                        <div className="mt-3 pt-2 border-t border-gray-200">
-                          <button
-                            onClick={async () => {
-                              await clearBuildingsCache()
-                              fetchBuildings(true)
-                            }}
-                            className="w-full h-6 rounded text-[10px] font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all"
-                          >
-                            Очистить кэш
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Search and Filters */}
-                  <div className="flex gap-2 flex-wrap flex-1">
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Поиск по адресу"
-                      className="h-8 rounded-lg border border-gray-200 bg-white px-3 text-xs flex-1 min-w-[150px] focus:outline-none focus:border-gray-400 transition-colors"
-                    />
+                  {/* District Filter */}
+                  <div>
+                    <label className="text-[10px] font-semibold text-gray-700 uppercase tracking-wider mb-2 block">
+                      📍 Район
+                    </label>
                     <select
                       value={districtFilter}
-                      onChange={(e) => setDistrictFilter(e.target.value)}
-                      className="h-8 rounded-lg border border-gray-200 bg-white px-3 text-xs focus:outline-none focus:border-gray-400 transition-colors"
+                      onChange={(e) => handleDistrictFilterChange(e.target.value)}
+                      className="h-9 w-full rounded-lg border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white px-3 text-xs font-semibold text-blue-700 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all shadow-sm cursor-pointer"
                     >
                       <option value="all">Все районы</option>
-                      {districts.map((district) => (
+                      {districtNames.map((district) => (
                         <option key={district} value={district}>
                           {district}
                         </option>
                       ))}
                     </select>
-                    <select
-                      value={buildingTypeFilter}
-                      onChange={(e) => setBuildingTypeFilter(e.target.value)}
-                      className="h-8 rounded-lg border border-gray-200 bg-white px-3 text-xs focus:outline-none focus:border-gray-400 transition-colors"
-                    >
-                      <option value="all">Все типы</option>
-                      <option value="general">ALSECO</option>
-                      <option value="izhs">Данные Районных акиматов</option>
-                      <option value="susn">Данные ДЧС</option>
-                    </select>
                   </div>
 
-                  {/* Count */}
-                  <div className="text-[10px] text-gray-400 whitespace-nowrap flex-shrink-0 font-medium">
-                    {filteredBuildings.length} / {buildings.length}
+                  {/* Action Buttons */}
+                  <div className="pt-2">
+                    <label className="text-[10px] font-semibold text-gray-700 uppercase tracking-wider mb-2 block">
+                      ⚙️ Действия
+                    </label>
+                    <div className="space-y-2">
+                      <button
+                        onClick={() => fetchBuildings(true)}
+                        disabled={loading}
+                        className="w-full h-9 rounded-lg text-xs font-medium bg-white text-gray-700 border border-gray-200 hover:border-gray-300 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+                        Обновить данные
+                      </button>
+
+                      <button
+                        onClick={() => setShowHeatmap(!showHeatmap)}
+                        className={`w-full h-9 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-2 ${
+                          showHeatmap
+                            ? "bg-gray-900 text-white shadow-sm"
+                            : "bg-white text-gray-700 border border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <Flame className="h-3.5 w-3.5" />
+                        {showHeatmap ? "Показать маркеры" : "Тепловая карта"}
+                      </button>
+
+                      <button
+                        onClick={() => setShowRenovationAreas(!showRenovationAreas)}
+                        className={`w-full h-9 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-2 ${
+                          showRenovationAreas
+                            ? "bg-purple-600 text-white shadow-sm"
+                            : "bg-white text-gray-700 border border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <Layers className="h-3.5 w-3.5" />
+                        Реновация {showRenovationAreas ? "✓" : ""}
+                      </button>
+
+                      <button
+                        onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                        className={`w-full h-9 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-2 ${
+                          showAdvancedFilters
+                            ? "bg-gray-900 text-white shadow-sm"
+                            : "bg-white text-gray-700 border border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <Layers className="h-3.5 w-3.5" />
+                        Доп. фильтры {showAdvancedFilters ? "✓" : ""}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Export Section */}
+                  <div className="pt-2">
+                    <label className="text-[10px] font-semibold text-gray-700 uppercase tracking-wider mb-2 block">
+                      📥 Экспорт
+                    </label>
+                    <div className="space-y-2">
+                      <button
+                        onClick={exportToCSV}
+                        className="w-full h-9 rounded-lg text-xs font-medium bg-white text-gray-700 border border-gray-200 hover:border-gray-300 transition-all flex items-center justify-center gap-2"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        Экспорт в CSV
+                      </button>
+                      <button
+                        onClick={exportToJSON}
+                        className="w-full h-9 rounded-lg text-xs font-medium bg-white text-gray-700 border border-gray-200 hover:border-gray-300 transition-all flex items-center justify-center gap-2"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        Экспорт в JSON
+                      </button>
+                      <button
+                        onClick={async () => {
+                          await clearBuildingsCache()
+                          fetchBuildings(true)
+                        }}
+                        className="w-full h-9 rounded-lg text-xs font-medium bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-all flex items-center justify-center gap-2"
+                      >
+                        Очистить кэш
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Left Sidebar - Statistics Cards Stacked Vertically */}
-          <div className="absolute top-[70px] left-0 w-[170px] flex flex-col gap-2.5 pointer-events-auto z-10">
-            {/* Show all category cards when "Все типы" is selected */}
-            {buildingTypeFilter === "all" ? (
-              <>
-                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-4 px-5 shadow-sm border-r-[3px] border-gray-400">
-                  <p className="text-[9px] uppercase tracking-[0.15em] text-gray-500 mb-1.5 font-medium">ВСЕГО</p>
-                  <p className="text-[2.5rem] font-bold text-gray-900 leading-none tabular-nums">{stats.total}</p>
-                  <p className="text-[8px] text-gray-400 mt-2 leading-tight">объектов</p>
-                </div>
+          {/* Statistics Cards - Right Side */}
+          <div className="absolute top-4 right-0 w-[170px] flex flex-col gap-2.5 pointer-events-auto z-10">
+            {/* ALSECO specific cards */}
+            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-orange-500">
+              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ВСЕГО ALSECO</p>
+              <p className="text-[2.75rem] font-bold text-orange-600 leading-none tabular-nums">
+                {categoryCounts.general}
+              </p>
+              <p className="text-[7.5px] text-orange-400 mt-1.5 leading-tight">жилых зданий</p>
+            </div>
 
-                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-4 px-5 shadow-sm border-r-[3px] border-green-500">
-                  <p className="text-[9px] uppercase tracking-[0.15em] text-gray-500 mb-1.5 font-medium">С КООРДИНАТАМИ</p>
-                  <p className="text-[2.5rem] font-bold text-green-600 leading-none tabular-nums">{stats.withCoordinates}</p>
-                  <p className="text-[8px] text-green-400 mt-2 leading-tight">на карте</p>
-                </div>
+            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-green-500">
+              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO С КООРДИНАТАМИ</p>
+              <p className="text-[2.75rem] font-bold text-green-600 leading-none tabular-nums">
+                {generalBuildings.filter((b) => b.latitude && b.longitude).length}
+              </p>
+              <p className="text-[7.5px] text-green-400 mt-1.5 leading-tight">на карте</p>
+            </div>
 
-                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-4 px-5 shadow-sm border-r-[3px] border-amber-500">
-                  <p className="text-[9px] uppercase tracking-[0.15em] text-gray-500 mb-1.5 font-medium">БЕЗ КООРДИНАТ</p>
-                  <p className="text-[2.5rem] font-bold text-amber-600 leading-none tabular-nums">{stats.withoutCoordinates}</p>
-                  <p className="text-[8px] text-amber-400 mt-2 leading-tight">не на карте</p>
-                </div>
+            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-amber-500">
+              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO БЕЗ КООРДИНАТ</p>
+              <p className="text-[2.75rem] font-bold text-amber-600 leading-none tabular-nums">
+                {generalBuildings.filter((b) => !b.latitude || !b.longitude).length}
+              </p>
+              <p className="text-[7.5px] text-amber-400 mt-1.5 leading-tight">не на карте</p>
+            </div>
 
-                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-4 px-5 shadow-sm border-r-[3px] border-purple-500">
-                  <p className="text-[9px] uppercase tracking-[0.15em] text-gray-500 mb-1.5 font-medium">УНИКАЛЬНЫХ</p>
-                  <p className="text-[2.5rem] font-bold text-purple-600 leading-none tabular-nums">{stats.uniqueMarkers}</p>
-                  <p className="text-[8px] text-purple-400 mt-2 leading-tight">координат</p>
-                </div>
+            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-purple-500">
+              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">УНИКАЛЬНЫХ КООРДИНАТ</p>
+              <p className="text-[2.75rem] font-bold text-purple-600 leading-none tabular-nums">
+                {new Set(generalBuildings.map((b) => `${b.latitude},${b.longitude}`)).size}
+              </p>
+              <p className="text-[7.5px] text-purple-400 mt-1.5 leading-tight">точек на карте</p>
+            </div>
 
-                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-4 px-5 shadow-sm border-r-[3px] border-orange-500">
-                  <p className="text-[9px] uppercase tracking-[0.15em] text-gray-500 mb-1.5 font-medium">ALSECO</p>
-                  <p className="text-[2.5rem] font-bold text-orange-600 leading-none tabular-nums">{stats.byCategory.general}</p>
-                  <p className="text-[8px] text-orange-400 mt-2 leading-tight">жилых зданий</p>
-                </div>
+            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-red-500">
+              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO НЕ В АЛМАТЫ</p>
+              <p className="text-[2.75rem] font-bold text-red-600 leading-none tabular-nums">
+                {generalBuildings.filter((b) => b.is_not_in_almaty === true).length}
+              </p>
+              <p className="text-[7.5px] text-red-400 mt-1.5 leading-tight">за пределами</p>
+            </div>
 
-                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-4 px-5 shadow-sm border-r-[3px] border-blue-500">
-                  <p className="text-[9px] uppercase tracking-[0.15em] text-gray-500 mb-1.5 font-medium">Данные Районных акиматов</p>
-                  <p className="text-[2.5rem] font-bold text-blue-600 leading-none tabular-nums">{stats.byCategory.izhs}</p>
-                  <p className="text-[8px] text-blue-400 mt-2 leading-tight">домов</p>
-                </div>
-
-                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-4 px-5 shadow-sm border-r-[3px] border-red-500">
-                  <p className="text-[9px] uppercase tracking-[0.15em] text-gray-500 mb-1.5 font-medium">Данные ДЧС</p>
-                  <p className="text-[2.5rem] font-bold text-red-600 leading-none tabular-nums">{stats.byCategory.susn}</p>
-                  <p className="text-[8px] text-red-400 mt-2 leading-tight">домов</p>
-                </div>
-
-                <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-4 px-5 shadow-sm border-r-[3px] border-yellow-500">
-                  <p className="text-[9px] uppercase tracking-[0.15em] text-gray-500 mb-1.5 font-medium">НЕТ ПОТРЕБЛЕНИЯ ЭЭ</p>
-                  <p className="text-[2.5rem] font-bold text-yellow-600 leading-none tabular-nums">{stats.seasonalOrUnused}</p>
-                  <p className="text-[8px] text-yellow-400 mt-2 leading-tight">объектов</p>
-                </div>
-              </>
-            ) : (
-              /* Show only the selected category statistics */
-              <>
-                {buildingTypeFilter === "general" ? (
-                  /* ALSECO specific cards */
-                  <>
-                    <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-orange-500">
-                      <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ВСЕГО ALSECO</p>
-                      <p className="text-[2.75rem] font-bold text-orange-600 leading-none tabular-nums">
-                        {categoryCounts.general}
-                      </p>
-                      <p className="text-[7.5px] text-orange-400 mt-1.5 leading-tight">жилых зданий</p>
-                    </div>
-
-                    <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-purple-500">
-                      <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ВСЕГО УНИКАЛЬНЫХ ALSECO</p>
-                      <p className="text-[2.75rem] font-bold text-purple-600 leading-none tabular-nums">
-                        {new Set(buildings.filter((b) => b.building_category === "general").map((b) => `${b.latitude},${b.longitude}`)).size}
-                      </p>
-                      <p className="text-[7.5px] text-purple-400 mt-1.5 leading-tight">координат</p>
-                    </div>
-
-                    <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-red-500">
-                      <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO НЕ В АЛМАТЫ</p>
-                      <p className="text-[2.75rem] font-bold text-red-600 leading-none tabular-nums">
-                        {buildings.filter((b) => b.building_category === "general" && b.is_not_in_almaty === true).length}
-                      </p>
-                      <p className="text-[7.5px] text-red-400 mt-1.5 leading-tight">за пределами</p>
-                    </div>
-
-                    <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-green-500">
-                      <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO В АЛМАТЫ</p>
-                      <p className="text-[2.75rem] font-bold text-green-600 leading-none tabular-nums">
-                        {buildings.filter((b) => b.building_category === "general" && !b.is_not_in_almaty).length}
-                      </p>
-                      <p className="text-[7.5px] text-green-400 mt-1.5 leading-tight">в городе</p>
-                    </div>
-                  </>
-                ) : (
-                  /* Other types (ИЖС, СУСН) */
-                  <>
-                    <div className={`bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] ${
-                      buildingTypeFilter === "izhs" ? "border-blue-500" : "border-red-500"
-                    }`}>
-                      <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">
-                        {buildingTypeFilter === "izhs" ? "ИЖС" : "СУСН"}
-                      </p>
-                      <p className={`text-[2.75rem] font-bold leading-none tabular-nums ${
-                        buildingTypeFilter === "izhs" ? "text-blue-600" : "text-red-600"
-                      }`}>
-                        {filteredCounts.general + filteredCounts.izhs + filteredCounts.susn}
-                      </p>
-                      <p className={`text-[7.5px] mt-1.5 leading-tight ${
-                        buildingTypeFilter === "izhs" ? "text-blue-400" : "text-red-400"
-                      }`}>
-                        {buildingTypeFilter === "izhs" ? "частных домов" : "многоквартирных"}
-                      </p>
-                    </div>
-
-                    <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-gray-400">
-                      <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">УНИКАЛЬНЫХ</p>
-                      <p className="text-[2.75rem] font-bold text-gray-900 leading-none tabular-nums">
-                        {new Set(filteredBuildings.map((b) => `${b.latitude},${b.longitude}`)).size}
-                      </p>
-                      <p className="text-[7.5px] text-gray-400 mt-1.5 leading-tight">координат на карте</p>
-                    </div>
-
-                    <div className="bg-white/95 backdrop-blur-xl rounded-r-xl py-3.5 px-4 shadow-sm border-r-[3px] border-gray-400">
-                      <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">РАЙОНОВ</p>
-                      <p className="text-[2.75rem] font-bold text-gray-900 leading-none tabular-nums">
-                        {new Set(filteredBuildings.map((b) => b.district)).size}
-                      </p>
-                      <p className="text-[7.5px] text-gray-400 mt-1.5 leading-tight">охвачено</p>
-                    </div>
-                  </>
-                )}
-              </>
-            )}
+            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-blue-500">
+              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO В АЛМАТЫ</p>
+              <p className="text-[2.75rem] font-bold text-blue-600 leading-none tabular-nums">
+                {generalBuildings.filter((b) => !b.is_not_in_almaty).length}
+              </p>
+              <p className="text-[7.5px] text-blue-400 mt-1.5 leading-tight">в городе</p>
+            </div>
           </div>
 
           {/* Info Card - Bottom Left */}

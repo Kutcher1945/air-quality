@@ -786,7 +786,9 @@ export default function BuildingsWithoutGasPage() {
 
           {/* Statistics Cards - Right Side */}
           <div className="absolute top-4 right-0 w-[170px] flex flex-col gap-2.5 pointer-events-auto z-10">
-            {/* ALSECO specific cards */}
+            {/* ALSECO specific cards in logical order */}
+
+            {/* 1. Total ALSECO */}
             <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-orange-500">
               <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ВСЕГО ALSECO</p>
               <p className="text-[2.75rem] font-bold text-orange-600 leading-none tabular-nums">
@@ -795,30 +797,16 @@ export default function BuildingsWithoutGasPage() {
               <p className="text-[7.5px] text-orange-400 mt-1.5 leading-tight">жилых зданий</p>
             </div>
 
-            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-green-500">
-              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO С КООРДИНАТАМИ</p>
-              <p className="text-[2.75rem] font-bold text-green-600 leading-none tabular-nums">
-                {generalBuildings.filter((b) => b.latitude && b.longitude).length}
+            {/* 2. ALSECO in Almaty */}
+            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-blue-500">
+              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO В АЛМАТЫ</p>
+              <p className="text-[2.75rem] font-bold text-blue-600 leading-none tabular-nums">
+                {generalBuildings.filter((b) => !b.is_not_in_almaty).length}
               </p>
-              <p className="text-[7.5px] text-green-400 mt-1.5 leading-tight">на карте</p>
+              <p className="text-[7.5px] text-blue-400 mt-1.5 leading-tight">в городе</p>
             </div>
 
-            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-amber-500">
-              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO БЕЗ КООРДИНАТ</p>
-              <p className="text-[2.75rem] font-bold text-amber-600 leading-none tabular-nums">
-                {generalBuildings.filter((b) => !b.latitude || !b.longitude).length}
-              </p>
-              <p className="text-[7.5px] text-amber-400 mt-1.5 leading-tight">не на карте</p>
-            </div>
-
-            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-purple-500">
-              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">УНИКАЛЬНЫХ КООРДИНАТ</p>
-              <p className="text-[2.75rem] font-bold text-purple-600 leading-none tabular-nums">
-                {new Set(generalBuildings.map((b) => `${b.latitude},${b.longitude}`)).size}
-              </p>
-              <p className="text-[7.5px] text-purple-400 mt-1.5 leading-tight">точек на карте</p>
-            </div>
-
+            {/* 3. ALSECO not in Almaty */}
             <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-red-500">
               <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO НЕ В АЛМАТЫ</p>
               <p className="text-[2.75rem] font-bold text-red-600 leading-none tabular-nums">
@@ -827,12 +815,31 @@ export default function BuildingsWithoutGasPage() {
               <p className="text-[7.5px] text-red-400 mt-1.5 leading-tight">за пределами</p>
             </div>
 
-            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-blue-500">
-              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO В АЛМАТЫ</p>
-              <p className="text-[2.75rem] font-bold text-blue-600 leading-none tabular-nums">
-                {generalBuildings.filter((b) => !b.is_not_in_almaty).length}
+            {/* 4. ALSECO with coordinates IN ALMATY */}
+            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-green-500">
+              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO С КООРДИНАТАМИ В АЛМАТЫ</p>
+              <p className="text-[2.75rem] font-bold text-green-600 leading-none tabular-nums">
+                {generalBuildings.filter((b) => !b.is_not_in_almaty && b.latitude && b.longitude).length}
               </p>
-              <p className="text-[7.5px] text-blue-400 mt-1.5 leading-tight">в городе</p>
+              <p className="text-[7.5px] text-green-400 mt-1.5 leading-tight">на карте в городе</p>
+            </div>
+
+            {/* 5. ALSECO without coordinates IN ALMATY */}
+            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-amber-500">
+              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO БЕЗ КООРДИНАТ В АЛМАТЫ</p>
+              <p className="text-[2.75rem] font-bold text-amber-600 leading-none tabular-nums">
+                {generalBuildings.filter((b) => !b.is_not_in_almaty && (!b.latitude || !b.longitude)).length}
+              </p>
+              <p className="text-[7.5px] text-amber-400 mt-1.5 leading-tight">в городе без координат</p>
+            </div>
+
+            {/* 6. Unique coordinates */}
+            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-purple-500">
+              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">УНИКАЛЬНЫХ КООРДИНАТ</p>
+              <p className="text-[2.75rem] font-bold text-purple-600 leading-none tabular-nums">
+                {new Set(generalBuildings.filter((b) => !b.is_not_in_almaty && b.latitude && b.longitude).map((b) => `${b.latitude},${b.longitude}`)).size}
+              </p>
+              <p className="text-[7.5px] text-purple-400 mt-1.5 leading-tight">точек на карте</p>
             </div>
           </div>
 

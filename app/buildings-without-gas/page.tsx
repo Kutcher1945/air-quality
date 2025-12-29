@@ -796,6 +796,15 @@ export default function BuildingsWithoutGasPage() {
               </p>
               <p className="text-[7.5px] text-orange-400 mt-1.5 leading-tight">жилых зданий</p>
             </div>
+            
+            {/* 3. ALSECO not in Almaty */}
+            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-red-500">
+              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO НЕ В АЛМАТЫ</p>
+              <p className="text-[2.75rem] font-bold text-red-600 leading-none tabular-nums">
+                {generalBuildings.filter((b) => b.is_not_in_almaty === true).length}
+              </p>
+              <p className="text-[7.5px] text-red-400 mt-1.5 leading-tight">за пределами</p>
+            </div>
 
             {/* 2. ALSECO in Almaty */}
             <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-blue-500">
@@ -806,14 +815,7 @@ export default function BuildingsWithoutGasPage() {
               <p className="text-[7.5px] text-blue-400 mt-1.5 leading-tight">в городе</p>
             </div>
 
-            {/* 3. ALSECO not in Almaty */}
-            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-red-500">
-              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO НЕ В АЛМАТЫ</p>
-              <p className="text-[2.75rem] font-bold text-red-600 leading-none tabular-nums">
-                {generalBuildings.filter((b) => b.is_not_in_almaty === true).length}
-              </p>
-              <p className="text-[7.5px] text-red-400 mt-1.5 leading-tight">за пределами</p>
-            </div>
+            
 
             {/* 4. ALSECO with coordinates IN ALMATY */}
             <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-green-500">

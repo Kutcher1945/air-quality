@@ -243,6 +243,14 @@ export default function BuildingsMap({
           rendererFactory: (L as any).canvas.tile,
           vectorTileLayerStyles: {
             heatmap: (properties: any) => {
+              if (selectedDistrictId && properties.district_id !== selectedDistrictId) {
+                return {
+                  fill: false,
+                  stroke: false,
+                  opacity: 0,
+                  fillOpacity: 0
+                };
+              }
               const val = Number(properties.intensity || 0);
               
               let color;

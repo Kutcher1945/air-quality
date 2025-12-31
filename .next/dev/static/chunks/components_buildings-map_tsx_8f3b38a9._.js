@@ -201,6 +201,14 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                         vectorTileLayerStyles: {
                             heatmap: {
                                 "BuildingsMap.useEffect.heatLayer": (properties)=>{
+                                    if (selectedDistrictId && properties.district_id !== selectedDistrictId) {
+                                        return {
+                                            fill: false,
+                                            stroke: false,
+                                            opacity: 0,
+                                            fillOpacity: 0
+                                        };
+                                    }
                                     const val = Number(properties.intensity || 0);
                                     let color;
                                     if (val === 0) {
@@ -679,7 +687,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 className: "jsx-b563ff2f7155152c" + " " + "h-full w-full"
             }, void 0, false, {
                 fileName: "[project]/components/buildings-map.tsx",
-                lineNumber: 685,
+                lineNumber: 693,
                 columnNumber: 7
             }, this)
         ]

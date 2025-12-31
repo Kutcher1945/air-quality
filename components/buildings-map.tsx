@@ -157,7 +157,7 @@ export default function BuildingsMap({
         <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3">
           Зданий без газа
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {heatmapLegendItems.map((item, index) => (
             <div key={index} className="flex items-center gap-3">
               <div 

@@ -692,10 +692,10 @@ export default function BuildingsWithoutGasPage() {
                     <Layers className="h-4 w-4" /> Зоны реновации
                   </button>
 
-                  <button onClick={() => setShowAdvancedFilters(!showAdvancedFilters)} className={`flex items-center justify-between px-4 h-10 rounded-xl text-xs font-semibold transition-all ${showAdvancedFilters ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}>
+                  {/* <button onClick={() => setShowAdvancedFilters(!showAdvancedFilters)} className={`flex items-center justify-between px-4 h-10 rounded-xl text-xs font-semibold transition-all ${showAdvancedFilters ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}>
                     <div className="flex items-center gap-3"><Calendar className="h-4 w-4" /> Доп. фильтры</div>
                     {showAdvancedFilters && <X className="h-3 w-3" />}
-                  </button>
+                  </button> */}
                 </div>
               </section>
 

@@ -8,6 +8,10 @@ import "leaflet.markercluster/dist/MarkerCluster.css"
 import "leaflet.markercluster/dist/MarkerCluster.Default.css"
 import "leaflet.heat"
 
+if (typeof window !== 'undefined') {
+  require('leaflet.vectorgrid');
+}
+
 interface Building {
   id: string
   address: string
@@ -143,6 +147,13 @@ export default function BuildingsMap({
     onBuildingClickRef.current = onBuildingClick
   }, [onBuildingClick])
 
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/tile-sw.js')
+        .then(() => console.log("Tile Cache Worker Registered"));
+    }
+  }, []);
+
   // Initialize map only once
   useEffect(() => {
     if (typeof window === "undefined" || !mapRef.current || mapInstanceRef.current) return
@@ -155,7 +166,8 @@ export default function BuildingsMap({
 
     // Create Leaflet map with EPSG:3395 CRS for Yandex tiles
     const map = L.map(mapRef.current, {
-      crs: L.CRS.EPSG3395, // Yandex uses Mercator projection (EPSG:3395)
+      // crs: L.CRS.EPSG3395, // Yandex uses Mercator projection (EPSG:3395)
+      crs: L.CRS.EPSG3857,
       center: mapCenter,
       zoom: 11,
       preferCanvas: true, // Use canvas for better performance
@@ -165,17 +177,26 @@ export default function BuildingsMap({
       fadeAnimation: true,
       // Performance optimizations
       wheelDebounceTime: 40,
-      wheelPxPerZoomLevel: 60,
+      // wheelDebounceTime: 100,
+      // wheelPxPerZoomLevel: 60,
     })
 
     // Add Yandex tiles layer (no API key needed!)
-    L.tileLayer("https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&lang=ru_RU", {
+    // L.tileLayer("https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&lang=ru_RU", {
+    //   attribution: '&copy; <a href="https://yandex.com/maps/">Yandex</a>',
+    //   maxZoom: 21, // Increased max zoom for closer inspection
+    //   minZoom: 0,
+    //   updateWhenIdle: false, // Update tiles during movement for smoother experience
+    //   updateWhenZooming: false, // Don't update while zooming
+    //   keepBuffer: 2, // Keep more tiles in buffer for smooth panning
+    // }).addTo(map)
+
+    L.tileLayer("https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&lang=ru_RU&projection=web_mercator", {
       attribution: '&copy; <a href="https://yandex.com/maps/">Yandex</a>',
-      maxZoom: 21, // Increased max zoom for closer inspection
+      maxZoom: 21,
       minZoom: 0,
-      updateWhenIdle: false, // Update tiles during movement for smoother experience
-      updateWhenZooming: false, // Don't update while zooming
-      keepBuffer: 2, // Keep more tiles in buffer for smooth panning
+      updateWhenIdle: false,
+      keepBuffer: 2,
     }).addTo(map)
 
     mapInstanceRef.current = map
@@ -188,7 +209,6 @@ export default function BuildingsMap({
     }
   }, [])
 
-  // Update markers and layers when buildings or showHeatmap changes
   useEffect(() => {
     if (!mapInstanceRef.current || typeof window === "undefined") return
 
@@ -213,29 +233,59 @@ export default function BuildingsMap({
     }
 
     if (showHeatmap) {
-      // Create heatmap layer
-      const heatData: [number, number, number][] = buildings.map((building) => [
-        building.latitude,
-        building.longitude,
-        0.8, // intensity
-      ])
+      const VectorGrid = (L as any).vectorGrid;
 
-      // @ts-ignore leaflet.heat is attached to L by side-effect import
-      const heatLayer = L.heatLayer(heatData, {
-        radius: 25,
-        blur: 15,
-        minOpacity: 0.5,
-        max: 1.0,
-        gradient: {
-          0.0: "#3b82f6", // Blue (low density)
-          0.4: "#10b981", // Green
-          0.6: "#fbbf24", // Yellow
-          0.8: "#f97316", // Orange
-          1.0: "#ef4444", // Red (high density)
-        },
-      }).addTo(map)
+      if (VectorGrid) {
+        const heatmapUrl = "https://admin.smartalmaty.kz/api/v1/address/gas-heatmap/tiles/{z}/{x}/{y}.pbf";
+        
+        const heatLayer = VectorGrid.protobuf(heatmapUrl, {
+          // rendererFactory: (L as any).svg.tile,
+          rendererFactory: (L as any).canvas.tile,
+          vectorTileLayerStyles: {
+            heatmap: (properties: any) => {
+              const val = Number(properties.intensity || 0);
+              
+              let color;
+              if (val === 0) {
+                color = '#22c55e';
+              } else if (val === 1) {
+                color = '#d4ce84ff';
+              } else if (val < 5) {
+                color = '#f97316';
+              } else if (val === 5) {
+                color = '#cf7e88ff';
+              } else if (val <= 20) {
+                color = '#ef4444';
+              } else {
+                color = '#7f1d1d';
+              }
 
-      heatLayerRef.current = heatLayer
+              return {
+                fill: true,
+                fillColor: color,
+                fillOpacity: 0.75,
+                stroke: false,
+                color: color,
+                weight: 1,
+                opacity: 0.2,
+              };
+            }
+          },
+          // srid: 3857, 
+          interactive: true,
+          getFeatureId: (f: any) => f.properties.id, //new
+          maxNativeZoom: 14, //new
+          maxZoom: 21, //new
+          updateWhenIdle: true, //new
+          updateWhenZooming: false, //new
+          zIndex: 1000,
+          keepBuffer: 4, // Keep more tiles in memory to prevent white flickering
+          buffer: 512, // Larger buffer helps with labels/edges
+        });
+
+        heatLayer.addTo(map);
+        heatLayerRef.current = heatLayer;
+      }
     } else {
       // Cluster markers for performance on large datasets
       // @ts-ignore markercluster is attached to L by side-effect import

@@ -23,6 +23,9 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
+if ("TURBOPACK compile-time truthy", 1) {
+    __turbopack_context__.r("[project]/node_modules/leaflet.vectorgrid/dist/Leaflet.VectorGrid.bundled.min.js [app-client] (ecmascript)");
+}
 // Fix Leaflet default marker icon issue
 delete __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].Icon.Default.prototype._getIconUrl;
 __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].Icon.Default.mergeOptions({
@@ -104,6 +107,15 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
     }["BuildingsMap.useEffect"], [
         onBuildingClick
     ]);
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "BuildingsMap.useEffect": ()=>{
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/tile-sw.js').then({
+                    "BuildingsMap.useEffect": ()=>console.log("Tile Cache Worker Registered")
+                }["BuildingsMap.useEffect"]);
+            }
+        }
+    }["BuildingsMap.useEffect"], []);
     // Initialize map only once
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "BuildingsMap.useEffect": ()=>{
@@ -119,7 +131,8 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
             });
             // Create Leaflet map with EPSG:3395 CRS for Yandex tiles
             const map = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].map(mapRef.current, {
-                crs: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].CRS.EPSG3395,
+                // crs: L.CRS.EPSG3395, // Yandex uses Mercator projection (EPSG:3395)
+                crs: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].CRS.EPSG3857,
                 center: mapCenter,
                 zoom: 11,
                 preferCanvas: true,
@@ -128,16 +141,22 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 markerZoomAnimation: true,
                 fadeAnimation: true,
                 // Performance optimizations
-                wheelDebounceTime: 40,
-                wheelPxPerZoomLevel: 60
+                wheelDebounceTime: 40
             });
             // Add Yandex tiles layer (no API key needed!)
-            __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].tileLayer("https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&lang=ru_RU", {
+            // L.tileLayer("https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&lang=ru_RU", {
+            //   attribution: '&copy; <a href="https://yandex.com/maps/">Yandex</a>',
+            //   maxZoom: 21, // Increased max zoom for closer inspection
+            //   minZoom: 0,
+            //   updateWhenIdle: false, // Update tiles during movement for smoother experience
+            //   updateWhenZooming: false, // Don't update while zooming
+            //   keepBuffer: 2, // Keep more tiles in buffer for smooth panning
+            // }).addTo(map)
+            __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].tileLayer("https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&lang=ru_RU&projection=web_mercator", {
                 attribution: '&copy; <a href="https://yandex.com/maps/">Yandex</a>',
                 maxZoom: 21,
                 minZoom: 0,
                 updateWhenIdle: false,
-                updateWhenZooming: false,
                 keepBuffer: 2
             }).addTo(map);
             mapInstanceRef.current = map;
@@ -151,7 +170,6 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
             })["BuildingsMap.useEffect"];
         }
     }["BuildingsMap.useEffect"], []);
-    // Update markers and layers when buildings or showHeatmap changes
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "BuildingsMap.useEffect": ()=>{
             if (!mapInstanceRef.current || ("TURBOPACK compile-time value", "object") === "undefined") return;
@@ -174,29 +192,58 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 renovationLayerRef.current = null;
             }
             if (showHeatmap) {
-                // Create heatmap layer
-                const heatData = buildings.map({
-                    "BuildingsMap.useEffect.heatData": (building)=>[
-                            building.latitude,
-                            building.longitude,
-                            0.8
-                        ]
-                }["BuildingsMap.useEffect.heatData"]);
-                // @ts-ignore leaflet.heat is attached to L by side-effect import
-                const heatLayer = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].heatLayer(heatData, {
-                    radius: 25,
-                    blur: 15,
-                    minOpacity: 0.5,
-                    max: 1.0,
-                    gradient: {
-                        0.0: "#3b82f6",
-                        0.4: "#10b981",
-                        0.6: "#fbbf24",
-                        0.8: "#f97316",
-                        1.0: "#ef4444"
-                    }
-                }).addTo(map);
-                heatLayerRef.current = heatLayer;
+                const VectorGrid = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].vectorGrid;
+                if (VectorGrid) {
+                    const heatmapUrl = "https://admin.smartalmaty.kz/api/v1/address/gas-heatmap/tiles/{z}/{x}/{y}.pbf";
+                    const heatLayer = VectorGrid.protobuf(heatmapUrl, {
+                        // rendererFactory: (L as any).svg.tile,
+                        rendererFactory: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].canvas.tile,
+                        vectorTileLayerStyles: {
+                            heatmap: {
+                                "BuildingsMap.useEffect.heatLayer": (properties)=>{
+                                    const val = Number(properties.intensity || 0);
+                                    let color;
+                                    if (val === 0) {
+                                        color = '#22c55e';
+                                    } else if (val === 1) {
+                                        color = '#d4ce84ff';
+                                    } else if (val < 5) {
+                                        color = '#f97316';
+                                    } else if (val === 5) {
+                                        color = '#cf7e88ff';
+                                    } else if (val <= 20) {
+                                        color = '#ef4444';
+                                    } else {
+                                        color = '#7f1d1d';
+                                    }
+                                    return {
+                                        fill: true,
+                                        fillColor: color,
+                                        fillOpacity: 0.75,
+                                        stroke: false,
+                                        color: color,
+                                        weight: 1,
+                                        opacity: 0.2
+                                    };
+                                }
+                            }["BuildingsMap.useEffect.heatLayer"]
+                        },
+                        // srid: 3857, 
+                        interactive: true,
+                        getFeatureId: {
+                            "BuildingsMap.useEffect.heatLayer": (f)=>f.properties.id
+                        }["BuildingsMap.useEffect.heatLayer"],
+                        maxNativeZoom: 14,
+                        maxZoom: 21,
+                        updateWhenIdle: true,
+                        updateWhenZooming: false,
+                        zIndex: 1000,
+                        keepBuffer: 4,
+                        buffer: 512
+                    });
+                    heatLayer.addTo(map);
+                    heatLayerRef.current = heatLayer;
+                }
             } else {
                 // Cluster markers for performance on large datasets
                 // @ts-ignore markercluster is attached to L by side-effect import
@@ -632,13 +679,13 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 className: "jsx-b563ff2f7155152c" + " " + "h-full w-full"
             }, void 0, false, {
                 fileName: "[project]/components/buildings-map.tsx",
-                lineNumber: 635,
+                lineNumber: 685,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true);
 }
-_s(BuildingsMap, "TuJuVZNCan6c91qsUZJz2szsHhY=");
+_s(BuildingsMap, "nulmqLULq+B0hgSxzU1Q6pEqdL8=");
 _c = BuildingsMap;
 var _c;
 __turbopack_context__.k.register(_c, "BuildingsMap");

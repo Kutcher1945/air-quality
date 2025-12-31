@@ -144,7 +144,7 @@ export default function BuildingsMap({
 
   const heatmapLegendItems = [
     { color: '#22c55e', label: '0 зданий' },
-    { color: '#d4ce84', label: '1 здание' },
+    { color: '#FFD700', label: '1 здание' },
     { color: '#f97316', label: '2 - 4 здания' },
     { color: '#cf7e88', label: '5 зданий' },
     { color: '#ef4444', label: '6 - 20 зданий' },
@@ -287,7 +287,7 @@ export default function BuildingsMap({
               if (val === 0) {
                 color = '#22c55e';
               } else if (val === 1) {
-                color = '#d4ce84ff';
+                color = '#FFD700';
               } else if (val < 5) {
                 color = '#f97316';
               } else if (val === 5) {

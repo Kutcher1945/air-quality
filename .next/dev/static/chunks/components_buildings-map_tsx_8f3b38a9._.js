@@ -105,7 +105,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
             label: '0 зданий'
         },
         {
-            color: '#d4ce84',
+            color: '#FFD700',
             label: '1 здание'
         },
         {
@@ -293,7 +293,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                                     if (val === 0) {
                                         color = '#22c55e';
                                     } else if (val === 1) {
-                                        color = '#d4ce84ff';
+                                        color = '#FFD700';
                                     } else if (val < 5) {
                                         color = '#f97316';
                                     } else if (val === 5) {

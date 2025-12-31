@@ -142,6 +142,36 @@ export default function BuildingsMap({
   const hasAutoFitted = useRef(false)
   const canvasRendererRef = useRef<L.Canvas | null>(null)
 
+  const heatmapLegendItems = [
+    { color: '#22c55e', label: '0 зданий' },
+    { color: '#d4ce84', label: '1 здание' },
+    { color: '#f97316', label: '2 - 4 здания' },
+    { color: '#cf7e88', label: '5 зданий' },
+    { color: '#ef4444', label: '6 - 20 зданий' },
+    { color: '#7f1d1d', label: 'более 20' },
+  ];
+
+  const HeatmapLegend = () => {
+    return (
+      <div className="absolute bottom-0 right-0 z-[1000] bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-xl border border-gray-200 pointer-events-none min-w-[140px]">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3">
+          Зданий без газа
+        </div>
+        <div className="flex flex-col gap-2">
+          {heatmapLegendItems.map((item, index) => (
+            <div key={index} className="flex items-center gap-3">
+              <div 
+                className="w-4 h-4 rounded-sm shadow-inner" 
+                style={{ backgroundColor: item.color }} 
+              />
+              <span className="text-xs font-semibold text-gray-700">{item.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   // Keep the ref updated with the latest callback
   useEffect(() => {
     onBuildingClickRef.current = onBuildingClick
@@ -690,6 +720,7 @@ export default function BuildingsMap({
           z-index: 1000 !important;
         }
       `}</style>
+      {showHeatmap && <HeatmapLegend />}
       <div ref={mapRef} className="h-full w-full" />
     </>
   )

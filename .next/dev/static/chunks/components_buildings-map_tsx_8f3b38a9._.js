@@ -99,6 +99,85 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
     const onBuildingClickRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(onBuildingClick);
     const hasAutoFitted = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(false);
     const canvasRendererRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const heatmapLegendItems = [
+        {
+            color: '#22c55e',
+            label: '0 зданий'
+        },
+        {
+            color: '#d4ce84',
+            label: '1 здание'
+        },
+        {
+            color: '#f97316',
+            label: '2 - 4 здания'
+        },
+        {
+            color: '#cf7e88',
+            label: '5 зданий'
+        },
+        {
+            color: '#ef4444',
+            label: '6 - 20 зданий'
+        },
+        {
+            color: '#7f1d1d',
+            label: 'более 20'
+        }
+    ];
+    const HeatmapLegend = ()=>{
+        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+            className: "absolute bottom-0 right-0 z-[1000] bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-xl border border-gray-200 pointer-events-none min-w-[140px]",
+            children: [
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3",
+                    children: "Зданий без газа"
+                }, void 0, false, {
+                    fileName: "[project]/components/buildings-map.tsx",
+                    lineNumber: 157,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "flex flex-col gap-2",
+                    children: heatmapLegendItems.map((item, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "flex items-center gap-3",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "w-4 h-4 rounded-sm shadow-inner",
+                                    style: {
+                                        backgroundColor: item.color
+                                    }
+                                }, void 0, false, {
+                                    fileName: "[project]/components/buildings-map.tsx",
+                                    lineNumber: 163,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    className: "text-xs font-semibold text-gray-700",
+                                    children: item.label
+                                }, void 0, false, {
+                                    fileName: "[project]/components/buildings-map.tsx",
+                                    lineNumber: 167,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, index, true, {
+                            fileName: "[project]/components/buildings-map.tsx",
+                            lineNumber: 162,
+                            columnNumber: 13
+                        }, this))
+                }, void 0, false, {
+                    fileName: "[project]/components/buildings-map.tsx",
+                    lineNumber: 160,
+                    columnNumber: 9
+                }, this)
+            ]
+        }, void 0, true, {
+            fileName: "[project]/components/buildings-map.tsx",
+            lineNumber: 156,
+            columnNumber: 7
+        }, this);
+    };
     // Keep the ref updated with the latest callback
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "BuildingsMap.useEffect": ()=>{
@@ -682,12 +761,19 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 id: "b563ff2f7155152c",
                 children: ".custom-marker>div:hover{opacity:1!important}.leaflet-marker-icon:hover{z-index:1000!important}"
             }, void 0, false, void 0, this),
+            showHeatmap && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(HeatmapLegend, {
+                className: "jsx-b563ff2f7155152c"
+            }, void 0, false, {
+                fileName: "[project]/components/buildings-map.tsx",
+                lineNumber: 723,
+                columnNumber: 23
+            }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 ref: mapRef,
                 className: "jsx-b563ff2f7155152c" + " " + "h-full w-full"
             }, void 0, false, {
                 fileName: "[project]/components/buildings-map.tsx",
-                lineNumber: 693,
+                lineNumber: 724,
                 columnNumber: 7
             }, this)
         ]

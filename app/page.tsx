@@ -67,7 +67,8 @@ const computeStatisticsFromData = (data: Record<string, number>): Statistics | n
 
 export default function AirQualityDashboard() {
   const { resolvedTheme, setTheme } = useTheme()
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
+  // Default to 2025 since 2026 data is not available yet
+  const [currentYear, setCurrentYear] = useState(2025)
   const [aqiData, setAqiData] = useState<Record<string, number>>({})
   const [statistics, setStatistics] = useState<Statistics | null>(null)
   const [loading, setLoading] = useState(true)

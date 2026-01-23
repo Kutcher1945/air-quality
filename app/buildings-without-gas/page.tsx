@@ -75,6 +75,7 @@ export default function BuildingsWithoutGasPage() {
   const [districts, setDistricts] = useState<District[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingProgress, setLoadingProgress] = useState({ loaded: 0, total: 0, status: "" })
+  const [loadingElapsed, setLoadingElapsed] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [districtFilter, setDistrictFilter] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
@@ -89,12 +90,27 @@ export default function BuildingsWithoutGasPage() {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
   const [selectedDistrictId, setSelectedDistrictId] = useState<number | null>(null)
+  const [showOnlySeasonalUnused, setShowOnlySeasonalUnused] = useState(false)
 
   useEffect(() => {
     fetchBuildings()
     fetchRenovationAreas()
     fetchDistricts()
   }, [])
+
+  // Timer for elapsed loading time
+  useEffect(() => {
+    let interval: NodeJS.Timeout
+    if (loading) {
+      setLoadingElapsed(0)
+      interval = setInterval(() => {
+        setLoadingElapsed(prev => prev + 1)
+      }, 1000)
+    }
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [loading])
 
   const handleBuildingClick = useCallback((building: Building) => {
     setSelectedBuilding(building)
@@ -506,6 +522,9 @@ export default function BuildingsWithoutGasPage() {
       const isGeneral = building.building_category === "general"
       if (!isGeneral) return false
 
+      // Filter for seasonal/unused buildings only
+      if (showOnlySeasonalUnused && building.is_seasonal_or_unused !== true) return false
+
       const matchesDistrict = districtFilter === "all" || building.district === districtFilter
       const matchesSearch =
         searchQuery === "" ||
@@ -522,7 +541,7 @@ export default function BuildingsWithoutGasPage() {
 
       return matchesDistrict && matchesSearch && matchesType && matchesYear && matchesFloors && matchesApartments
     })
-  }, [buildings, districtFilter, searchQuery, buildingTypeFilter, yearFilter, floorsFilter, apartmentsFilter])
+  }, [buildings, districtFilter, searchQuery, buildingTypeFilter, yearFilter, floorsFilter, apartmentsFilter, showOnlySeasonalUnused])
 
   // Only show districts from general (ALSECO) buildings
   const generalBuildings = buildings.filter((b) => b.building_category === "general")
@@ -588,6 +607,34 @@ export default function BuildingsWithoutGasPage() {
                       {loadingProgress.loaded.toLocaleString()} / {loadingProgress.total.toLocaleString()} объектов
                     </p>
                   </>
+                )}
+                {/* Elapsed time */}
+                <div className="mt-4 flex items-center justify-center gap-2">
+                  <span className="text-xs text-gray-400">Время загрузки:</span>
+                  <span className="text-sm font-mono font-medium text-blue-600">
+                    {Math.floor(loadingElapsed / 60)}:{(loadingElapsed % 60).toString().padStart(2, '0')}
+                  </span>
+                </div>
+                {loadingElapsed > 15 && (
+                  <p className="text-xs text-amber-600 text-center mt-2">
+                    ⏳ Загрузка занимает больше времени чем обычно...
+                  </p>
+                )}
+                {loadingElapsed > 30 && (
+                  <p className="text-xs text-orange-600 text-center mt-1">
+                    Сервер обрабатывает ~50,000 записей. Пожалуйста, подождите.
+                  </p>
+                )}
+                {loadingElapsed > 60 && (
+                  <button
+                    onClick={() => {
+                      setLoading(false)
+                      setError("Превышено время ожидания. Попробуйте позже.")
+                    }}
+                    className="mt-3 w-full py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                  >
+                    Отменить загрузку
+                  </button>
                 )}
               </div>
             </div>
@@ -842,6 +889,25 @@ export default function BuildingsWithoutGasPage() {
                 {new Set(generalBuildings.filter((b) => !b.is_not_in_almaty && b.latitude && b.longitude).map((b) => `${b.latitude},${b.longitude}`)).size}
               </p>
               <p className="text-[7.5px] text-purple-400 mt-1.5 leading-tight">точек на карте</p>
+            </div>
+
+            {/* 7. Seasonal or Unused ALSECO buildings */}
+            <div className={`bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] ${showOnlySeasonalUnused ? 'border-pink-600 ring-2 ring-pink-200' : 'border-pink-500'}`}>
+              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">СЕЗОННЫЕ / НЕИСПОЛЬЗУЕМЫЕ</p>
+              <p className="text-[2.75rem] font-bold text-pink-600 leading-none tabular-nums">
+                {generalBuildings.filter((b) => b.is_seasonal_or_unused === true).length}
+              </p>
+              <p className="text-[7.5px] text-pink-400 mt-1.5 leading-tight">ALSECO зданий</p>
+              <button
+                onClick={() => setShowOnlySeasonalUnused(!showOnlySeasonalUnused)}
+                className={`mt-2 w-full h-6 rounded text-[9px] font-medium transition-all flex items-center justify-center gap-1 ${
+                  showOnlySeasonalUnused
+                    ? "bg-pink-600 text-white shadow-sm"
+                    : "bg-pink-50 text-pink-600 border border-pink-200 hover:bg-pink-100"
+                }`}
+              >
+                {showOnlySeasonalUnused ? "✓ Показаны" : "❄️ Показать на карте"}
+              </button>
             </div>
           </div>
 

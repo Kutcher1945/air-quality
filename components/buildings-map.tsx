@@ -17,6 +17,7 @@ interface Building {
   has_gas: boolean
   building_type: string
   building_category: "general" | "izhs" | "susn"
+  is_seasonal_or_unused?: boolean
   geometry?: {
     type: string
     coordinates: any
@@ -70,7 +71,7 @@ L.Icon.Default.mergeOptions({
 })
 
 // Function to create colored marker icons based on building category
-const createMarkerIcon = (category: "general" | "izhs" | "susn") => {
+const createMarkerIcon = (category: "general" | "izhs" | "susn", isSeasonalOrUnused?: boolean) => {
   // Different colors for each building type
   const colors = {
     general: "#f97316", // Orange - General buildings without gas
@@ -82,6 +83,40 @@ const createMarkerIcon = (category: "general" | "izhs" | "susn") => {
     general: "🏠", // House
     izhs: "🏡",    // House with garden
     susn: "🏢",    // Office building
+  }
+
+  // Special styling for seasonal/unused buildings
+  if (isSeasonalOrUnused) {
+    return L.divIcon({
+      className: "custom-marker seasonal-marker",
+      html: `
+        <div style="
+          background-color: #ec4899;
+          width: 36px;
+          height: 36px;
+          border-radius: 50% 50% 50% 0;
+          transform: rotate(-45deg);
+          border: 3px solid white;
+          box-shadow: 0 2px 12px rgba(236, 72, 153, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0.95;
+          backdrop-filter: blur(2px);
+          transition: opacity 0.2s ease;
+        ">
+          <div style="
+            transform: rotate(45deg);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+          ">❄️</div>
+        </div>
+      `,
+      iconSize: [36, 36],
+      iconAnchor: [18, 36],
+      popupAnchor: [0, -36],
+    })
   }
 
   const color = colors[category]
@@ -344,8 +379,8 @@ export default function BuildingsMap({
 
       let markersCreated = 0
       buildings.forEach((building) => {
-        // Use different colored icon based on building category
-        const icon = createMarkerIcon(building.building_category)
+        // Use different colored icon based on building category and seasonal/unused status
+        const icon = createMarkerIcon(building.building_category, building.is_seasonal_or_unused)
 
         const marker = L.marker([building.latitude, building.longitude], {
           icon,
@@ -354,6 +389,7 @@ export default function BuildingsMap({
           `
           <div style="padding: 8px; min-width: 200px;">
             <strong style="font-size: 14px;">${building.address}</strong>
+            ${building.is_seasonal_or_unused ? `<span style="display: inline-block; margin-left: 8px; padding: 2px 6px; background: #fdf2f8; color: #be185d; font-size: 10px; border-radius: 4px; font-weight: bold;">❄️ Сезонное</span>` : ""}
             <hr style="margin: 8px 0; border: none; border-top: 1px solid #e5e7eb;">
             <p style="margin: 4px 0; font-size: 12px;"><strong>Район:</strong> ${building.district}</p>
             <p style="margin: 4px 0; font-size: 12px;"><strong>Тип:</strong> ${building.building_type}</p>

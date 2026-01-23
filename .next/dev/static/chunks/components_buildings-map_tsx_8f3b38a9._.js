@@ -31,7 +31,7 @@ __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$
     shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png"
 });
 // Function to create colored marker icons based on building category
-const createMarkerIcon = (category)=>{
+const createMarkerIcon = (category, isSeasonalOrUnused)=>{
     // Different colors for each building type
     const colors = {
         general: "#f97316",
@@ -43,6 +43,48 @@ const createMarkerIcon = (category)=>{
         izhs: "🏡",
         susn: "🏢"
     };
+    // Special styling for seasonal/unused buildings
+    if (isSeasonalOrUnused) {
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].divIcon({
+            className: "custom-marker seasonal-marker",
+            html: `
+        <div style="
+          background-color: #ec4899;
+          width: 36px;
+          height: 36px;
+          border-radius: 50% 50% 50% 0;
+          transform: rotate(-45deg);
+          border: 3px solid white;
+          box-shadow: 0 2px 12px rgba(236, 72, 153, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0.95;
+          backdrop-filter: blur(2px);
+          transition: opacity 0.2s ease;
+        ">
+          <div style="
+            transform: rotate(45deg);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+          ">❄️</div>
+        </div>
+      `,
+            iconSize: [
+                36,
+                36
+            ],
+            iconAnchor: [
+                18,
+                36
+            ],
+            popupAnchor: [
+                0,
+                -36
+            ]
+        });
+    }
     const color = colors[category];
     const icon = emoji[category];
     return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].divIcon({
@@ -306,8 +348,8 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 let markersCreated = 0;
                 buildings.forEach({
                     "BuildingsMap.useEffect": (building)=>{
-                        // Use different colored icon based on building category
-                        const icon = createMarkerIcon(building.building_category);
+                        // Use different colored icon based on building category and seasonal/unused status
+                        const icon = createMarkerIcon(building.building_category, building.is_seasonal_or_unused);
                         const marker = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].marker([
                             building.latitude,
                             building.longitude
@@ -317,6 +359,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                         }).bindPopup(`
           <div style="padding: 8px; min-width: 200px;">
             <strong style="font-size: 14px;">${building.address}</strong>
+            ${building.is_seasonal_or_unused ? `<span style="display: inline-block; margin-left: 8px; padding: 2px 6px; background: #fdf2f8; color: #be185d; font-size: 10px; border-radius: 4px; font-weight: bold;">❄️ Сезонное</span>` : ""}
             <hr style="margin: 8px 0; border: none; border-top: 1px solid #e5e7eb;">
             <p style="margin: 4px 0; font-size: 12px;"><strong>Район:</strong> ${building.district}</p>
             <p style="margin: 4px 0; font-size: 12px;"><strong>Тип:</strong> ${building.building_type}</p>
@@ -632,7 +675,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 className: "jsx-8c726aafc29b0ebc" + " " + "h-full w-full"
             }, void 0, false, {
                 fileName: "[project]/components/buildings-map.tsx",
-                lineNumber: 635,
+                lineNumber: 671,
                 columnNumber: 7
             }, this)
         ]

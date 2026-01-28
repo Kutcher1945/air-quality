@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import dynamic from "next/dynamic"
 import { HeaderMenu } from "@/components/header-menu"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -147,11 +147,9 @@ export default function BuildingsWithoutGasPage() {
           console.log("💾 Loading from cache:", cachedData.length, "buildings")
           setLoadingProgress({ loaded: 0, total: cachedData.length, status: "Загрузка из кэша..." })
 
-          // Show progress animation
-          await new Promise(resolve => setTimeout(resolve, 300))
-          setLoadingProgress({ loaded: cachedData.length, total: cachedData.length, status: "Обработка данных..." })
+          // Transform using Web Worker for non-blocking UI
+          const buildingsData = await transformWithWorker(cachedData)
 
-          const buildingsData = transformBuildingsData(cachedData)
           console.log("🏢 Transformed from cache:", {
             total: buildingsData.length,
             byCategory: {
@@ -161,62 +159,85 @@ export default function BuildingsWithoutGasPage() {
             }
           })
 
-          await new Promise(resolve => setTimeout(resolve, 200))
           setLoadingProgress({ loaded: buildingsData.length, total: buildingsData.length, status: "Готово!" })
           setBuildings(buildingsData)
 
-          await new Promise(resolve => setTimeout(resolve, 300))
+          await new Promise(resolve => setTimeout(resolve, 200))
           setLoading(false)
           return
         }
       }
 
-      console.log("📡 Fetching from API...")
+      console.log("📡 Fetching from API with streaming...")
       setLoadingProgress({ loaded: 0, total: 0, status: "Подключение к серверу..." })
 
-      // Show intermediate messages and simulate progress for long fetch
-      const updateMessages = [
-        { delay: 1500, status: "Отправка запроса..." },
-        { delay: 3000, status: "Загрузка данных (~50,000 объектов)..." },
-        { delay: 5000, status: "Получение данных с сервера..." },
-        { delay: 7000, status: "Обработка большого объема данных..." },
-        { delay: 10000, status: "Почти готово, еще немного..." },
-        { delay: 13000, status: "Завершение загрузки..." },
-      ]
-
-      const timeouts = updateMessages.map(({ delay, status }) =>
-        setTimeout(() => setLoadingProgress({ loaded: 0, total: 0, status }), delay)
-      )
-
-      // ✅ Fetch from combined all-sources endpoint (returns all categories pre-labeled)
+      // ✅ Fetch with streaming to track download progress
       const response = await fetch("https://admin.smartalmaty.kz/api/v1/address/buildings-without-gas/all-sources/")
-
-      // Clear all timeouts
-      timeouts.forEach(clearTimeout)
 
       if (!response.ok) {
         throw new Error(`API returned ${response.status}`)
       }
 
-      setLoadingProgress({ loaded: 0, total: 0, status: "Получение данных..." })
-      const data = await response.json()
+      // Get total size from Content-Length header (if available)
+      const contentLength = response.headers.get('Content-Length')
+      const totalBytes = contentLength ? parseInt(contentLength, 10) : 0
+
+      // Stream the response to track download progress
+      let receivedBytes = 0
+      const reader = response.body?.getReader()
+      const chunks: Uint8Array[] = []
+
+      if (reader) {
+        setLoadingProgress({ loaded: 0, total: totalBytes || 50000000, status: "Загрузка данных..." })
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          chunks.push(value)
+          receivedBytes += value.length
+
+          // Update progress (estimate ~50MB for 50k records if Content-Length not available)
+          const estimatedTotal = totalBytes || 50000000
+          const percent = Math.min(Math.round((receivedBytes / estimatedTotal) * 100), 99)
+          const mbReceived = (receivedBytes / 1024 / 1024).toFixed(1)
+          setLoadingProgress({
+            loaded: receivedBytes,
+            total: estimatedTotal,
+            status: `Загружено ${mbReceived} МБ (${percent}%)`
+          })
+        }
+      }
+
+      // Combine chunks and decode
+      setLoadingProgress({ loaded: 0, total: 0, status: "Декодирование данных..." })
+      const allChunks = new Uint8Array(receivedBytes)
+      let position = 0
+      for (const chunk of chunks) {
+        allChunks.set(chunk, position)
+        position += chunk.length
+      }
+
+      const jsonText = new TextDecoder().decode(allChunks)
+      setLoadingProgress({ loaded: 0, total: 0, status: "Парсинг JSON..." })
+      const data = JSON.parse(jsonText)
       const apiBuildings = data.data || data
 
       console.log("📊 API Response:", {
         totalFromAPI: apiBuildings?.length || 0,
+        bytesReceived: receivedBytes,
         sampleData: apiBuildings?.[0],
       })
 
-      await new Promise(resolve => setTimeout(resolve, 200))
-      setLoadingProgress({ loaded: apiBuildings.length, total: apiBuildings.length, status: "Обработка данных..." })
+      setLoadingProgress({ loaded: 0, total: apiBuildings.length, status: "Сохранение в кэш..." })
 
-      // Save raw API data to cache for next time
-      await saveBuildingsToCache(apiBuildings)
+      // Save raw API data to cache for next time (in background)
+      saveBuildingsToCache(apiBuildings).catch(err => console.warn('Cache save failed:', err))
 
-      await new Promise(resolve => setTimeout(resolve, 200))
-      setLoadingProgress({ loaded: apiBuildings.length, total: apiBuildings.length, status: "Трансформация данных..." })
-      // Transform API response to match component interface
-      const buildingsData = transformBuildingsData(apiBuildings)
+      setLoadingProgress({ loaded: 0, total: apiBuildings.length, status: "Трансформация данных..." })
+
+      // Transform using Web Worker (non-blocking) or fast fallback
+      const buildingsData = await transformWithWorker(apiBuildings)
 
       console.log("🏢 Transformed Buildings:", {
         total: buildingsData.length,
@@ -230,11 +251,8 @@ export default function BuildingsWithoutGasPage() {
 
       console.log("📍 Map will display:", buildingsData.length, "markers")
 
-      await new Promise(resolve => setTimeout(resolve, 200))
       setLoadingProgress({ loaded: buildingsData.length, total: buildingsData.length, status: "Готово!" })
       setBuildings(buildingsData)
-
-      await new Promise(resolve => setTimeout(resolve, 300))
     } catch (error) {
       console.error("Failed to fetch buildings from API:", error)
       setError("Не удалось загрузить данные из API")
@@ -358,46 +376,109 @@ export default function BuildingsWithoutGasPage() {
     }
   }
 
-  // Helper function to transform API data
-  const transformBuildingsData = (apiBuildings: any[]): Building[] => {
-    return (apiBuildings || [])
-      .map((b: any) => {
-        const catStr = (b.category || "").toLowerCase()
-        let category: "general" | "izhs" | "susn" = "general"
-        if (catStr.includes("ижс") || catStr.includes("izhs")) category = "izhs"
-        else if (catStr.includes("сусн") || catStr.includes("susn")) category = "susn"
+  // Web Worker ref for data transformation
+  const workerRef = useRef<Worker | null>(null)
 
-        const districtLabel =
-          b.district && typeof b.district === "string"
-            ? b.district
-            : b.district_id && DISTRICT_LABELS[String(b.district_id)]
-              ? DISTRICT_LABELS[String(b.district_id)]
-              : b.district_id
-                ? `Район ${b.district_id}`
-                : "Не указан"
+  // Initialize Web Worker
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      workerRef.current = new Worker('/buildings-worker.js')
+    }
+    return () => {
+      workerRef.current?.terminate()
+    }
+  }, [])
 
-        return {
-          id: b.id?.toString() || crypto.randomUUID(),
-          address: b.address || "Без адреса",
-          district: districtLabel,
-          district_id: b.district_id,
-          latitude: b.lat ?? b.latitude ?? null,
-          longitude: b.lon ?? b.longitude ?? null,
-          has_gas: false,
-          building_type:
-            category === "izhs"
-              ? "Индивидуальное жилищное строительство"
-              : category === "susn"
-                ? "Социально уязвимые слои населения"
-                : "Жилое здание",
-          building_category: category,
-          is_not_in_almaty: b.is_not_in_almaty || false,
-          is_seasonal_or_unused: b.is_seasonal_or_unused || false,
-          geometry: b.geometry || null,
+  // Transform data using Web Worker (non-blocking)
+  const transformWithWorker = useCallback((apiBuildings: any[]): Promise<Building[]> => {
+    return new Promise((resolve, reject) => {
+      if (!workerRef.current) {
+        // Fallback to main thread if worker not available
+        resolve(transformBuildingsDataFast(apiBuildings))
+        return
+      }
+
+      const worker = workerRef.current
+
+      const handleMessage = (e: MessageEvent) => {
+        const { type, data, stats, processed, total, message } = e.data
+
+        if (type === 'progress') {
+          setLoadingProgress(prev => ({
+            ...prev,
+            loaded: processed,
+            total: total,
+            status: `Обработка данных: ${Math.round((processed / total) * 100)}%`
+          }))
+        } else if (type === 'complete') {
+          console.log(`✅ Worker processed ${stats.total} buildings in ${stats.processingTime}ms`)
+          worker.removeEventListener('message', handleMessage)
+          resolve(data)
+        } else if (type === 'error') {
+          worker.removeEventListener('message', handleMessage)
+          reject(new Error(message))
         }
+      }
+
+      worker.addEventListener('message', handleMessage)
+      worker.postMessage({ type: 'transform', data: apiBuildings })
+    })
+  }, [])
+
+  // Optimized transformation function using for-loop (faster than map/filter)
+  const transformBuildingsDataFast = (apiBuildings: any[]): Building[] => {
+    const result: Building[] = []
+    const len = apiBuildings.length
+
+    for (let i = 0; i < len; i++) {
+      const b = apiBuildings[i]
+
+      // Fast category detection using indexOf (faster than includes)
+      const catStr = (b.category || "").toLowerCase()
+      let category: "general" | "izhs" | "susn" = "general"
+      if (catStr.indexOf("ижс") !== -1 || catStr.indexOf("izhs") !== -1) {
+        category = "izhs"
+      } else if (catStr.indexOf("сусн") !== -1 || catStr.indexOf("susn") !== -1) {
+        category = "susn"
+      }
+
+      // District label lookup
+      let districtLabel: string
+      if (b.district && typeof b.district === "string") {
+        districtLabel = b.district
+      } else if (b.district_id && DISTRICT_LABELS[String(b.district_id)]) {
+        districtLabel = DISTRICT_LABELS[String(b.district_id)]
+      } else if (b.district_id) {
+        districtLabel = `Район ${b.district_id}`
+      } else {
+        districtLabel = "Не указан"
+      }
+
+      result.push({
+        id: b.id ? String(b.id) : crypto.randomUUID(),
+        address: b.address || "Без адреса",
+        district: districtLabel,
+        district_id: b.district_id,
+        latitude: b.lat ?? b.latitude ?? null,
+        longitude: b.lon ?? b.longitude ?? null,
+        has_gas: false,
+        building_type: category === "izhs"
+          ? "Индивидуальное жилищное строительство"
+          : category === "susn"
+            ? "Социально уязвимые слои населения"
+            : "Жилое здание",
+        building_category: category,
+        is_not_in_almaty: b.is_not_in_almaty || false,
+        is_seasonal_or_unused: b.is_seasonal_or_unused || false,
+        geometry: b.geometry || null,
       })
-      // Don't filter out buildings without coordinates - keep ALL buildings for stats
+    }
+
+    return result
   }
+
+  // Legacy alias for compatibility
+  const transformBuildingsData = transformBuildingsDataFast
 
   // Тестовые данные для демонстрации
   const getMockBuildings = (): Building[] => {

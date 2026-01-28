@@ -23,6 +23,9 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
+if ("TURBOPACK compile-time truthy", 1) {
+    __turbopack_context__.r("[project]/node_modules/leaflet.vectorgrid/dist/Leaflet.VectorGrid.bundled.min.js [app-client] (ecmascript)");
+}
 // Fix Leaflet default marker icon issue
 delete __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].Icon.Default.prototype._getIconUrl;
 __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].Icon.Default.mergeOptions({
@@ -138,6 +141,85 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
     const onBuildingClickRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(onBuildingClick);
     const hasAutoFitted = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(false);
     const canvasRendererRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const heatmapLegendItems = [
+        {
+            color: '#22c55e',
+            label: '0 зданий'
+        },
+        {
+            color: '#FFD700',
+            label: '1 здание'
+        },
+        {
+            color: '#f97316',
+            label: '2 - 4 здания'
+        },
+        {
+            color: '#cf7e88',
+            label: '5 зданий'
+        },
+        {
+            color: '#ef4444',
+            label: '6 - 20 зданий'
+        },
+        {
+            color: '#7f1d1d',
+            label: 'более 20'
+        }
+    ];
+    const HeatmapLegend = ()=>{
+        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+            className: "absolute bottom-0 right-0 z-[1000] bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-xl border border-gray-200 pointer-events-none min-w-[140px]",
+            children: [
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3",
+                    children: "Зданий без газа"
+                }, void 0, false, {
+                    fileName: "[project]/components/buildings-map.tsx",
+                    lineNumber: 192,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "grid grid-cols-2 gap-2",
+                    children: heatmapLegendItems.map((item, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "flex items-center gap-3",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "w-4 h-4 rounded-sm shadow-inner",
+                                    style: {
+                                        backgroundColor: item.color
+                                    }
+                                }, void 0, false, {
+                                    fileName: "[project]/components/buildings-map.tsx",
+                                    lineNumber: 198,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    className: "text-xs font-semibold text-gray-700",
+                                    children: item.label
+                                }, void 0, false, {
+                                    fileName: "[project]/components/buildings-map.tsx",
+                                    lineNumber: 202,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, index, true, {
+                            fileName: "[project]/components/buildings-map.tsx",
+                            lineNumber: 197,
+                            columnNumber: 13
+                        }, this))
+                }, void 0, false, {
+                    fileName: "[project]/components/buildings-map.tsx",
+                    lineNumber: 195,
+                    columnNumber: 9
+                }, this)
+            ]
+        }, void 0, true, {
+            fileName: "[project]/components/buildings-map.tsx",
+            lineNumber: 191,
+            columnNumber: 7
+        }, this);
+    };
     // Keep the ref updated with the latest callback
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "BuildingsMap.useEffect": ()=>{
@@ -146,6 +228,15 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
     }["BuildingsMap.useEffect"], [
         onBuildingClick
     ]);
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "BuildingsMap.useEffect": ()=>{
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/tile-sw.js').then({
+                    "BuildingsMap.useEffect": ()=>console.log("Tile Cache Worker Registered")
+                }["BuildingsMap.useEffect"]);
+            }
+        }
+    }["BuildingsMap.useEffect"], []);
     // Initialize map only once
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "BuildingsMap.useEffect": ()=>{
@@ -161,7 +252,8 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
             });
             // Create Leaflet map with EPSG:3395 CRS for Yandex tiles
             const map = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].map(mapRef.current, {
-                crs: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].CRS.EPSG3395,
+                // crs: L.CRS.EPSG3395, // Yandex uses Mercator projection (EPSG:3395)
+                crs: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].CRS.EPSG3857,
                 center: mapCenter,
                 zoom: 11,
                 preferCanvas: true,
@@ -170,16 +262,22 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 markerZoomAnimation: true,
                 fadeAnimation: true,
                 // Performance optimizations
-                wheelDebounceTime: 40,
-                wheelPxPerZoomLevel: 60
+                wheelDebounceTime: 40
             });
             // Add Yandex tiles layer (no API key needed!)
-            __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].tileLayer("https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&lang=ru_RU", {
+            // L.tileLayer("https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&lang=ru_RU", {
+            //   attribution: '&copy; <a href="https://yandex.com/maps/">Yandex</a>',
+            //   maxZoom: 21, // Increased max zoom for closer inspection
+            //   minZoom: 0,
+            //   updateWhenIdle: false, // Update tiles during movement for smoother experience
+            //   updateWhenZooming: false, // Don't update while zooming
+            //   keepBuffer: 2, // Keep more tiles in buffer for smooth panning
+            // }).addTo(map)
+            __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].tileLayer("https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&lang=ru_RU&projection=web_mercator", {
                 attribution: '&copy; <a href="https://yandex.com/maps/">Yandex</a>',
                 maxZoom: 21,
                 minZoom: 0,
                 updateWhenIdle: false,
-                updateWhenZooming: false,
                 keepBuffer: 2
             }).addTo(map);
             mapInstanceRef.current = map;
@@ -193,7 +291,6 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
             })["BuildingsMap.useEffect"];
         }
     }["BuildingsMap.useEffect"], []);
-    // Update markers and layers when buildings or showHeatmap changes
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "BuildingsMap.useEffect": ()=>{
             if (!mapInstanceRef.current || ("TURBOPACK compile-time value", "object") === "undefined") return;
@@ -216,29 +313,66 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 renovationLayerRef.current = null;
             }
             if (showHeatmap) {
-                // Create heatmap layer
-                const heatData = buildings.map({
-                    "BuildingsMap.useEffect.heatData": (building)=>[
-                            building.latitude,
-                            building.longitude,
-                            0.8
-                        ]
-                }["BuildingsMap.useEffect.heatData"]);
-                // @ts-ignore leaflet.heat is attached to L by side-effect import
-                const heatLayer = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].heatLayer(heatData, {
-                    radius: 25,
-                    blur: 15,
-                    minOpacity: 0.5,
-                    max: 1.0,
-                    gradient: {
-                        0.0: "#3b82f6",
-                        0.4: "#10b981",
-                        0.6: "#fbbf24",
-                        0.8: "#f97316",
-                        1.0: "#ef4444"
-                    }
-                }).addTo(map);
-                heatLayerRef.current = heatLayer;
+                const VectorGrid = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].vectorGrid;
+                if (VectorGrid) {
+                    const heatmapUrl = "https://admin.smartalmaty.kz/api/v1/address/gas-heatmap/tiles/{z}/{x}/{y}.pbf";
+                    const heatLayer = VectorGrid.protobuf(heatmapUrl, {
+                        // rendererFactory: (L as any).svg.tile,
+                        rendererFactory: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].canvas.tile,
+                        vectorTileLayerStyles: {
+                            heatmap: {
+                                "BuildingsMap.useEffect.heatLayer": (properties)=>{
+                                    if (selectedDistrictId && properties.district_id !== selectedDistrictId) {
+                                        return {
+                                            fill: false,
+                                            stroke: false,
+                                            opacity: 0,
+                                            fillOpacity: 0
+                                        };
+                                    }
+                                    const val = Number(properties.intensity || 0);
+                                    let color;
+                                    if (val === 0) {
+                                        color = '#22c55e';
+                                    } else if (val === 1) {
+                                        color = '#FFD700';
+                                    } else if (val < 5) {
+                                        color = '#f97316';
+                                    } else if (val === 5) {
+                                        color = '#cf7e88ff';
+                                    } else if (val <= 20) {
+                                        color = '#ef4444';
+                                    } else {
+                                        color = '#7f1d1d';
+                                    }
+                                    return {
+                                        fill: true,
+                                        fillColor: color,
+                                        fillOpacity: 0.75,
+                                        stroke: false,
+                                        color: color,
+                                        weight: 1,
+                                        opacity: 0.2
+                                    };
+                                }
+                            }["BuildingsMap.useEffect.heatLayer"]
+                        },
+                        // srid: 3857, 
+                        interactive: true,
+                        getFeatureId: {
+                            "BuildingsMap.useEffect.heatLayer": (f)=>f.properties.id
+                        }["BuildingsMap.useEffect.heatLayer"],
+                        maxNativeZoom: 14,
+                        maxZoom: 21,
+                        updateWhenIdle: true,
+                        updateWhenZooming: false,
+                        zIndex: 1000,
+                        keepBuffer: 4,
+                        buffer: 512
+                    });
+                    heatLayer.addTo(map);
+                    heatLayerRef.current = heatLayer;
+                }
             } else {
                 // Cluster markers for performance on large datasets
                 // @ts-ignore markercluster is attached to L by side-effect import
@@ -670,18 +804,25 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 id: "8c726aafc29b0ebc",
                 children: ".custom-marker>div:hover{opacity:1!important}.leaflet-marker-icon:hover{z-index:1000!important}"
             }, void 0, false, void 0, this),
+            showHeatmap && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(HeatmapLegend, {
+                className: "jsx-8c726aafc29b0ebc"
+            }, void 0, false, {
+                fileName: "[project]/components/buildings-map.tsx",
+                lineNumber: 759,
+                columnNumber: 23
+            }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 ref: mapRef,
                 className: "jsx-8c726aafc29b0ebc" + " " + "h-full w-full"
             }, void 0, false, {
                 fileName: "[project]/components/buildings-map.tsx",
-                lineNumber: 671,
+                lineNumber: 760,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true);
 }
-_s(BuildingsMap, "TuJuVZNCan6c91qsUZJz2szsHhY=");
+_s(BuildingsMap, "nulmqLULq+B0hgSxzU1Q6pEqdL8=");
 _c = BuildingsMap;
 var _c;
 __turbopack_context__.k.register(_c, "BuildingsMap");

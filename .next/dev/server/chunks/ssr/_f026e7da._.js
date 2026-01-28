@@ -196,6 +196,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$shared$2f$lib$2f$app$2d$dynamic$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/shared/lib/app-dynamic.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/button.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$building$2d$2$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Building2$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/building-2.js [app-ssr] (ecmascript) <export default as Building2>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$map$2d$pin$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__MapPin$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/map-pin.js [app-ssr] (ecmascript) <export default as MapPin>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$alert$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__AlertCircle$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/circle-alert.js [app-ssr] (ecmascript) <export default as AlertCircle>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$flame$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Flame$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/flame.js [app-ssr] (ecmascript) <export default as Flame>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$download$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Download$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/download.js [app-ssr] (ecmascript) <export default as Download>");
@@ -317,14 +318,8 @@ function BuildingsWithoutGasPage() {
                         total: cachedData.length,
                         status: "Загрузка из кэша..."
                     });
-                    // Show progress animation
-                    await new Promise((resolve)=>setTimeout(resolve, 300));
-                    setLoadingProgress({
-                        loaded: cachedData.length,
-                        total: cachedData.length,
-                        status: "Обработка данных..."
-                    });
-                    const buildingsData = transformBuildingsData(cachedData);
+                    // Transform using Web Worker for non-blocking UI
+                    const buildingsData = await transformWithWorker(cachedData);
                     console.log("🏢 Transformed from cache:", {
                         total: buildingsData.length,
                         byCategory: {
@@ -333,90 +328,96 @@ function BuildingsWithoutGasPage() {
                             susn: buildingsData.filter((b)=>b.building_category === "susn").length
                         }
                     });
-                    await new Promise((resolve)=>setTimeout(resolve, 200));
                     setLoadingProgress({
                         loaded: buildingsData.length,
                         total: buildingsData.length,
                         status: "Готово!"
                     });
                     setBuildings(buildingsData);
-                    await new Promise((resolve)=>setTimeout(resolve, 300));
+                    await new Promise((resolve)=>setTimeout(resolve, 200));
                     setLoading(false);
                     return;
                 }
             }
-            console.log("📡 Fetching from API...");
+            console.log("📡 Fetching from API with streaming...");
             setLoadingProgress({
                 loaded: 0,
                 total: 0,
                 status: "Подключение к серверу..."
             });
-            // Show intermediate messages and simulate progress for long fetch
-            const updateMessages = [
-                {
-                    delay: 1500,
-                    status: "Отправка запроса..."
-                },
-                {
-                    delay: 3000,
-                    status: "Загрузка данных (~50,000 объектов)..."
-                },
-                {
-                    delay: 5000,
-                    status: "Получение данных с сервера..."
-                },
-                {
-                    delay: 7000,
-                    status: "Обработка большого объема данных..."
-                },
-                {
-                    delay: 10000,
-                    status: "Почти готово, еще немного..."
-                },
-                {
-                    delay: 13000,
-                    status: "Завершение загрузки..."
-                }
-            ];
-            const timeouts = updateMessages.map(({ delay, status })=>setTimeout(()=>setLoadingProgress({
-                        loaded: 0,
-                        total: 0,
-                        status
-                    }), delay));
-            // ✅ Fetch from combined all-sources endpoint (returns all categories pre-labeled)
+            // ✅ Fetch with streaming to track download progress
             const response = await fetch("https://admin.smartalmaty.kz/api/v1/address/buildings-without-gas/all-sources/");
-            // Clear all timeouts
-            timeouts.forEach(clearTimeout);
             if (!response.ok) {
                 throw new Error(`API returned ${response.status}`);
             }
+            // Get total size from Content-Length header (if available)
+            const contentLength = response.headers.get('Content-Length');
+            const totalBytes = contentLength ? parseInt(contentLength, 10) : 0;
+            // Stream the response to track download progress
+            let receivedBytes = 0;
+            const reader = response.body?.getReader();
+            const chunks = [];
+            if (reader) {
+                setLoadingProgress({
+                    loaded: 0,
+                    total: totalBytes || 50000000,
+                    status: "Загрузка данных..."
+                });
+                while(true){
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    chunks.push(value);
+                    receivedBytes += value.length;
+                    // Update progress (estimate ~50MB for 50k records if Content-Length not available)
+                    const estimatedTotal = totalBytes || 50000000;
+                    const percent = Math.min(Math.round(receivedBytes / estimatedTotal * 100), 99);
+                    const mbReceived = (receivedBytes / 1024 / 1024).toFixed(1);
+                    setLoadingProgress({
+                        loaded: receivedBytes,
+                        total: estimatedTotal,
+                        status: `Загружено ${mbReceived} МБ (${percent}%)`
+                    });
+                }
+            }
+            // Combine chunks and decode
             setLoadingProgress({
                 loaded: 0,
                 total: 0,
-                status: "Получение данных..."
+                status: "Декодирование данных..."
             });
-            const data = await response.json();
+            const allChunks = new Uint8Array(receivedBytes);
+            let position = 0;
+            for (const chunk of chunks){
+                allChunks.set(chunk, position);
+                position += chunk.length;
+            }
+            const jsonText = new TextDecoder().decode(allChunks);
+            setLoadingProgress({
+                loaded: 0,
+                total: 0,
+                status: "Парсинг JSON..."
+            });
+            const data = JSON.parse(jsonText);
             const apiBuildings = data.data || data;
             console.log("📊 API Response:", {
                 totalFromAPI: apiBuildings?.length || 0,
+                bytesReceived: receivedBytes,
                 sampleData: apiBuildings?.[0]
             });
-            await new Promise((resolve)=>setTimeout(resolve, 200));
             setLoadingProgress({
-                loaded: apiBuildings.length,
+                loaded: 0,
                 total: apiBuildings.length,
-                status: "Обработка данных..."
+                status: "Сохранение в кэш..."
             });
-            // Save raw API data to cache for next time
-            await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$buildingsCache$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["saveBuildingsToCache"])(apiBuildings);
-            await new Promise((resolve)=>setTimeout(resolve, 200));
+            // Save raw API data to cache for next time (in background)
+            (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$buildingsCache$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["saveBuildingsToCache"])(apiBuildings).catch((err)=>console.warn('Cache save failed:', err));
             setLoadingProgress({
-                loaded: apiBuildings.length,
+                loaded: 0,
                 total: apiBuildings.length,
                 status: "Трансформация данных..."
             });
-            // Transform API response to match component interface
-            const buildingsData = transformBuildingsData(apiBuildings);
+            // Transform using Web Worker (non-blocking) or fast fallback
+            const buildingsData = await transformWithWorker(apiBuildings);
             console.log("🏢 Transformed Buildings:", {
                 total: buildingsData.length,
                 withCoordinates: buildingsData.filter((b)=>b.latitude && b.longitude).length,
@@ -427,14 +428,12 @@ function BuildingsWithoutGasPage() {
                 }
             });
             console.log("📍 Map will display:", buildingsData.length, "markers");
-            await new Promise((resolve)=>setTimeout(resolve, 200));
             setLoadingProgress({
                 loaded: buildingsData.length,
                 total: buildingsData.length,
                 status: "Готово!"
             });
             setBuildings(buildingsData);
-            await new Promise((resolve)=>setTimeout(resolve, 300));
         } catch (error) {
             console.error("Failed to fetch buildings from API:", error);
             setError("Не удалось загрузить данные из API");
@@ -546,16 +545,77 @@ function BuildingsWithoutGasPage() {
         // Don't show error to user, just log it
         }
     };
-    // Helper function to transform API data
-    const transformBuildingsData = (apiBuildings)=>{
-        return (apiBuildings || []).map((b)=>{
+    // Web Worker ref for data transformation
+    const workerRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
+    // Initialize Web Worker
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+        ;
+        return ()=>{
+            workerRef.current?.terminate();
+        };
+    }, []);
+    // Transform data using Web Worker (non-blocking)
+    const transformWithWorker = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])((apiBuildings)=>{
+        return new Promise((resolve, reject)=>{
+            if (!workerRef.current) {
+                // Fallback to main thread if worker not available
+                resolve(transformBuildingsDataFast(apiBuildings));
+                return;
+            }
+            const worker = workerRef.current;
+            const handleMessage = (e)=>{
+                const { type, data, stats, processed, total, message } = e.data;
+                if (type === 'progress') {
+                    setLoadingProgress((prev)=>({
+                            ...prev,
+                            loaded: processed,
+                            total: total,
+                            status: `Обработка данных: ${Math.round(processed / total * 100)}%`
+                        }));
+                } else if (type === 'complete') {
+                    console.log(`✅ Worker processed ${stats.total} buildings in ${stats.processingTime}ms`);
+                    worker.removeEventListener('message', handleMessage);
+                    resolve(data);
+                } else if (type === 'error') {
+                    worker.removeEventListener('message', handleMessage);
+                    reject(new Error(message));
+                }
+            };
+            worker.addEventListener('message', handleMessage);
+            worker.postMessage({
+                type: 'transform',
+                data: apiBuildings
+            });
+        });
+    }, []);
+    // Optimized transformation function using for-loop (faster than map/filter)
+    const transformBuildingsDataFast = (apiBuildings)=>{
+        const result = [];
+        const len = apiBuildings.length;
+        for(let i = 0; i < len; i++){
+            const b = apiBuildings[i];
+            // Fast category detection using indexOf (faster than includes)
             const catStr = (b.category || "").toLowerCase();
             let category = "general";
-            if (catStr.includes("ижс") || catStr.includes("izhs")) category = "izhs";
-            else if (catStr.includes("сусн") || catStr.includes("susn")) category = "susn";
-            const districtLabel = b.district && typeof b.district === "string" ? b.district : b.district_id && DISTRICT_LABELS[String(b.district_id)] ? DISTRICT_LABELS[String(b.district_id)] : b.district_id ? `Район ${b.district_id}` : "Не указан";
-            return {
-                id: b.id?.toString() || crypto.randomUUID(),
+            if (catStr.indexOf("ижс") !== -1 || catStr.indexOf("izhs") !== -1) {
+                category = "izhs";
+            } else if (catStr.indexOf("сусн") !== -1 || catStr.indexOf("susn") !== -1) {
+                category = "susn";
+            }
+            // District label lookup
+            let districtLabel;
+            if (b.district && typeof b.district === "string") {
+                districtLabel = b.district;
+            } else if (b.district_id && DISTRICT_LABELS[String(b.district_id)]) {
+                districtLabel = DISTRICT_LABELS[String(b.district_id)];
+            } else if (b.district_id) {
+                districtLabel = `Район ${b.district_id}`;
+            } else {
+                districtLabel = "Не указан";
+            }
+            result.push({
+                id: b.id ? String(b.id) : crypto.randomUUID(),
                 address: b.address || "Без адреса",
                 district: districtLabel,
                 district_id: b.district_id,
@@ -567,10 +627,12 @@ function BuildingsWithoutGasPage() {
                 is_not_in_almaty: b.is_not_in_almaty || false,
                 is_seasonal_or_unused: b.is_seasonal_or_unused || false,
                 geometry: b.geometry || null
-            };
-        });
-    // Don't filter out buildings without coordinates - keep ALL buildings for stats
+            });
+        }
+        return result;
     };
+    // Legacy alias for compatibility
+    const transformBuildingsData = transformBuildingsDataFast;
     // Тестовые данные для демонстрации
     const getMockBuildings = ()=>{
         return [
@@ -766,12 +828,12 @@ function BuildingsWithoutGasPage() {
                                         className: "animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
                                     }, void 0, false, {
                                         fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                        lineNumber: 593,
+                                        lineNumber: 674,
                                         columnNumber: 19
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                    lineNumber: 592,
+                                    lineNumber: 673,
                                     columnNumber: 17
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -779,7 +841,7 @@ function BuildingsWithoutGasPage() {
                                     children: loadingProgress.status || "Загрузка..."
                                 }, void 0, false, {
                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                    lineNumber: 595,
+                                    lineNumber: 676,
                                     columnNumber: 17
                                 }, this),
                                 loadingProgress.total > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -793,12 +855,12 @@ function BuildingsWithoutGasPage() {
                                                 }
                                             }, void 0, false, {
                                                 fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                lineNumber: 601,
+                                                lineNumber: 682,
                                                 columnNumber: 23
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 600,
+                                            lineNumber: 681,
                                             columnNumber: 21
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -811,7 +873,7 @@ function BuildingsWithoutGasPage() {
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 606,
+                                            lineNumber: 687,
                                             columnNumber: 21
                                         }, this)
                                     ]
@@ -824,7 +886,7 @@ function BuildingsWithoutGasPage() {
                                             children: "Время загрузки:"
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 613,
+                                            lineNumber: 694,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -836,13 +898,13 @@ function BuildingsWithoutGasPage() {
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 614,
+                                            lineNumber: 695,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                    lineNumber: 612,
+                                    lineNumber: 693,
                                     columnNumber: 17
                                 }, this),
                                 loadingElapsed > 15 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -850,7 +912,7 @@ function BuildingsWithoutGasPage() {
                                     children: "⏳ Загрузка занимает больше времени чем обычно..."
                                 }, void 0, false, {
                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                    lineNumber: 619,
+                                    lineNumber: 700,
                                     columnNumber: 19
                                 }, this),
                                 loadingElapsed > 30 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -858,7 +920,7 @@ function BuildingsWithoutGasPage() {
                                     children: "Сервер обрабатывает ~50,000 записей. Пожалуйста, подождите."
                                 }, void 0, false, {
                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                    lineNumber: 624,
+                                    lineNumber: 705,
                                     columnNumber: 19
                                 }, this),
                                 loadingElapsed > 60 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -870,18 +932,18 @@ function BuildingsWithoutGasPage() {
                                     children: "Отменить загрузку"
                                 }, void 0, false, {
                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                    lineNumber: 629,
+                                    lineNumber: 710,
                                     columnNumber: 19
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                            lineNumber: 591,
+                            lineNumber: 672,
                             columnNumber: 15
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/buildings-without-gas/page.tsx",
-                        lineNumber: 590,
+                        lineNumber: 671,
                         columnNumber: 13
                     }, this) : error ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "flex h-full flex-col items-center justify-center gap-3 bg-background",
@@ -890,7 +952,7 @@ function BuildingsWithoutGasPage() {
                                 className: "h-12 w-12 text-orange-500"
                             }, void 0, false, {
                                 fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                lineNumber: 643,
+                                lineNumber: 724,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -898,7 +960,7 @@ function BuildingsWithoutGasPage() {
                                 children: error
                             }, void 0, false, {
                                 fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                lineNumber: 644,
+                                lineNumber: 725,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -906,7 +968,7 @@ function BuildingsWithoutGasPage() {
                                 children: "Используются тестовые данные для демонстрации"
                             }, void 0, false, {
                                 fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                lineNumber: 645,
+                                lineNumber: 726,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -916,13 +978,13 @@ function BuildingsWithoutGasPage() {
                                 children: "Попробовать снова"
                             }, void 0, false, {
                                 fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                lineNumber: 646,
+                                lineNumber: 727,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/buildings-without-gas/page.tsx",
-                        lineNumber: 642,
+                        lineNumber: 723,
                         columnNumber: 13
                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(BuildingsMap, {
                         buildings: filteredBuildings.filter((b)=>b.latitude && b.longitude),
@@ -934,428 +996,598 @@ function BuildingsWithoutGasPage() {
                         onBuildingClick: handleBuildingClick
                     }, void 0, false, {
                         fileName: "[project]/app/buildings-without-gas/page.tsx",
-                        lineNumber: 651,
+                        lineNumber: 732,
                         columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                    lineNumber: 588,
+                    lineNumber: 669,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "relative z-10 h-full w-full pointer-events-none",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "absolute top-0 left-0 bottom-0 w-[280px] pointer-events-auto z-20",
-                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "h-full bg-white border-r border-gray-200/80 backdrop-blur-xl bg-white/95 shadow-lg flex flex-col",
-                                children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "px-4 py-4 border-b border-gray-200",
-                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "flex items-center gap-3",
+                            className: "absolute top-0 left-0 bottom-0 w-[300px] pointer-events-auto z-20 flex flex-col bg-white/95 backdrop-blur-md border-r border-slate-200 shadow-xl",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "h-[72px] px-5 flex items-center gap-3 border-b border-slate-200 shrink-0",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 shadow-lg shadow-slate-200",
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$building$2d$2$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Building2$3e$__["Building2"], {
+                                                className: "h-5 w-5 text-white"
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                lineNumber: 751,
+                                                columnNumber: 15
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                            lineNumber: 750,
+                                            columnNumber: 13
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-gray-900 to-gray-700 shadow-md",
-                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$building$2d$2$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Building2$3e$__["Building2"], {
-                                                        className: "h-5 w-5 text-white"
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                    className: "text-[10px] font-bold tracking-[0.1em] text-slate-400 uppercase leading-tight",
+                                                    children: "ИНФРАСТРУКТУРА / АЛМАТЫ"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                    lineNumber: 754,
+                                                    columnNumber: 15
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
+                                                    className: "text-sm font-bold text-slate-900 leading-tight",
+                                                    children: "Здания без газа"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                    lineNumber: 755,
+                                                    columnNumber: 15
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                            lineNumber: 753,
+                                            columnNumber: 13
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                    lineNumber: 749,
+                                    columnNumber: 11
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "flex-1 overflow-y-auto custom-scrollbar",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "p-5 bg-slate-50/50 border-b border-slate-100",
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "flex items-end justify-between",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-[10px] font-bold text-slate-500 uppercase",
+                                                        children: "Найдено объектов"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                        lineNumber: 672,
-                                                        columnNumber: 21
+                                                        lineNumber: 764,
+                                                        columnNumber: 17
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "flex items-baseline gap-1",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                className: "text-xl font-black text-slate-900 tabular-nums leading-none",
+                                                                children: filteredBuildings.length.toLocaleString()
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                lineNumber: 766,
+                                                                columnNumber: 19
+                                                            }, this),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                className: "text-xs font-medium text-slate-400",
+                                                                children: [
+                                                                    "/ ",
+                                                                    generalBuildings.length.toLocaleString()
+                                                                ]
+                                                            }, void 0, true, {
+                                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                lineNumber: 769,
+                                                                columnNumber: 19
+                                                            }, this)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                        lineNumber: 765,
+                                                        columnNumber: 17
                                                     }, this)
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                    lineNumber: 671,
-                                                    columnNumber: 19
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    children: [
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                            className: "text-[8px] uppercase tracking-[0.2em] text-gray-400 font-semibold leading-tight",
-                                                            children: "ИНФРАСТРУКТУРА / АЛМАТЫ"
-                                                        }, void 0, false, {
-                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                            lineNumber: 675,
-                                                            columnNumber: 21
-                                                        }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
-                                                            className: "text-base font-bold text-gray-900 leading-tight mt-0.5",
-                                                            children: "Здания без газа"
-                                                        }, void 0, false, {
-                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                            lineNumber: 678,
-                                                            columnNumber: 21
-                                                        }, this)
-                                                    ]
-                                                }, void 0, true, {
-                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                    lineNumber: 674,
-                                                    columnNumber: 19
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                lineNumber: 763,
+                                                columnNumber: 15
+                                            }, this)
+                                        }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 670,
-                                            columnNumber: 17
-                                        }, this)
-                                    }, void 0, false, {
-                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                        lineNumber: 669,
-                                        columnNumber: 15
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200",
-                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "flex items-center justify-between",
+                                            lineNumber: 762,
+                                            columnNumber: 13
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "p-5 space-y-6",
                                             children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                    className: "text-xs text-gray-600 font-medium",
-                                                    children: "Результаты:"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                    lineNumber: 686,
-                                                    columnNumber: 19
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "flex items-center gap-1.5",
-                                                    children: [
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                            className: "text-lg font-bold text-blue-600 tabular-nums",
-                                                            children: filteredBuildings.length.toLocaleString()
-                                                        }, void 0, false, {
-                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                            lineNumber: 688,
-                                                            columnNumber: 21
-                                                        }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                            className: "text-xs text-gray-400",
-                                                            children: "/"
-                                                        }, void 0, false, {
-                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                            lineNumber: 691,
-                                                            columnNumber: 21
-                                                        }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                            className: "text-sm text-gray-500 tabular-nums",
-                                                            children: generalBuildings.length.toLocaleString()
-                                                        }, void 0, false, {
-                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                            lineNumber: 692,
-                                                            columnNumber: 21
-                                                        }, this)
-                                                    ]
-                                                }, void 0, true, {
-                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                    lineNumber: 687,
-                                                    columnNumber: 19
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 685,
-                                            columnNumber: 17
-                                        }, this)
-                                    }, void 0, false, {
-                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                        lineNumber: 684,
-                                        columnNumber: 15
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "flex-1 overflow-y-auto",
-                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "p-4 space-y-4",
-                                            children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                            className: "text-[10px] font-semibold text-gray-700 uppercase tracking-wider mb-2 block",
-                                                            children: "🔍 Поиск"
+                                                            className: "text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block",
+                                                            children: "Поиск по адресу"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                            lineNumber: 704,
-                                                            columnNumber: 21
+                                                            lineNumber: 777,
+                                                            columnNumber: 17
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            className: "relative",
+                                                            className: "relative group",
                                                             children: [
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
                                                                     type: "text",
                                                                     value: searchQuery,
                                                                     onChange: (e)=>setSearchQuery(e.target.value),
-                                                                    placeholder: "Введите адрес...",
-                                                                    className: "h-9 w-full rounded-lg border-2 border-gray-200 bg-white pl-3 pr-8 text-xs focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+                                                                    placeholder: "Название улицы, номер...",
+                                                                    className: "h-10 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                    lineNumber: 708,
-                                                                    columnNumber: 23
+                                                                    lineNumber: 779,
+                                                                    columnNumber: 19
                                                                 }, this),
                                                                 searchQuery && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                                     onClick: ()=>setSearchQuery(""),
-                                                                    className: "absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600",
+                                                                    className: "absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600",
                                                                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__X$3e$__["X"], {
                                                                         className: "h-4 w-4"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                        lineNumber: 720,
-                                                                        columnNumber: 27
+                                                                        lineNumber: 788,
+                                                                        columnNumber: 23
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                    lineNumber: 716,
-                                                                    columnNumber: 25
+                                                                    lineNumber: 787,
+                                                                    columnNumber: 21
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                            lineNumber: 707,
-                                                            columnNumber: 21
+                                                            lineNumber: 778,
+                                                            columnNumber: 17
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                    lineNumber: 703,
-                                                    columnNumber: 19
+                                                    lineNumber: 776,
+                                                    columnNumber: 15
                                                 }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                            className: "text-[10px] font-semibold text-gray-700 uppercase tracking-wider mb-2 block",
-                                                            children: "📍 Район"
+                                                            className: "text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block",
+                                                            children: "Район города"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                            lineNumber: 728,
-                                                            columnNumber: 21
+                                                            lineNumber: 796,
+                                                            columnNumber: 17
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
                                                             value: districtFilter,
                                                             onChange: (e)=>handleDistrictFilterChange(e.target.value),
-                                                            className: "h-9 w-full rounded-lg border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white px-3 text-xs font-semibold text-blue-700 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all shadow-sm cursor-pointer",
+                                                            className: "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 cursor-pointer focus:border-blue-500 outline-none",
                                                             children: [
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
                                                                     value: "all",
                                                                     children: "Все районы"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                    lineNumber: 736,
-                                                                    columnNumber: 23
+                                                                    lineNumber: 802,
+                                                                    columnNumber: 19
                                                                 }, this),
                                                                 districtNames.map((district)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
                                                                         value: district,
                                                                         children: district
                                                                     }, district, false, {
                                                                         fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                        lineNumber: 738,
-                                                                        columnNumber: 25
+                                                                        lineNumber: 803,
+                                                                        columnNumber: 52
                                                                     }, this))
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                            lineNumber: 731,
-                                                            columnNumber: 21
+                                                            lineNumber: 797,
+                                                            columnNumber: 17
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                    lineNumber: 727,
-                                                    columnNumber: 19
+                                                    lineNumber: 795,
+                                                    columnNumber: 15
                                                 }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "pt-2",
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                            className: "text-[10px] font-semibold text-gray-700 uppercase tracking-wider mb-2 block",
-                                                            children: "⚙️ Действия"
+                                                            className: "text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block",
+                                                            children: "Управление картой"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                            lineNumber: 747,
-                                                            columnNumber: 21
+                                                            lineNumber: 809,
+                                                            columnNumber: 17
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            className: "space-y-2",
+                                                            className: "grid grid-cols-1 gap-2",
                                                             children: [
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                                     onClick: ()=>fetchBuildings(true),
                                                                     disabled: loading,
-                                                                    className: "w-full h-9 rounded-lg text-xs font-medium bg-white text-gray-700 border border-gray-200 hover:border-gray-300 transition-all disabled:opacity-50 flex items-center justify-center gap-2",
+                                                                    className: "flex items-center gap-3 px-4 h-10 rounded-xl text-xs font-semibold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200",
                                                                     children: [
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$refresh$2d$cw$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__RefreshCw$3e$__["RefreshCw"], {
                                                                             className: `h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                            lineNumber: 756,
-                                                                            columnNumber: 25
+                                                                            lineNumber: 812,
+                                                                            columnNumber: 21
                                                                         }, this),
-                                                                        "Обновить данные"
-                                                                    ]
-                                                                }, void 0, true, {
-                                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                    lineNumber: 751,
-                                                                    columnNumber: 23
-                                                                }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                                    onClick: ()=>setShowHeatmap(!showHeatmap),
-                                                                    className: `w-full h-9 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-2 ${showHeatmap ? "bg-gray-900 text-white shadow-sm" : "bg-white text-gray-700 border border-gray-200 hover:border-gray-300"}`,
-                                                                    children: [
-                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$flame$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Flame$3e$__["Flame"], {
-                                                                            className: "h-3.5 w-3.5"
-                                                                        }, void 0, false, {
-                                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                            lineNumber: 768,
-                                                                            columnNumber: 25
-                                                                        }, this),
-                                                                        showHeatmap ? "Показать маркеры" : "Тепловая карта"
-                                                                    ]
-                                                                }, void 0, true, {
-                                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                    lineNumber: 760,
-                                                                    columnNumber: 23
-                                                                }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                                    onClick: ()=>setShowRenovationAreas(!showRenovationAreas),
-                                                                    className: `w-full h-9 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-2 ${showRenovationAreas ? "bg-purple-600 text-white shadow-sm" : "bg-white text-gray-700 border border-gray-200 hover:border-gray-300"}`,
-                                                                    children: [
-                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$layers$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Layers$3e$__["Layers"], {
-                                                                            className: "h-3.5 w-3.5"
-                                                                        }, void 0, false, {
-                                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                            lineNumber: 780,
-                                                                            columnNumber: 25
-                                                                        }, this),
-                                                                        "Реновация ",
-                                                                        showRenovationAreas ? "✓" : ""
-                                                                    ]
-                                                                }, void 0, true, {
-                                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                    lineNumber: 772,
-                                                                    columnNumber: 23
-                                                                }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                                    onClick: ()=>setShowAdvancedFilters(!showAdvancedFilters),
-                                                                    className: `w-full h-9 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-2 ${showAdvancedFilters ? "bg-gray-900 text-white shadow-sm" : "bg-white text-gray-700 border border-gray-200 hover:border-gray-300"}`,
-                                                                    children: [
-                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$layers$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Layers$3e$__["Layers"], {
-                                                                            className: "h-3.5 w-3.5"
-                                                                        }, void 0, false, {
-                                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                            lineNumber: 792,
-                                                                            columnNumber: 25
-                                                                        }, this),
-                                                                        "Доп. фильтры ",
-                                                                        showAdvancedFilters ? "✓" : ""
-                                                                    ]
-                                                                }, void 0, true, {
-                                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                    lineNumber: 784,
-                                                                    columnNumber: 23
-                                                                }, this)
-                                                            ]
-                                                        }, void 0, true, {
-                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                            lineNumber: 750,
-                                                            columnNumber: 21
-                                                        }, this)
-                                                    ]
-                                                }, void 0, true, {
-                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                    lineNumber: 746,
-                                                    columnNumber: 19
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "pt-2",
-                                                    children: [
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                            className: "text-[10px] font-semibold text-gray-700 uppercase tracking-wider mb-2 block",
-                                                            children: "📥 Экспорт"
-                                                        }, void 0, false, {
-                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                            lineNumber: 800,
-                                                            columnNumber: 21
-                                                        }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            className: "space-y-2",
-                                                            children: [
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                                    onClick: exportToCSV,
-                                                                    className: "w-full h-9 rounded-lg text-xs font-medium bg-white text-gray-700 border border-gray-200 hover:border-gray-300 transition-all flex items-center justify-center gap-2",
-                                                                    children: [
-                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$download$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Download$3e$__["Download"], {
-                                                                            className: "h-3.5 w-3.5"
-                                                                        }, void 0, false, {
-                                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                            lineNumber: 808,
-                                                                            columnNumber: 25
-                                                                        }, this),
-                                                                        "Экспорт в CSV"
-                                                                    ]
-                                                                }, void 0, true, {
-                                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                    lineNumber: 804,
-                                                                    columnNumber: 23
-                                                                }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                                    onClick: exportToJSON,
-                                                                    className: "w-full h-9 rounded-lg text-xs font-medium bg-white text-gray-700 border border-gray-200 hover:border-gray-300 transition-all flex items-center justify-center gap-2",
-                                                                    children: [
-                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$download$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Download$3e$__["Download"], {
-                                                                            className: "h-3.5 w-3.5"
-                                                                        }, void 0, false, {
-                                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                            lineNumber: 815,
-                                                                            columnNumber: 25
-                                                                        }, this),
-                                                                        "Экспорт в JSON"
+                                                                        " Обновить данные"
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
                                                                     lineNumber: 811,
-                                                                    columnNumber: 23
+                                                                    columnNumber: 19
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                                    onClick: async ()=>{
-                                                                        await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$buildingsCache$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["clearBuildingsCache"])();
-                                                                        fetchBuildings(true);
-                                                                    },
-                                                                    className: "w-full h-9 rounded-lg text-xs font-medium bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-all flex items-center justify-center gap-2",
-                                                                    children: "Очистить кэш"
-                                                                }, void 0, false, {
+                                                                    onClick: ()=>setShowHeatmap(!showHeatmap),
+                                                                    className: `flex items-center gap-3 px-4 h-10 rounded-xl text-xs font-semibold transition-all ${showHeatmap ? "bg-orange-500 text-white shadow-md shadow-orange-200" : "bg-slate-100 text-slate-600"}`,
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$flame$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Flame$3e$__["Flame"], {
+                                                                            className: "h-4 w-4"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                            lineNumber: 816,
+                                                                            columnNumber: 21
+                                                                        }, this),
+                                                                        " Тепловая карта"
+                                                                    ]
+                                                                }, void 0, true, {
                                                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                    lineNumber: 818,
-                                                                    columnNumber: 23
+                                                                    lineNumber: 815,
+                                                                    columnNumber: 19
+                                                                }, this),
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                                    onClick: ()=>setShowRenovationAreas(!showRenovationAreas),
+                                                                    className: `flex items-center gap-3 px-4 h-10 rounded-xl text-xs font-semibold transition-all ${showRenovationAreas ? "bg-purple-600 text-white shadow-md shadow-purple-200" : "bg-slate-100 text-slate-600"}`,
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$layers$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Layers$3e$__["Layers"], {
+                                                                            className: "h-4 w-4"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                            lineNumber: 820,
+                                                                            columnNumber: 21
+                                                                        }, this),
+                                                                        " Зоны реновации"
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                    lineNumber: 819,
+                                                                    columnNumber: 19
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                            lineNumber: 803,
-                                                            columnNumber: 21
+                                                            lineNumber: 810,
+                                                            columnNumber: 17
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                    lineNumber: 799,
-                                                    columnNumber: 19
+                                                    lineNumber: 808,
+                                                    columnNumber: 15
+                                                }, this),
+                                                showAdvancedFilters && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
+                                                    className: "p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-200",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            children: [
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                    className: "text-[10px] font-bold text-slate-500 uppercase mb-2 flex items-center gap-2",
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$calendar$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Calendar$3e$__["Calendar"], {
+                                                                            className: "h-3 w-3"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                            lineNumber: 836,
+                                                                            columnNumber: 23
+                                                                        }, this),
+                                                                        " Год постройки"
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                    lineNumber: 835,
+                                                                    columnNumber: 21
+                                                                }, this),
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                    className: "flex gap-2",
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                                                            type: "number",
+                                                                            placeholder: "От",
+                                                                            value: yearFilter?.min || "",
+                                                                            onChange: (e)=>setYearFilter((prev)=>({
+                                                                                        min: Number(e.target.value),
+                                                                                        max: prev?.max || 2025
+                                                                                    })),
+                                                                            className: "w-1/2 h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs focus:border-blue-500 outline-none"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                            lineNumber: 839,
+                                                                            columnNumber: 23
+                                                                        }, this),
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                                                            type: "number",
+                                                                            placeholder: "До",
+                                                                            value: yearFilter?.max || "",
+                                                                            onChange: (e)=>setYearFilter((prev)=>({
+                                                                                        min: prev?.min || 1900,
+                                                                                        max: Number(e.target.value)
+                                                                                    })),
+                                                                            className: "w-1/2 h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs focus:border-blue-500 outline-none"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                            lineNumber: 846,
+                                                                            columnNumber: 23
+                                                                        }, this)
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                    lineNumber: 838,
+                                                                    columnNumber: 21
+                                                                }, this)
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                            lineNumber: 834,
+                                                            columnNumber: 19
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            children: [
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                    className: "text-[10px] font-bold text-slate-500 uppercase mb-2 flex items-center gap-2",
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$layers$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Layers$3e$__["Layers"], {
+                                                                            className: "h-3 w-3"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                            lineNumber: 859,
+                                                                            columnNumber: 23
+                                                                        }, this),
+                                                                        " Этажность"
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                    lineNumber: 858,
+                                                                    columnNumber: 21
+                                                                }, this),
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                    className: "flex gap-2",
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                                                            type: "number",
+                                                                            placeholder: "От",
+                                                                            value: floorsFilter?.min || "",
+                                                                            onChange: (e)=>setFloorsFilter((prev)=>({
+                                                                                        min: Number(e.target.value),
+                                                                                        max: prev?.max || 100
+                                                                                    })),
+                                                                            className: "w-1/2 h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs focus:border-blue-500 outline-none"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                            lineNumber: 862,
+                                                                            columnNumber: 23
+                                                                        }, this),
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                                                            type: "number",
+                                                                            placeholder: "До",
+                                                                            value: floorsFilter?.max || "",
+                                                                            onChange: (e)=>setFloorsFilter((prev)=>({
+                                                                                        min: prev?.min || 1,
+                                                                                        max: Number(e.target.value)
+                                                                                    })),
+                                                                            className: "w-1/2 h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs focus:border-blue-500 outline-none"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                            lineNumber: 869,
+                                                                            columnNumber: 23
+                                                                        }, this)
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                    lineNumber: 861,
+                                                                    columnNumber: 21
+                                                                }, this)
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                            lineNumber: 857,
+                                                            columnNumber: 19
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            children: [
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                    className: "text-[10px] font-bold text-slate-500 uppercase mb-2 flex items-center gap-2",
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$house$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Home$3e$__["Home"], {
+                                                                            className: "h-3 w-3"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                            lineNumber: 882,
+                                                                            columnNumber: 23
+                                                                        }, this),
+                                                                        " Квартир"
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                    lineNumber: 881,
+                                                                    columnNumber: 21
+                                                                }, this),
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                    className: "flex gap-2",
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                                                            type: "number",
+                                                                            placeholder: "От",
+                                                                            value: apartmentsFilter?.min || "",
+                                                                            onChange: (e)=>setApartmentsFilter((prev)=>({
+                                                                                        min: Number(e.target.value),
+                                                                                        max: prev?.max || 1000
+                                                                                    })),
+                                                                            className: "w-1/2 h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs focus:border-blue-500 outline-none"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                            lineNumber: 885,
+                                                                            columnNumber: 23
+                                                                        }, this),
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                                                            type: "number",
+                                                                            placeholder: "До",
+                                                                            value: apartmentsFilter?.max || "",
+                                                                            onChange: (e)=>setApartmentsFilter((prev)=>({
+                                                                                        min: prev?.min || 1,
+                                                                                        max: Number(e.target.value)
+                                                                                    })),
+                                                                            className: "w-1/2 h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs focus:border-blue-500 outline-none"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                            lineNumber: 892,
+                                                                            columnNumber: 23
+                                                                        }, this)
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                    lineNumber: 884,
+                                                                    columnNumber: 21
+                                                                }, this)
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                            lineNumber: 880,
+                                                            columnNumber: 19
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                            onClick: ()=>{
+                                                                setYearFilter(null);
+                                                                setFloorsFilter(null);
+                                                                setApartmentsFilter(null);
+                                                            },
+                                                            className: "w-full h-8 rounded-lg text-[10px] font-bold bg-white text-slate-500 border border-slate-200 hover:bg-slate-100 transition-all uppercase tracking-wider",
+                                                            children: "Сбросить фильтры"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                            lineNumber: 902,
+                                                            columnNumber: 19
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                    lineNumber: 832,
+                                                    columnNumber: 17
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
+                                                    className: "pt-4 border-t border-slate-100 space-y-3",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                            className: "text-[10px] font-bold text-slate-400 uppercase tracking-widest block",
+                                                            children: "Экспорт и кэш"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                            lineNumber: 917,
+                                                            columnNumber: 17
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "flex gap-2",
+                                                            children: [
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                                    onClick: exportToCSV,
+                                                                    className: "flex-1 h-10 rounded-xl border border-slate-200 bg-white text-[10px] font-bold text-slate-600 uppercase flex items-center justify-center gap-2",
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$download$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Download$3e$__["Download"], {
+                                                                            className: "h-3 w-3"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                            lineNumber: 920,
+                                                                            columnNumber: 21
+                                                                        }, this),
+                                                                        " CSV"
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                    lineNumber: 919,
+                                                                    columnNumber: 19
+                                                                }, this),
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                                    onClick: exportToJSON,
+                                                                    className: "flex-1 h-10 rounded-xl border border-slate-200 bg-white text-[10px] font-bold text-slate-600 uppercase flex items-center justify-center gap-2",
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$download$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Download$3e$__["Download"], {
+                                                                            className: "h-3 w-3"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                            lineNumber: 923,
+                                                                            columnNumber: 21
+                                                                        }, this),
+                                                                        " JSON"
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                    lineNumber: 922,
+                                                                    columnNumber: 19
+                                                                }, this)
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                            lineNumber: 918,
+                                                            columnNumber: 17
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                            onClick: async ()=>{
+                                                                await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$buildingsCache$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["clearBuildingsCache"])();
+                                                                fetchBuildings(true);
+                                                            },
+                                                            className: "w-full h-9 rounded-xl bg-red-50 text-red-600 text-[10px] font-bold border border-red-100 uppercase transition-colors hover:bg-red-100",
+                                                            children: "Очистить кэш"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                            lineNumber: 926,
+                                                            columnNumber: 17
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                    lineNumber: 916,
+                                                    columnNumber: 15
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 701,
-                                            columnNumber: 17
+                                            lineNumber: 774,
+                                            columnNumber: 13
                                         }, this)
-                                    }, void 0, false, {
-                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                        lineNumber: 700,
-                                        columnNumber: 15
-                                    }, this)
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                lineNumber: 667,
-                                columnNumber: 13
-                            }, this)
-                        }, void 0, false, {
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                    lineNumber: 760,
+                                    columnNumber: 11
+                                }, this)
+                            ]
+                        }, void 0, true, {
                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                            lineNumber: 666,
-                            columnNumber: 11
+                            lineNumber: 747,
+                            columnNumber: 9
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "absolute top-4 right-0 w-[170px] flex flex-col gap-2.5 pointer-events-auto z-10",
@@ -1368,7 +1600,7 @@ function BuildingsWithoutGasPage() {
                                             children: "ВСЕГО ALSECO"
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 840,
+                                            lineNumber: 940,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1376,7 +1608,7 @@ function BuildingsWithoutGasPage() {
                                             children: categoryCounts.general
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 841,
+                                            lineNumber: 941,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1384,13 +1616,13 @@ function BuildingsWithoutGasPage() {
                                             children: "жилых зданий"
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 844,
+                                            lineNumber: 944,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                    lineNumber: 839,
+                                    lineNumber: 939,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1401,7 +1633,7 @@ function BuildingsWithoutGasPage() {
                                             children: "ALSECO НЕ В АЛМАТЫ"
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 849,
+                                            lineNumber: 949,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1409,7 +1641,7 @@ function BuildingsWithoutGasPage() {
                                             children: generalBuildings.filter((b)=>b.is_not_in_almaty === true).length
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 850,
+                                            lineNumber: 950,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1417,13 +1649,13 @@ function BuildingsWithoutGasPage() {
                                             children: "за пределами"
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 853,
+                                            lineNumber: 953,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                    lineNumber: 848,
+                                    lineNumber: 948,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1434,7 +1666,7 @@ function BuildingsWithoutGasPage() {
                                             children: "ALSECO В АЛМАТЫ"
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 858,
+                                            lineNumber: 958,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1442,7 +1674,7 @@ function BuildingsWithoutGasPage() {
                                             children: generalBuildings.filter((b)=>!b.is_not_in_almaty).length
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 859,
+                                            lineNumber: 959,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1450,13 +1682,13 @@ function BuildingsWithoutGasPage() {
                                             children: "в городе"
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 862,
+                                            lineNumber: 962,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                    lineNumber: 857,
+                                    lineNumber: 957,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1467,7 +1699,7 @@ function BuildingsWithoutGasPage() {
                                             children: "ALSECO С КООРДИНАТАМИ В АЛМАТЫ"
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 869,
+                                            lineNumber: 969,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1475,7 +1707,7 @@ function BuildingsWithoutGasPage() {
                                             children: generalBuildings.filter((b)=>!b.is_not_in_almaty && b.latitude && b.longitude).length
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 870,
+                                            lineNumber: 970,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1483,13 +1715,13 @@ function BuildingsWithoutGasPage() {
                                             children: "на карте в городе"
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 873,
+                                            lineNumber: 973,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                    lineNumber: 868,
+                                    lineNumber: 968,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1500,7 +1732,7 @@ function BuildingsWithoutGasPage() {
                                             children: "ALSECO БЕЗ КООРДИНАТ В АЛМАТЫ"
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 878,
+                                            lineNumber: 978,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1508,7 +1740,7 @@ function BuildingsWithoutGasPage() {
                                             children: generalBuildings.filter((b)=>!b.is_not_in_almaty && (!b.latitude || !b.longitude)).length
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 879,
+                                            lineNumber: 979,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1516,13 +1748,13 @@ function BuildingsWithoutGasPage() {
                                             children: "в городе без координат"
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 882,
+                                            lineNumber: 982,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                    lineNumber: 877,
+                                    lineNumber: 977,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1533,7 +1765,7 @@ function BuildingsWithoutGasPage() {
                                             children: "УНИКАЛЬНЫХ КООРДИНАТ"
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 887,
+                                            lineNumber: 987,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1541,7 +1773,7 @@ function BuildingsWithoutGasPage() {
                                             children: new Set(generalBuildings.filter((b)=>!b.is_not_in_almaty && b.latitude && b.longitude).map((b)=>`${b.latitude},${b.longitude}`)).size
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 888,
+                                            lineNumber: 988,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1549,13 +1781,13 @@ function BuildingsWithoutGasPage() {
                                             children: "точек на карте"
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 891,
+                                            lineNumber: 991,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                    lineNumber: 886,
+                                    lineNumber: 986,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1566,7 +1798,7 @@ function BuildingsWithoutGasPage() {
                                             children: "СЕЗОННЫЕ / НЕИСПОЛЬЗУЕМЫЕ"
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 896,
+                                            lineNumber: 996,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1574,7 +1806,7 @@ function BuildingsWithoutGasPage() {
                                             children: generalBuildings.filter((b)=>b.is_seasonal_or_unused === true).length
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 897,
+                                            lineNumber: 997,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1582,7 +1814,7 @@ function BuildingsWithoutGasPage() {
                                             children: "ALSECO зданий"
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 900,
+                                            lineNumber: 1000,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1591,664 +1823,313 @@ function BuildingsWithoutGasPage() {
                                             children: showOnlySeasonalUnused ? "✓ Показаны" : "❄️ Показать на карте"
                                         }, void 0, false, {
                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                            lineNumber: 901,
+                                            lineNumber: 1001,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                    lineNumber: 895,
+                                    lineNumber: 995,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                            lineNumber: 835,
+                            lineNumber: 935,
                             columnNumber: 11
                         }, this),
-                        showAdvancedFilters && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "absolute top-[70px] right-4 w-[280px] pointer-events-auto z-20",
-                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "bg-white/95 backdrop-blur-xl rounded-xl p-4 shadow-lg border border-gray-200",
-                                children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "flex items-center justify-between mb-3",
-                                        children: [
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
-                                                className: "text-xs font-semibold text-gray-900",
-                                                children: "Расширенные фильтры"
-                                            }, void 0, false, {
-                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                lineNumber: 939,
-                                                columnNumber: 19
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                onClick: ()=>setShowAdvancedFilters(false),
-                                                className: "text-gray-400 hover:text-gray-600",
-                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__X$3e$__["X"], {
-                                                    className: "h-4 w-4"
+                        showSidePanel && selectedBuilding && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "absolute top-0 left-[300px] h-full w-[320px] pointer-events-auto z-10 flex flex-col bg-white/95 backdrop-blur-md border-r border-slate-200 shadow-[15px_0_30px_-5px_rgba(0,0,0,0.1)] animate-in slide-in-from-left duration-300",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "h-[72px] px-5 flex items-center justify-between border-b border-slate-200 shrink-0",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "flex items-center gap-3",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: `h-10 w-10 flex items-center justify-center rounded-xl ${selectedBuilding.building_category === "general" ? "bg-orange-100 text-orange-600" : "bg-blue-100 text-blue-600"}`,
+                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$map$2d$pin$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__MapPin$3e$__["MapPin"], {
+                                                        className: "h-5 w-5"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                        lineNumber: 1045,
+                                                        columnNumber: 19
+                                                    }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                    lineNumber: 944,
-                                                    columnNumber: 21
-                                                }, this)
-                                            }, void 0, false, {
-                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                lineNumber: 940,
-                                                columnNumber: 19
-                                            }, this)
-                                        ]
-                                    }, void 0, true, {
-                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                        lineNumber: 938,
-                                        columnNumber: 17
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "space-y-3",
-                                        children: [
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                children: [
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                        className: "text-[10px] font-medium text-gray-700 mb-1.5 flex items-center gap-1",
-                                                        children: [
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$calendar$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Calendar$3e$__["Calendar"], {
-                                                                className: "h-3 w-3"
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                lineNumber: 952,
-                                                                columnNumber: 23
-                                                            }, this),
-                                                            "Год постройки"
-                                                        ]
-                                                    }, void 0, true, {
-                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                        lineNumber: 951,
-                                                        columnNumber: 21
-                                                    }, this),
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                        className: "flex gap-2",
-                                                        children: [
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                                                type: "number",
-                                                                placeholder: "От",
-                                                                value: yearFilter?.min || "",
-                                                                onChange: (e)=>setYearFilter((prev)=>({
-                                                                            min: Number(e.target.value),
-                                                                            max: prev?.max || 2025
-                                                                        })),
-                                                                className: "w-1/2 h-7 rounded border border-gray-200 px-2 text-xs focus:outline-none focus:border-gray-400"
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                lineNumber: 956,
-                                                                columnNumber: 23
-                                                            }, this),
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                                                type: "number",
-                                                                placeholder: "До",
-                                                                value: yearFilter?.max || "",
-                                                                onChange: (e)=>setYearFilter((prev)=>({
-                                                                            min: prev?.min || 1900,
-                                                                            max: Number(e.target.value)
-                                                                        })),
-                                                                className: "w-1/2 h-7 rounded border border-gray-200 px-2 text-xs focus:outline-none focus:border-gray-400"
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                lineNumber: 963,
-                                                                columnNumber: 23
-                                                            }, this)
-                                                        ]
-                                                    }, void 0, true, {
-                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                        lineNumber: 955,
-                                                        columnNumber: 21
-                                                    }, this)
-                                                ]
-                                            }, void 0, true, {
-                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                lineNumber: 950,
-                                                columnNumber: 19
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                children: [
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                        className: "text-[10px] font-medium text-gray-700 mb-1.5 flex items-center gap-1",
-                                                        children: [
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$layers$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Layers$3e$__["Layers"], {
-                                                                className: "h-3 w-3"
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                lineNumber: 976,
-                                                                columnNumber: 23
-                                                            }, this),
-                                                            "Количество этажей"
-                                                        ]
-                                                    }, void 0, true, {
-                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                        lineNumber: 975,
-                                                        columnNumber: 21
-                                                    }, this),
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                        className: "flex gap-2",
-                                                        children: [
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                                                type: "number",
-                                                                placeholder: "От",
-                                                                value: floorsFilter?.min || "",
-                                                                onChange: (e)=>setFloorsFilter((prev)=>({
-                                                                            min: Number(e.target.value),
-                                                                            max: prev?.max || 100
-                                                                        })),
-                                                                className: "w-1/2 h-7 rounded border border-gray-200 px-2 text-xs focus:outline-none focus:border-gray-400"
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                lineNumber: 980,
-                                                                columnNumber: 23
-                                                            }, this),
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                                                type: "number",
-                                                                placeholder: "До",
-                                                                value: floorsFilter?.max || "",
-                                                                onChange: (e)=>setFloorsFilter((prev)=>({
-                                                                            min: prev?.min || 1,
-                                                                            max: Number(e.target.value)
-                                                                        })),
-                                                                className: "w-1/2 h-7 rounded border border-gray-200 px-2 text-xs focus:outline-none focus:border-gray-400"
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                lineNumber: 987,
-                                                                columnNumber: 23
-                                                            }, this)
-                                                        ]
-                                                    }, void 0, true, {
-                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                        lineNumber: 979,
-                                                        columnNumber: 21
-                                                    }, this)
-                                                ]
-                                            }, void 0, true, {
-                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                lineNumber: 974,
-                                                columnNumber: 19
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                children: [
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                        className: "text-[10px] font-medium text-gray-700 mb-1.5 flex items-center gap-1",
-                                                        children: [
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$house$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Home$3e$__["Home"], {
-                                                                className: "h-3 w-3"
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                lineNumber: 1000,
-                                                                columnNumber: 23
-                                                            }, this),
-                                                            "Количество квартир"
-                                                        ]
-                                                    }, void 0, true, {
-                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                        lineNumber: 999,
-                                                        columnNumber: 21
-                                                    }, this),
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                        className: "flex gap-2",
-                                                        children: [
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                                                type: "number",
-                                                                placeholder: "От",
-                                                                value: apartmentsFilter?.min || "",
-                                                                onChange: (e)=>setApartmentsFilter((prev)=>({
-                                                                            min: Number(e.target.value),
-                                                                            max: prev?.max || 1000
-                                                                        })),
-                                                                className: "w-1/2 h-7 rounded border border-gray-200 px-2 text-xs focus:outline-none focus:border-gray-400"
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                lineNumber: 1004,
-                                                                columnNumber: 23
-                                                            }, this),
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                                                type: "number",
-                                                                placeholder: "До",
-                                                                value: apartmentsFilter?.max || "",
-                                                                onChange: (e)=>setApartmentsFilter((prev)=>({
-                                                                            min: prev?.min || 1,
-                                                                            max: Number(e.target.value)
-                                                                        })),
-                                                                className: "w-1/2 h-7 rounded border border-gray-200 px-2 text-xs focus:outline-none focus:border-gray-400"
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                lineNumber: 1011,
-                                                                columnNumber: 23
-                                                            }, this)
-                                                        ]
-                                                    }, void 0, true, {
-                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                        lineNumber: 1003,
-                                                        columnNumber: 21
-                                                    }, this)
-                                                ]
-                                            }, void 0, true, {
-                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                lineNumber: 998,
-                                                columnNumber: 19
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                onClick: ()=>{
-                                                    setYearFilter(null);
-                                                    setFloorsFilter(null);
-                                                    setApartmentsFilter(null);
-                                                },
-                                                className: "w-full h-7 rounded-lg text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all",
-                                                children: "Сбросить фильтры"
-                                            }, void 0, false, {
-                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                lineNumber: 1022,
-                                                columnNumber: 19
-                                            }, this)
-                                        ]
-                                    }, void 0, true, {
-                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                        lineNumber: 948,
-                                        columnNumber: 17
-                                    }, this)
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                lineNumber: 937,
-                                columnNumber: 15
-                            }, this)
-                        }, void 0, false, {
-                            fileName: "[project]/app/buildings-without-gas/page.tsx",
-                            lineNumber: 936,
-                            columnNumber: 13
-                        }, this),
-                        showSidePanel && selectedBuilding && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "absolute top-0 right-0 h-full w-[380px] pointer-events-auto z-30",
-                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "h-full bg-white shadow-2xl border-l border-gray-200 overflow-y-auto",
-                                children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between z-10",
-                                        children: [
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                className: "flex items-center gap-2",
-                                                children: [
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                        className: `h-8 w-8 rounded-lg flex items-center justify-center ${selectedBuilding.building_category === "general" ? "bg-orange-100" : selectedBuilding.building_category === "izhs" ? "bg-blue-100" : "bg-red-100"}`,
-                                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$building$2d$2$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Building2$3e$__["Building2"], {
-                                                            className: `h-4 w-4 ${selectedBuilding.building_category === "general" ? "text-orange-600" : selectedBuilding.building_category === "izhs" ? "text-blue-600" : "text-red-600"}`
+                                                    lineNumber: 1042,
+                                                    columnNumber: 17
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                            className: "text-[10px] font-bold tracking-[0.1em] text-slate-400 uppercase",
+                                                            children: "Карточка объекта"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
                                                             lineNumber: 1048,
-                                                            columnNumber: 23
-                                                        }, this)
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                        lineNumber: 1044,
-                                                        columnNumber: 21
-                                                    }, this),
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                        children: [
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                                className: "text-[9px] uppercase tracking-wider text-gray-400 font-medium",
-                                                                children: "Детали здания"
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                lineNumber: 1054,
-                                                                columnNumber: 23
-                                                            }, this),
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                                                                className: "text-xs font-semibold text-gray-900",
-                                                                children: selectedBuilding.building_category === "general" ? "ALSECO" : selectedBuilding.building_category === "izhs" ? "ИЖС" : "СУСН"
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                lineNumber: 1055,
-                                                                columnNumber: 23
-                                                            }, this)
-                                                        ]
-                                                    }, void 0, true, {
-                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                        lineNumber: 1053,
-                                                        columnNumber: 21
-                                                    }, this)
-                                                ]
-                                            }, void 0, true, {
-                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                lineNumber: 1043,
-                                                columnNumber: 19
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                onClick: ()=>{
-                                                    setShowSidePanel(false);
-                                                    setSelectedBuilding(null);
-                                                },
-                                                className: "text-gray-400 hover:text-gray-600 transition-colors",
-                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__X$3e$__["X"], {
-                                                    className: "h-5 w-5"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                    lineNumber: 1068,
-                                                    columnNumber: 21
-                                                }, this)
-                                            }, void 0, false, {
-                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                lineNumber: 1061,
-                                                columnNumber: 19
-                                            }, this)
-                                        ]
-                                    }, void 0, true, {
-                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                        lineNumber: 1042,
-                                        columnNumber: 17
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "p-4 space-y-4",
-                                        children: [
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                children: [
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                        className: "text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1",
-                                                        children: "Адрес"
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                        lineNumber: 1076,
-                                                        columnNumber: 21
-                                                    }, this),
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                        className: "text-sm font-medium text-gray-900",
-                                                        children: selectedBuilding.address
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                        lineNumber: 1077,
-                                                        columnNumber: 21
-                                                    }, this)
-                                                ]
-                                            }, void 0, true, {
-                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                lineNumber: 1075,
-                                                columnNumber: 19
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                children: [
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                        className: "text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1",
-                                                        children: "Район"
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                        lineNumber: 1082,
-                                                        columnNumber: 21
-                                                    }, this),
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                        className: "text-sm text-gray-700",
-                                                        children: selectedBuilding.district
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                        lineNumber: 1083,
-                                                        columnNumber: 21
-                                                    }, this)
-                                                ]
-                                            }, void 0, true, {
-                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                lineNumber: 1081,
-                                                columnNumber: 19
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                className: "grid grid-cols-2 gap-3",
-                                                children: [
-                                                    selectedBuilding.floors && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                        className: "bg-gray-50 rounded-lg p-3",
-                                                        children: [
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                                className: "text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1",
-                                                                children: "Этажей"
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                lineNumber: 1090,
-                                                                columnNumber: 25
-                                                            }, this),
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                                className: "text-xl font-bold text-gray-900",
-                                                                children: selectedBuilding.floors
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                lineNumber: 1091,
-                                                                columnNumber: 25
-                                                            }, this)
-                                                        ]
-                                                    }, void 0, true, {
-                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                        lineNumber: 1089,
-                                                        columnNumber: 23
-                                                    }, this),
-                                                    selectedBuilding.apartments && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                        className: "bg-gray-50 rounded-lg p-3",
-                                                        children: [
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                                className: "text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1",
-                                                                children: "Квартир"
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                lineNumber: 1096,
-                                                                columnNumber: 25
-                                                            }, this),
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                                className: "text-xl font-bold text-gray-900",
-                                                                children: selectedBuilding.apartments
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                lineNumber: 1097,
-                                                                columnNumber: 25
-                                                            }, this)
-                                                        ]
-                                                    }, void 0, true, {
-                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                        lineNumber: 1095,
-                                                        columnNumber: 23
-                                                    }, this),
-                                                    selectedBuilding.year_built && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                        className: "bg-gray-50 rounded-lg p-3",
-                                                        children: [
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                                className: "text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1",
-                                                                children: "Год постройки"
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                lineNumber: 1102,
-                                                                columnNumber: 25
-                                                            }, this),
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                                className: "text-xl font-bold text-gray-900",
-                                                                children: selectedBuilding.year_built
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                lineNumber: 1103,
-                                                                columnNumber: 25
-                                                            }, this)
-                                                        ]
-                                                    }, void 0, true, {
-                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                        lineNumber: 1101,
-                                                        columnNumber: 23
-                                                    }, this)
-                                                ]
-                                            }, void 0, true, {
-                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                lineNumber: 1087,
-                                                columnNumber: 19
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                children: [
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                        className: "text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-2",
-                                                        children: "Координаты"
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                        lineNumber: 1110,
-                                                        columnNumber: 21
-                                                    }, this),
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                        className: "bg-gray-50 rounded-lg p-3 space-y-1 text-xs font-mono",
-                                                        children: [
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                                className: "flex justify-between",
-                                                                children: [
-                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                        className: "text-gray-500",
-                                                                        children: "Широта:"
-                                                                    }, void 0, false, {
-                                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                        lineNumber: 1113,
-                                                                        columnNumber: 25
-                                                                    }, this),
-                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                        className: "text-gray-900",
-                                                                        children: selectedBuilding.latitude.toFixed(6)
-                                                                    }, void 0, false, {
-                                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                        lineNumber: 1114,
-                                                                        columnNumber: 25
-                                                                    }, this)
-                                                                ]
-                                                            }, void 0, true, {
-                                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                lineNumber: 1112,
-                                                                columnNumber: 23
-                                                            }, this),
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                                className: "flex justify-between",
-                                                                children: [
-                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                        className: "text-gray-500",
-                                                                        children: "Долгота:"
-                                                                    }, void 0, false, {
-                                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                        lineNumber: 1117,
-                                                                        columnNumber: 25
-                                                                    }, this),
-                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                        className: "text-gray-900",
-                                                                        children: selectedBuilding.longitude.toFixed(6)
-                                                                    }, void 0, false, {
-                                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                        lineNumber: 1118,
-                                                                        columnNumber: 25
-                                                                    }, this)
-                                                                ]
-                                                            }, void 0, true, {
-                                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                lineNumber: 1116,
-                                                                columnNumber: 23
-                                                            }, this)
-                                                        ]
-                                                    }, void 0, true, {
-                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                        lineNumber: 1111,
-                                                        columnNumber: 21
-                                                    }, this)
-                                                ]
-                                            }, void 0, true, {
-                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                lineNumber: 1109,
-                                                columnNumber: 19
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                children: [
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                        className: "text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1",
-                                                        children: "Тип здания"
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                        lineNumber: 1125,
-                                                        columnNumber: 21
-                                                    }, this),
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                        className: "text-sm text-gray-700",
-                                                        children: selectedBuilding.building_type
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                        lineNumber: 1126,
-                                                        columnNumber: 21
-                                                    }, this)
-                                                ]
-                                            }, void 0, true, {
-                                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                lineNumber: 1124,
-                                                columnNumber: 19
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                className: "bg-orange-50 border border-orange-200 rounded-lg p-3",
-                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "flex items-start gap-2",
-                                                    children: [
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$alert$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__AlertCircle$3e$__["AlertCircle"], {
-                                                            className: "h-4 w-4 text-orange-600 mt-0.5 flex-shrink-0"
+                                                            columnNumber: 19
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
+                                                            className: "text-sm font-bold text-slate-900 leading-tight",
+                                                            children: "Информация"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                            lineNumber: 1132,
-                                                            columnNumber: 23
-                                                        }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            children: [
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                                    className: "text-xs font-medium text-orange-900",
-                                                                    children: "Отсутствует газоснабжение"
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                    lineNumber: 1134,
-                                                                    columnNumber: 25
-                                                                }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                                    className: "text-[10px] text-orange-700 mt-0.5",
-                                                                    children: "Здание использует альтернативные источники отопления"
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                                    lineNumber: 1135,
-                                                                    columnNumber: 25
-                                                                }, this)
-                                                            ]
-                                                        }, void 0, true, {
-                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                            lineNumber: 1133,
-                                                            columnNumber: 23
+                                                            lineNumber: 1049,
+                                                            columnNumber: 19
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                    lineNumber: 1131,
-                                                    columnNumber: 21
+                                                    lineNumber: 1047,
+                                                    columnNumber: 17
                                                 }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                            lineNumber: 1041,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                            onClick: ()=>{
+                                                setShowSidePanel(false);
+                                                setSelectedBuilding(null);
+                                            },
+                                            className: "p-2 hover:bg-slate-100 rounded-lg transition-colors",
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__X$3e$__["X"], {
+                                                className: "h-5 w-5 text-slate-400"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                                lineNumber: 1130,
-                                                columnNumber: 19
+                                                lineNumber: 1056,
+                                                columnNumber: 17
                                             }, this)
-                                        ]
-                                    }, void 0, true, {
-                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                        lineNumber: 1073,
-                                        columnNumber: 17
-                                    }, this)
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/app/buildings-without-gas/page.tsx",
-                                lineNumber: 1040,
-                                columnNumber: 15
-                            }, this)
-                        }, void 0, false, {
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                            lineNumber: 1052,
+                                            columnNumber: 15
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                    lineNumber: 1040,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "flex-1 overflow-y-auto custom-scrollbar p-5 space-y-6",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                    className: "text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block",
+                                                    children: "Адрес и район"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                    lineNumber: 1064,
+                                                    columnNumber: 17
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                                    className: "text-m font-bold text-slate-900 leading-snug",
+                                                    children: selectedBuilding.address
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                    lineNumber: 1065,
+                                                    columnNumber: 17
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                    className: "text-sm text-slate-500 mt-1 flex items-center gap-1.5",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$map$2d$pin$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__MapPin$3e$__["MapPin"], {
+                                                            className: "h-3.5 w-3.5 text-blue-500"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                            lineNumber: 1067,
+                                                            columnNumber: 19
+                                                        }, this),
+                                                        " ",
+                                                        selectedBuilding.district
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                    lineNumber: 1066,
+                                                    columnNumber: 17
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                            lineNumber: 1063,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
+                                            className: "p-4 rounded-xl bg-slate-50 border border-slate-100",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                    className: "text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1",
+                                                    children: "Тип здания"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                    lineNumber: 1089,
+                                                    columnNumber: 17
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                    className: "text-sm font-semibold text-gray-700 leading-relaxed",
+                                                    children: selectedBuilding.building_type
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                    lineNumber: 1090,
+                                                    columnNumber: 17
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                            lineNumber: 1088,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "p-4 rounded-2xl bg-orange-50 border border-orange-100 flex gap-3",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "h-8 w-8 shrink-0 rounded-full bg-orange-500 flex items-center justify-center shadow-sm",
+                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$alert$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__AlertCircle$3e$__["AlertCircle"], {
+                                                        className: "h-5 w-5 text-white"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                        lineNumber: 1098,
+                                                        columnNumber: 19
+                                                    }, this)
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                    lineNumber: 1097,
+                                                    columnNumber: 17
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
+                                                            className: "text-xs font-bold text-orange-900 uppercase tracking-tight",
+                                                            children: "Газ отсутствует"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                            lineNumber: 1101,
+                                                            columnNumber: 19
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                            className: "text-[11px] text-orange-700 leading-relaxed mt-0.5",
+                                                            children: "Объект числится в списках на газификацию или использует альтернативные источники."
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                            lineNumber: 1102,
+                                                            columnNumber: 19
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                    lineNumber: 1100,
+                                                    columnNumber: 17
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                            lineNumber: 1096,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "pt-4 border-t border-slate-100",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                    className: "text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block",
+                                                    children: "Геолокация"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                    lineNumber: 1110,
+                                                    columnNumber: 17
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "bg-slate-50 border border-slate-100 rounded-xl p-3 font-mono text-[10px] text-slate-500 space-y-1",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "flex justify-between",
+                                                            children: [
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                    children: "Широта:"
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                    lineNumber: 1113,
+                                                                    columnNumber: 21
+                                                                }, this),
+                                                                " ",
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                    className: "font-bold",
+                                                                    children: selectedBuilding.latitude.toFixed(6)
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                    lineNumber: 1113,
+                                                                    columnNumber: 42
+                                                                }, this)
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                            lineNumber: 1112,
+                                                            columnNumber: 19
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "flex justify-between",
+                                                            children: [
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                    children: "Долгота:"
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                    lineNumber: 1116,
+                                                                    columnNumber: 21
+                                                                }, this),
+                                                                " ",
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                    className: "font-bold",
+                                                                    children: selectedBuilding.longitude.toFixed(6)
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                                    lineNumber: 1116,
+                                                                    columnNumber: 43
+                                                                }, this)
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                            lineNumber: 1115,
+                                                            columnNumber: 19
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                                    lineNumber: 1111,
+                                                    columnNumber: 17
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                            lineNumber: 1109,
+                                            columnNumber: 15
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/app/buildings-without-gas/page.tsx",
+                                    lineNumber: 1061,
+                                    columnNumber: 13
+                                }, this)
+                            ]
+                        }, void 0, true, {
                             fileName: "[project]/app/buildings-without-gas/page.tsx",
-                            lineNumber: 1039,
-                            columnNumber: 13
+                            lineNumber: 1038,
+                            columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/buildings-without-gas/page.tsx",
-                    lineNumber: 664,
+                    lineNumber: 745,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/app/buildings-without-gas/page.tsx",
-            lineNumber: 586,
+            lineNumber: 667,
             columnNumber: 7
         }, this)
     }, void 0, false);

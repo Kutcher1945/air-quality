@@ -33,8 +33,50 @@ __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$
     iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
     shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png"
 });
+const IZHS_RESIDENTIAL_TYPES = [
+    'Не указано',
+    'Частный дом',
+    'Коттедж',
+    'Таунхаус',
+    'Сооружение',
+    'Малоэтажный жилой дом',
+    'Жилой дом'
+];
+const IZHS_NON_RESIDENTIAL_TYPES = [
+    'Административное здание',
+    'Магазин',
+    'Строящееся здание',
+    'Автосервис',
+    'Общежитие',
+    'Хозяйственный корпус',
+    'Апартаменты',
+    'Кафе, бар',
+    'Ветлечебница',
+    'Строящийся коттедж',
+    'Строящееся административное здание',
+    'Производственный корпус',
+    'Киоск',
+    'Бани, сауны',
+    'Гостиница',
+    'Планируемая застройка',
+    'Строящийся таунхаус',
+    'Детский сад, ясли',
+    'Религиозное сооружение',
+    'Гараж',
+    'Ремонтируемое здание',
+    'Автомойка',
+    'Ресторан',
+    'Автоцентр',
+    'Склад',
+    'Столовая',
+    'Торговый павильон',
+    'Государственное учреждение',
+    'Шиномонтаж',
+    'Школа',
+    'Спортивное сооружение'
+];
 // Function to create colored marker icons based on building category
-const createMarkerIcon = (category, isSeasonalOrUnused)=>{
+const createMarkerIcon = (category, isSeasonalOrUnused, buildingTypeRaw)=>{
     // Different colors for each building type
     const colors = {
         general: "#f97316",
@@ -88,8 +130,18 @@ const createMarkerIcon = (category, isSeasonalOrUnused)=>{
             ]
         });
     }
-    const color = colors[category];
-    const icon = emoji[category];
+    let color = colors[category];
+    let icon = emoji[category];
+    if (category === "general" && buildingTypeRaw) {
+        const raw = buildingTypeRaw.trim();
+        if (IZHS_RESIDENTIAL_TYPES.includes(raw)) {
+            color = "#10b981"; // Green - ALSECO ИЖС types
+            icon = "🏡";
+        } else if (IZHS_NON_RESIDENTIAL_TYPES.includes(raw)) {
+            color = "#8b5cf6"; // Purple - ALSECO не ИЖС types
+            icon = "🏬";
+        }
+    }
     return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].divIcon({
         className: "custom-marker",
         html: `
@@ -176,7 +228,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                     children: "Зданий без газа"
                 }, void 0, false, {
                     fileName: "[project]/components/buildings-map.tsx",
-                    lineNumber: 192,
+                    lineNumber: 252,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -191,7 +243,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                                     }
                                 }, void 0, false, {
                                     fileName: "[project]/components/buildings-map.tsx",
-                                    lineNumber: 198,
+                                    lineNumber: 258,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -199,24 +251,24 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                                     children: item.label
                                 }, void 0, false, {
                                     fileName: "[project]/components/buildings-map.tsx",
-                                    lineNumber: 202,
+                                    lineNumber: 262,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, index, true, {
                             fileName: "[project]/components/buildings-map.tsx",
-                            lineNumber: 197,
+                            lineNumber: 257,
                             columnNumber: 13
                         }, this))
                 }, void 0, false, {
                     fileName: "[project]/components/buildings-map.tsx",
-                    lineNumber: 195,
+                    lineNumber: 255,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/components/buildings-map.tsx",
-            lineNumber: 191,
+            lineNumber: 251,
             columnNumber: 7
         }, this);
     };
@@ -483,7 +535,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 buildings.forEach({
                     "BuildingsMap.useEffect": (building)=>{
                         // Use different colored icon based on building category and seasonal/unused status
-                        const icon = createMarkerIcon(building.building_category, building.is_seasonal_or_unused);
+                        const icon = createMarkerIcon(building.building_category, building.is_seasonal_or_unused, building.building_type_raw);
                         const marker = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].marker([
                             building.latitude,
                             building.longitude
@@ -808,7 +860,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 className: "jsx-8c726aafc29b0ebc"
             }, void 0, false, {
                 fileName: "[project]/components/buildings-map.tsx",
-                lineNumber: 759,
+                lineNumber: 823,
                 columnNumber: 23
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -816,7 +868,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 className: "jsx-8c726aafc29b0ebc" + " " + "h-full w-full"
             }, void 0, false, {
                 fileName: "[project]/components/buildings-map.tsx",
-                lineNumber: 760,
+                lineNumber: 824,
                 columnNumber: 7
             }, this)
         ]

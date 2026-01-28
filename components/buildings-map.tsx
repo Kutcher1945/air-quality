@@ -20,6 +20,7 @@ interface Building {
   longitude: number
   has_gas: boolean
   building_type: string
+  building_type_raw?: string | null
   building_category: "general" | "izhs" | "susn"
   is_seasonal_or_unused?: boolean
   geometry?: {
@@ -74,8 +75,56 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 })
 
+const IZHS_RESIDENTIAL_TYPES = [
+  'Не указано',
+  'Частный дом',
+  'Коттедж',
+  'Таунхаус',
+  'Сооружение',
+  'Малоэтажный жилой дом',
+  'Жилой дом',
+]
+
+const IZHS_NON_RESIDENTIAL_TYPES = [
+  'Административное здание',
+  'Магазин',
+  'Строящееся здание',
+  'Автосервис',
+  'Общежитие',
+  'Хозяйственный корпус',
+  'Апартаменты',
+  'Кафе, бар',
+  'Ветлечебница',
+  'Строящийся коттедж',
+  'Строящееся административное здание',
+  'Производственный корпус',
+  'Киоск',
+  'Бани, сауны',
+  'Гостиница',
+  'Планируемая застройка',
+  'Строящийся таунхаус',
+  'Детский сад, ясли',
+  'Религиозное сооружение',
+  'Гараж',
+  'Ремонтируемое здание',
+  'Автомойка',
+  'Ресторан',
+  'Автоцентр',
+  'Склад',
+  'Столовая',
+  'Торговый павильон',
+  'Государственное учреждение',
+  'Шиномонтаж',
+  'Школа',
+  'Спортивное сооружение',
+]
+
 // Function to create colored marker icons based on building category
-const createMarkerIcon = (category: "general" | "izhs" | "susn", isSeasonalOrUnused?: boolean) => {
+const createMarkerIcon = (
+  category: "general" | "izhs" | "susn",
+  isSeasonalOrUnused?: boolean,
+  buildingTypeRaw?: string | null,
+) => {
   // Different colors for each building type
   const colors = {
     general: "#f97316", // Orange - General buildings without gas
@@ -123,8 +172,19 @@ const createMarkerIcon = (category: "general" | "izhs" | "susn", isSeasonalOrUnu
     })
   }
 
-  const color = colors[category]
-  const icon = emoji[category]
+  let color = colors[category]
+  let icon = emoji[category]
+
+  if (category === "general" && buildingTypeRaw) {
+    const raw = buildingTypeRaw.trim()
+    if (IZHS_RESIDENTIAL_TYPES.includes(raw)) {
+      color = "#10b981" // Green - ALSECO ИЖС types
+      icon = "🏡"
+    } else if (IZHS_NON_RESIDENTIAL_TYPES.includes(raw)) {
+      color = "#8b5cf6" // Purple - ALSECO не ИЖС types
+      icon = "🏬"
+    }
+  }
 
   return L.divIcon({
     className: "custom-marker",
@@ -468,7 +528,11 @@ export default function BuildingsMap({
       let markersCreated = 0
       buildings.forEach((building) => {
         // Use different colored icon based on building category and seasonal/unused status
-        const icon = createMarkerIcon(building.building_category, building.is_seasonal_or_unused)
+        const icon = createMarkerIcon(
+          building.building_category,
+          building.is_seasonal_or_unused,
+          building.building_type_raw,
+        )
 
         const marker = L.marker([building.latitude, building.longitude], {
           icon,

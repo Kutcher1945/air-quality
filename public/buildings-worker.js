@@ -54,6 +54,7 @@ function transformBuildingsData(apiBuildings) {
         : category === "susn"
           ? "Социально уязвимые слои населения"
           : "Жилое здание",
+      building_type_raw: b.building_type || null,
       building_category: category,
       is_not_in_almaty: b.is_not_in_almaty || false,
       is_seasonal_or_unused: b.is_seasonal_or_unused || false,

@@ -22,6 +22,52 @@ const DISTRICT_LABELS: Record<string, string> = {
   "8": "Турксибский район",
 }
 
+// Residential building types for ИЖС filter
+const IZHS_RESIDENTIAL_TYPES = [
+  'Не указано',
+  'Частный дом',
+  'Коттедж',
+  'Таунхаус',
+  'Сооружение',
+  'Малоэтажный жилой дом',
+  'Жилой дом',
+]
+
+// Non-residential building types for ИЖС filter
+const IZHS_NON_RESIDENTIAL_TYPES = [
+  'Административное здание',
+  'Магазин',
+  'Строящееся здание',
+  'Автосервис',
+  'Общежитие',
+  'Хозяйственный корпус',
+  'Апартаменты',
+  'Кафе, бар',
+  'Ветлечебница',
+  'Строящийся коттедж',
+  'Строящееся административное здание',
+  'Производственный корпус',
+  'Киоск',
+  'Бани, сауны',
+  'Гостиница',
+  'Планируемая застройка',
+  'Строящийся таунхаус',
+  'Детский сад, ясли',
+  'Религиозное сооружение',
+  'Гараж',
+  'Ремонтируемое здание',
+  'Автомойка',
+  'Ресторан',
+  'Автоцентр',
+  'Склад',
+  'Столовая',
+  'Торговый павильон',
+  'Государственное учреждение',
+  'Шиномонтаж',
+  'Школа',
+  'Спортивное сооружение',
+]
+
 interface Building {
   id: string
   address: string
@@ -30,6 +76,7 @@ interface Building {
   longitude: number
   has_gas: boolean
   building_type: string
+  building_type_raw?: string | null  // Raw building type from database (e.g., "Частный дом", "Коттедж")
   building_category: "general" | "izhs" | "susn"
   district_id?: number | null
   is_not_in_almaty?: boolean
@@ -91,6 +138,18 @@ export default function BuildingsWithoutGasPage() {
   const [showHelp, setShowHelp] = useState(false)
   const [selectedDistrictId, setSelectedDistrictId] = useState<number | null>(null)
   const [showOnlySeasonalUnused, setShowOnlySeasonalUnused] = useState(false)
+
+  // Category visibility checkboxes
+  const [showAlseco, setShowAlseco] = useState(true)
+  const [showIzhs, setShowIzhs] = useState(false)
+  const [showSusn, setShowSusn] = useState(false)
+
+  // Selected category for stats panel
+  const [selectedStatsCategory, setSelectedStatsCategory] = useState<"general" | "izhs" | "susn">("general")
+
+  // ИЖС building type filters (for "Данные районных акиматов" category)
+  const [showIzhsResidential, setShowIzhsResidential] = useState(true)
+  const [showIzhsNonResidential, setShowIzhsNonResidential] = useState(false)
 
   useEffect(() => {
     fetchBuildings()
@@ -467,6 +526,7 @@ export default function BuildingsWithoutGasPage() {
           : category === "susn"
             ? "Социально уязвимые слои населения"
             : "Жилое здание",
+        building_type_raw: b.building_type || null,  // Raw building type from API
         building_category: category,
         is_not_in_almaty: b.is_not_in_almaty || false,
         is_seasonal_or_unused: b.is_seasonal_or_unused || false,
@@ -599,9 +659,12 @@ export default function BuildingsWithoutGasPage() {
 
   const filteredBuildings = useMemo(() => {
     return buildings.filter((building) => {
-      // ONLY SHOW GENERAL (ALSECO) BUILDINGS
-      const isGeneral = building.building_category === "general"
-      if (!isGeneral) return false
+      // Filter by category checkboxes
+      const matchesCategory =
+        (showAlseco && building.building_category === "general") ||
+        (showIzhs && building.building_category === "izhs") ||
+        (showSusn && building.building_category === "susn")
+      if (!matchesCategory) return false
 
       // Filter for seasonal/unused buildings only
       if (showOnlySeasonalUnused && building.is_seasonal_or_unused !== true) return false
@@ -612,7 +675,7 @@ export default function BuildingsWithoutGasPage() {
         building.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
         building.district.toLowerCase().includes(searchQuery.toLowerCase())
 
-      // Filter by building type (keeping for backward compatibility, but always "general" now)
+      // Filter by building type (keeping for backward compatibility)
       const matchesType = buildingTypeFilter === "all" || building.building_category === buildingTypeFilter
 
       // Advanced filters
@@ -622,18 +685,34 @@ export default function BuildingsWithoutGasPage() {
 
       return matchesDistrict && matchesSearch && matchesType && matchesYear && matchesFloors && matchesApartments
     })
-  }, [buildings, districtFilter, searchQuery, buildingTypeFilter, yearFilter, floorsFilter, apartmentsFilter, showOnlySeasonalUnused])
+  }, [buildings, districtFilter, searchQuery, buildingTypeFilter, yearFilter, floorsFilter, apartmentsFilter, showOnlySeasonalUnused, showAlseco, showIzhs, showSusn])
 
-  // Only show districts from general (ALSECO) buildings
+  // Category-specific counts
   const generalBuildings = buildings.filter((b) => b.building_category === "general")
-  const districtNames = Array.from(new Set(generalBuildings.map((b) => b.district)))
+  const izhsBuildings = buildings.filter((b) => b.building_category === "izhs")
+  const susnBuildings = buildings.filter((b) => b.building_category === "susn")
+
+  // Get districts from all visible categories
+  const visibleBuildings = buildings.filter((b) =>
+    (showAlseco && b.building_category === "general") ||
+    (showIzhs && b.building_category === "izhs") ||
+    (showSusn && b.building_category === "susn")
+  )
+  const districtNames = Array.from(new Set(visibleBuildings.map((b) => b.district)))
     .filter((name) => name !== "Район 9" && name !== "Не указан")
     .sort()
+
   const categoryCounts = {
     general: generalBuildings.length,
-    izhs: buildings.filter((b) => b.building_category === "izhs").length,
-    susn: buildings.filter((b) => b.building_category === "susn").length,
+    izhs: izhsBuildings.length,
+    susn: susnBuildings.length,
   }
+
+  // Total of selected categories
+  const selectedCategoriesTotal =
+    (showAlseco ? categoryCounts.general : 0) +
+    (showIzhs ? categoryCounts.izhs : 0) +
+    (showSusn ? categoryCounts.susn : 0)
   const filteredCounts = {
     general: filteredBuildings.filter((b) => b.building_category === "general").length,
     izhs: filteredBuildings.filter((b) => b.building_category === "izhs").length,
@@ -766,7 +845,7 @@ export default function BuildingsWithoutGasPage() {
                   <span className="text-xl font-black text-slate-900 tabular-nums leading-none">
                     {filteredBuildings.length.toLocaleString()}
                   </span>
-                  <span className="text-xs font-medium text-slate-400">/ {generalBuildings.length.toLocaleString()}</span>
+                  <span className="text-xs font-medium text-slate-400">/ {selectedCategoriesTotal.toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -788,6 +867,57 @@ export default function BuildingsWithoutGasPage() {
                       <X className="h-4 w-4" />
                     </button>
                   )}
+                </div>
+              </section>
+
+              {/* Category Checkboxes Section */}
+              <section>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Категории зданий</label>
+                <div className="space-y-2">
+                  {/* ALSECO */}
+                  <label className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={showAlseco}
+                      onChange={(e) => setShowAlseco(e.target.checked)}
+                      className="w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
+                    />
+                    <div className="flex-1">
+                      <span className="text-xs font-semibold text-slate-700">ALSECO</span>
+                      <span className="text-[10px] text-slate-400 ml-2">({categoryCounts.general.toLocaleString()})</span>
+                    </div>
+                    <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                  </label>
+
+                  {/* ИЖС */}
+                  <label className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={showIzhs}
+                      onChange={(e) => setShowIzhs(e.target.checked)}
+                      className="w-4 h-4 rounded border-slate-300 text-green-500 focus:ring-green-500"
+                    />
+                    <div className="flex-1">
+                      <span className="text-xs font-semibold text-slate-700">Данные районных акиматов</span>
+                      <span className="text-[10px] text-slate-400 ml-2">({categoryCounts.izhs.toLocaleString()})</span>
+                    </div>
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  </label>
+
+                  {/* СУСН */}
+                  <label className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={showSusn}
+                      onChange={(e) => setShowSusn(e.target.checked)}
+                      className="w-4 h-4 rounded border-slate-300 text-blue-500 focus:ring-blue-500"
+                    />
+                    <div className="flex-1">
+                      <span className="text-xs font-semibold text-slate-700">СУСН</span>
+                      <span className="text-[10px] text-slate-400 ml-2">({categoryCounts.susn.toLocaleString()})</span>
+                    </div>
+                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                  </label>
                 </div>
               </section>
 
@@ -933,82 +1063,135 @@ export default function BuildingsWithoutGasPage() {
 
           {/* Statistics Cards - Right Side */}
           <div className="absolute top-4 right-0 w-[170px] flex flex-col gap-2.5 pointer-events-auto z-10">
-            {/* ALSECO specific cards in logical order */}
-
-            {/* 1. Total ALSECO */}
-            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-orange-500">
-              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ВСЕГО ALSECO</p>
-              <p className="text-[2.75rem] font-bold text-orange-600 leading-none tabular-nums">
-                {categoryCounts.general}
-              </p>
-              <p className="text-[7.5px] text-orange-400 mt-1.5 leading-tight">жилых зданий</p>
-            </div>
-            
-            {/* 3. ALSECO not in Almaty */}
-            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-red-500">
-              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO НЕ В АЛМАТЫ</p>
-              <p className="text-[2.75rem] font-bold text-red-600 leading-none tabular-nums">
-                {generalBuildings.filter((b) => b.is_not_in_almaty === true).length}
-              </p>
-              <p className="text-[7.5px] text-red-400 mt-1.5 leading-tight">за пределами</p>
-            </div>
-
-            {/* 2. ALSECO in Almaty */}
-            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-blue-500">
-              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO В АЛМАТЫ</p>
-              <p className="text-[2.75rem] font-bold text-blue-600 leading-none tabular-nums">
-                {generalBuildings.filter((b) => !b.is_not_in_almaty).length}
-              </p>
-              <p className="text-[7.5px] text-blue-400 mt-1.5 leading-tight">в городе</p>
-            </div>
-
-            
-
-            {/* 4. ALSECO with coordinates IN ALMATY */}
-            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-green-500">
-              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO С КООРДИНАТАМИ В АЛМАТЫ</p>
-              <p className="text-[2.75rem] font-bold text-green-600 leading-none tabular-nums">
-                {generalBuildings.filter((b) => !b.is_not_in_almaty && b.latitude && b.longitude).length}
-              </p>
-              <p className="text-[7.5px] text-green-400 mt-1.5 leading-tight">на карте в городе</p>
-            </div>
-
-            {/* 5. ALSECO without coordinates IN ALMATY */}
-            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-amber-500">
-              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ALSECO БЕЗ КООРДИНАТ В АЛМАТЫ</p>
-              <p className="text-[2.75rem] font-bold text-amber-600 leading-none tabular-nums">
-                {generalBuildings.filter((b) => !b.is_not_in_almaty && (!b.latitude || !b.longitude)).length}
-              </p>
-              <p className="text-[7.5px] text-amber-400 mt-1.5 leading-tight">в городе без координат</p>
-            </div>
-
-            {/* 6. Unique coordinates */}
-            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-purple-500">
-              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">УНИКАЛЬНЫХ КООРДИНАТ</p>
-              <p className="text-[2.75rem] font-bold text-purple-600 leading-none tabular-nums">
-                {new Set(generalBuildings.filter((b) => !b.is_not_in_almaty && b.latitude && b.longitude).map((b) => `${b.latitude},${b.longitude}`)).size}
-              </p>
-              <p className="text-[7.5px] text-purple-400 mt-1.5 leading-tight">точек на карте</p>
-            </div>
-
-            {/* 7. Seasonal or Unused ALSECO buildings */}
-            <div className={`bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] ${showOnlySeasonalUnused ? 'border-pink-600 ring-2 ring-pink-200' : 'border-pink-500'}`}>
-              <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">СЕЗОННЫЕ / НЕИСПОЛЬЗУЕМЫЕ</p>
-              <p className="text-[2.75rem] font-bold text-pink-600 leading-none tabular-nums">
-                {generalBuildings.filter((b) => b.is_seasonal_or_unused === true).length}
-              </p>
-              <p className="text-[7.5px] text-pink-400 mt-1.5 leading-tight">ALSECO зданий</p>
+            {/* Category Tabs */}
+            <div className="bg-white/95 backdrop-blur-xl rounded-l-xl p-1.5 shadow-sm flex gap-1">
               <button
-                onClick={() => setShowOnlySeasonalUnused(!showOnlySeasonalUnused)}
-                className={`mt-2 w-full h-6 rounded text-[9px] font-medium transition-all flex items-center justify-center gap-1 ${
-                  showOnlySeasonalUnused
-                    ? "bg-pink-600 text-white shadow-sm"
-                    : "bg-pink-50 text-pink-600 border border-pink-200 hover:bg-pink-100"
+                onClick={() => setSelectedStatsCategory("general")}
+                className={`flex-1 py-1.5 px-2 rounded-lg text-[9px] font-bold transition-all ${
+                  selectedStatsCategory === "general"
+                    ? "bg-orange-500 text-white shadow-sm"
+                    : "text-slate-500 hover:bg-slate-100"
                 }`}
               >
-                {showOnlySeasonalUnused ? "✓ Показаны" : "❄️ Показать на карте"}
+                ALSECO
+              </button>
+              <button
+                onClick={() => setSelectedStatsCategory("izhs")}
+                className={`flex-1 py-1.5 px-2 rounded-lg text-[9px] font-bold transition-all ${
+                  selectedStatsCategory === "izhs"
+                    ? "bg-green-500 text-white shadow-sm"
+                    : "text-slate-500 hover:bg-slate-100"
+                }`}
+              >
+                Данные районных акиматов
+              </button>
+              <button
+                onClick={() => setSelectedStatsCategory("susn")}
+                className={`flex-1 py-1.5 px-2 rounded-lg text-[9px] font-bold transition-all ${
+                  selectedStatsCategory === "susn"
+                    ? "bg-blue-500 text-white shadow-sm"
+                    : "text-slate-500 hover:bg-slate-100"
+                }`}
+              >
+              СУСН
               </button>
             </div>
+
+            {/* Dynamic stats based on selected category */}
+            {(() => {
+              const categoryData = selectedStatsCategory === "general"
+                ? generalBuildings
+                : selectedStatsCategory === "izhs"
+                  ? izhsBuildings
+                  : susnBuildings
+              const categoryName = selectedStatsCategory === "general"
+                ? "ALSECO"
+                : selectedStatsCategory === "izhs"
+                  ? "ИЖС"
+                  : "СУСН"
+              const primaryColor = selectedStatsCategory === "general"
+                ? { border: "border-orange-500", text: "text-orange-600", subtext: "text-orange-400", bg: "bg-orange-500", bgLight: "bg-orange-50", bgHover: "hover:bg-orange-100" }
+                : selectedStatsCategory === "izhs"
+                  ? { border: "border-green-500", text: "text-green-600", subtext: "text-green-400", bg: "bg-green-500", bgLight: "bg-green-50", bgHover: "hover:bg-green-100" }
+                  : { border: "border-blue-500", text: "text-blue-600", subtext: "text-blue-400", bg: "bg-blue-500", bgLight: "bg-blue-50", bgHover: "hover:bg-blue-100" }
+
+              return (
+                <>
+                  {/* 1. Total */}
+                  <div className={`bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] ${primaryColor.border}`}>
+                    <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">ВСЕГО {categoryName}</p>
+                    <p className={`text-[2.75rem] font-bold ${primaryColor.text} leading-none tabular-nums`}>
+                      {categoryData.length}
+                    </p>
+                    <p className={`text-[7.5px] ${primaryColor.subtext} mt-1.5 leading-tight`}>зданий</p>
+                  </div>
+
+                  {/* 2. Not in Almaty */}
+                  <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-red-500">
+                    <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">{categoryName} НЕ В АЛМАТЫ</p>
+                    <p className="text-[2.75rem] font-bold text-red-600 leading-none tabular-nums">
+                      {categoryData.filter((b) => b.is_not_in_almaty === true).length}
+                    </p>
+                    <p className="text-[7.5px] text-red-400 mt-1.5 leading-tight">за пределами</p>
+                  </div>
+
+                  {/* 3. In Almaty */}
+                  <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-cyan-500">
+                    <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">{categoryName} В АЛМАТЫ</p>
+                    <p className="text-[2.75rem] font-bold text-cyan-600 leading-none tabular-nums">
+                      {categoryData.filter((b) => !b.is_not_in_almaty).length}
+                    </p>
+                    <p className="text-[7.5px] text-cyan-400 mt-1.5 leading-tight">в городе</p>
+                  </div>
+
+                  {/* 4. With coordinates IN ALMATY */}
+                  <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-emerald-500">
+                    <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">{categoryName} С КООРДИНАТАМИ</p>
+                    <p className="text-[2.75rem] font-bold text-emerald-600 leading-none tabular-nums">
+                      {categoryData.filter((b) => !b.is_not_in_almaty && b.latitude && b.longitude).length}
+                    </p>
+                    <p className="text-[7.5px] text-emerald-400 mt-1.5 leading-tight">на карте в городе</p>
+                  </div>
+
+                  {/* 5. Without coordinates IN ALMATY */}
+                  <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-amber-500">
+                    <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">{categoryName} БЕЗ КООРДИНАТ</p>
+                    <p className="text-[2.75rem] font-bold text-amber-600 leading-none tabular-nums">
+                      {categoryData.filter((b) => !b.is_not_in_almaty && (!b.latitude || !b.longitude)).length}
+                    </p>
+                    <p className="text-[7.5px] text-amber-400 mt-1.5 leading-tight">в городе без координат</p>
+                  </div>
+
+                  {/* 6. Unique coordinates */}
+                  <div className="bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] border-purple-500">
+                    <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">УНИКАЛЬНЫХ КООРДИНАТ</p>
+                    <p className="text-[2.75rem] font-bold text-purple-600 leading-none tabular-nums">
+                      {new Set(categoryData.filter((b) => !b.is_not_in_almaty && b.latitude && b.longitude).map((b) => `${b.latitude},${b.longitude}`)).size}
+                    </p>
+                    <p className="text-[7.5px] text-purple-400 mt-1.5 leading-tight">точек на карте</p>
+                  </div>
+
+                  {/* 7. Seasonal or Unused buildings */}
+                  <div className={`bg-white/95 backdrop-blur-xl rounded-l-xl py-3.5 px-4 shadow-sm border-l-[3px] ${showOnlySeasonalUnused ? 'border-pink-600 ring-2 ring-pink-200' : 'border-pink-500'}`}>
+                    <p className="text-[8.5px] uppercase tracking-[0.15em] text-gray-500 mb-1 font-medium">СЕЗОННЫЕ / НЕИСПОЛЬЗУЕМЫЕ</p>
+                    <p className="text-[2.75rem] font-bold text-pink-600 leading-none tabular-nums">
+                      {categoryData.filter((b) => b.is_seasonal_or_unused === true).length}
+                    </p>
+                    <p className="text-[7.5px] text-pink-400 mt-1.5 leading-tight">{categoryName} зданий</p>
+                    <button
+                      onClick={() => setShowOnlySeasonalUnused(!showOnlySeasonalUnused)}
+                      className={`mt-2 w-full h-6 rounded text-[9px] font-medium transition-all flex items-center justify-center gap-1 ${
+                        showOnlySeasonalUnused
+                          ? "bg-pink-600 text-white shadow-sm"
+                          : "bg-pink-50 text-pink-600 border border-pink-200 hover:bg-pink-100"
+                      }`}
+                    >
+                      {showOnlySeasonalUnused ? "✓ Показаны" : "❄️ Показать на карте"}
+                    </button>
+                  </div>
+                </>
+              )
+            })()}
           </div>
 
           {/* Info Card - Bottom Left */}

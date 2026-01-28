@@ -335,8 +335,27 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
             mapInstanceRef.current = map;
             return ({
                 "BuildingsMap.useEffect": ()=>{
-                    if (mapInstanceRef.current) {
-                        mapInstanceRef.current.remove();
+                    const currentMap = mapInstanceRef.current;
+                    if (currentMap) {
+                        if (heatLayerRef.current) {
+                            currentMap.removeLayer(heatLayerRef.current);
+                            heatLayerRef.current = null;
+                        }
+                        if (clusterGroupRef.current) {
+                            clusterGroupRef.current.clearLayers();
+                            currentMap.removeLayer(clusterGroupRef.current);
+                            clusterGroupRef.current = null;
+                        }
+                        if (districtLayerRef.current) {
+                            currentMap.removeLayer(districtLayerRef.current);
+                            districtLayerRef.current = null;
+                        }
+                        if (renovationLayerRef.current) {
+                            currentMap.removeLayer(renovationLayerRef.current);
+                            renovationLayerRef.current = null;
+                        }
+                        currentMap.off();
+                        currentMap.remove();
                         mapInstanceRef.current = null;
                     }
                 }
@@ -347,6 +366,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
         "BuildingsMap.useEffect": ()=>{
             if (!mapInstanceRef.current || ("TURBOPACK compile-time value", "object") === "undefined") return;
             const map = mapInstanceRef.current;
+            let cancelled = false;
             // Clear existing layers
             if (heatLayerRef.current) {
                 map.removeLayer(heatLayerRef.current);
@@ -364,6 +384,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 map.removeLayer(renovationLayerRef.current);
                 renovationLayerRef.current = null;
             }
+            if (cancelled || !mapInstanceRef.current) return;
             if (showHeatmap) {
                 const VectorGrid = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].vectorGrid;
                 if (VectorGrid) {
@@ -422,8 +443,10 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                         keepBuffer: 4,
                         buffer: 512
                     });
-                    heatLayer.addTo(map);
-                    heatLayerRef.current = heatLayer;
+                    if (!cancelled && mapInstanceRef.current) {
+                        heatLayer.addTo(map);
+                        heatLayerRef.current = heatLayer;
+                    }
                 }
             } else {
                 // Cluster markers for performance on large datasets
@@ -672,8 +695,10 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                         });
                     }
                 }["BuildingsMap.useEffect"]);
-                clusterGroup.addTo(map);
-                clusterGroupRef.current = clusterGroup;
+                if (!cancelled && mapInstanceRef.current) {
+                    clusterGroup.addTo(map);
+                    clusterGroupRef.current = clusterGroup;
+                }
                 console.log(`✅ Successfully created ${markersCreated} markers on the map`);
             }
             // Render district polygons (filter by selectedDistrictId if specified)
@@ -833,14 +858,40 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                             b.longitude
                         ]
                 }["BuildingsMap.useEffect.bounds"]));
-                map.fitBounds(bounds, {
-                    padding: [
-                        50,
-                        50
-                    ]
-                });
-                hasAutoFitted.current = true;
+                if (!cancelled && mapInstanceRef.current) {
+                    map.fitBounds(bounds, {
+                        padding: [
+                            50,
+                            50
+                        ]
+                    });
+                    hasAutoFitted.current = true;
+                }
             }
+            return ({
+                "BuildingsMap.useEffect": ()=>{
+                    cancelled = true;
+                    if (!mapInstanceRef.current) return;
+                    const activeMap = mapInstanceRef.current;
+                    if (heatLayerRef.current) {
+                        activeMap.removeLayer(heatLayerRef.current);
+                        heatLayerRef.current = null;
+                    }
+                    if (clusterGroupRef.current) {
+                        clusterGroupRef.current.clearLayers();
+                        activeMap.removeLayer(clusterGroupRef.current);
+                        clusterGroupRef.current = null;
+                    }
+                    if (districtLayerRef.current) {
+                        activeMap.removeLayer(districtLayerRef.current);
+                        districtLayerRef.current = null;
+                    }
+                    if (renovationLayerRef.current) {
+                        activeMap.removeLayer(renovationLayerRef.current);
+                        renovationLayerRef.current = null;
+                    }
+                }
+            })["BuildingsMap.useEffect"];
         }
     }["BuildingsMap.useEffect"], [
         buildings,
@@ -860,7 +911,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 className: "jsx-8c726aafc29b0ebc"
             }, void 0, false, {
                 fileName: "[project]/components/buildings-map.tsx",
-                lineNumber: 823,
+                lineNumber: 873,
                 columnNumber: 23
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -868,7 +919,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 className: "jsx-8c726aafc29b0ebc" + " " + "h-full w-full"
             }, void 0, false, {
                 fileName: "[project]/components/buildings-map.tsx",
-                lineNumber: 824,
+                lineNumber: 874,
                 columnNumber: 7
             }, this)
         ]

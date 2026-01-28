@@ -143,6 +143,8 @@ export default function BuildingsWithoutGasPage() {
   const [showAlseco, setShowAlseco] = useState(true)
   const [showIzhs, setShowIzhs] = useState(false)
   const [showSusn, setShowSusn] = useState(false)
+  const [showAlsecoInAlmaty, setShowAlsecoInAlmaty] = useState(true)
+  const [showAlsecoNotInAlmaty, setShowAlsecoNotInAlmaty] = useState(false)
 
   // Selected category for stats panel
   const [selectedStatsCategory, setSelectedStatsCategory] = useState<"general" | "izhs" | "susn">("general")
@@ -153,7 +155,87 @@ export default function BuildingsWithoutGasPage() {
 
   // ALSECO building type filters (ИЖС vs не ИЖС)
   const [showAlsecoIzhsTypes, setShowAlsecoIzhsTypes] = useState(true)
-  const [showAlsecoNonIzhsTypes, setShowAlsecoNonIzhsTypes] = useState(false)
+  const [showAlsecoNonIzhsTypes, setShowAlsecoNonIzhsTypes] = useState(true)
+  const [selectedAlsecoIzhsTypes, setSelectedAlsecoIzhsTypes] = useState<Record<string, boolean>>({
+    "Частный дом": true,
+    "Коттедж": true,
+    "Жилой дом": true,
+    "Дом": true,
+  })
+  const [selectedAlsecoNonIzhsTypes, setSelectedAlsecoNonIzhsTypes] = useState<Record<string, boolean>>({
+    "Административное здание": true,
+    "Магазин": true,
+    "Строящееся здание": true,
+    "Автосервис": true,
+    "Общежитие": true,
+    "Хозяйственный корпус": true,
+    "Апартаменты": true,
+    "Кафе, бар": true,
+    "Ветлечебница": true,
+    "Строящийся коттедж": true,
+    "Строящееся административное здание": true,
+    "Производственный корпус": true,
+    "Киоск": true,
+    "Бани, сауны": true,
+    "Гостиница": true,
+    "Планируемая застройка": true,
+    "Строящийся таунхаус": true,
+    "Детский сад, ясли": true,
+    "Религиозное сооружение": true,
+    "Гараж": true,
+    "Ремонтируемое здание": true,
+    "Автомойка": true,
+    "Ресторан": true,
+    "Автоцентр": true,
+    "Склад": true,
+    "Столовая": true,
+    "Торговый павильон": true,
+    "Государственное учреждение": true,
+    "Шиномонтаж": true,
+    "Школа": true,
+    "Спортивное сооружение": true,
+    "Таунхаус": true,
+    "Сооружение": true,
+    "Малоэтажный жилой дом": true,
+  })
+
+  const alsecoIzhsLabels = ["Частный дом", "Коттедж", "Жилой дом", "Дом"]
+  const alsecoNonIzhsLabels = [
+    "Административное здание",
+    "Магазин",
+    "Строящееся здание",
+    "Автосервис",
+    "Общежитие",
+    "Хозяйственный корпус",
+    "Апартаменты",
+    "Кафе, бар",
+    "Ветлечебница",
+    "Строящийся коттедж",
+    "Строящееся административное здание",
+    "Производственный корпус",
+    "Киоск",
+    "Бани, сауны",
+    "Гостиница",
+    "Планируемая застройка",
+    "Строящийся таунхаус",
+    "Детский сад, ясли",
+    "Религиозное сооружение",
+    "Гараж",
+    "Ремонтируемое здание",
+    "Автомойка",
+    "Ресторан",
+    "Автоцентр",
+    "Склад",
+    "Столовая",
+    "Торговый павильон",
+    "Государственное учреждение",
+    "Шиномонтаж",
+    "Школа",
+    "Спортивное сооружение",
+    "Таунхаус",
+    "Сооружение",
+    "Малоэтажный жилой дом",
+  ]
 
   // Defer heavy filtering inputs to keep UI responsive on large datasets
   const deferredSearchQuery = useDeferredValue(searchQuery)
@@ -168,6 +250,20 @@ export default function BuildingsWithoutGasPage() {
   const deferredShowSusn = useDeferredValue(showSusn)
   const deferredShowAlsecoIzhsTypes = useDeferredValue(showAlsecoIzhsTypes)
   const deferredShowAlsecoNonIzhsTypes = useDeferredValue(showAlsecoNonIzhsTypes)
+  const deferredShowAlsecoInAlmaty = useDeferredValue(showAlsecoInAlmaty)
+  const deferredShowAlsecoNotInAlmaty = useDeferredValue(showAlsecoNotInAlmaty)
+  const deferredSelectedAlsecoIzhsTypes = useDeferredValue(selectedAlsecoIzhsTypes)
+  const deferredSelectedAlsecoNonIzhsTypes = useDeferredValue(selectedAlsecoNonIzhsTypes)
+
+  const allAlsecoIzhsSelected = useMemo(
+    () => alsecoIzhsLabels.every((label) => deferredSelectedAlsecoIzhsTypes[label]),
+    [alsecoIzhsLabels, deferredSelectedAlsecoIzhsTypes]
+  )
+  const allAlsecoNonIzhsSelected = useMemo(
+    () => alsecoNonIzhsLabels.every((label) => deferredSelectedAlsecoNonIzhsTypes[label]),
+    [alsecoNonIzhsLabels, deferredSelectedAlsecoNonIzhsTypes]
+  )
+  const alsecoIzhsLabelSet = useMemo(() => new Set(alsecoIzhsLabels), [alsecoIzhsLabels])
 
   useEffect(() => {
     fetchBuildings()
@@ -221,6 +317,10 @@ export default function BuildingsWithoutGasPage() {
       if (!forceRefresh) {
         const cachedData = await getBuildingsFromCache()
         if (cachedData && cachedData.length > 0) {
+          const hasBuildingTypeField = typeof cachedData[0]?.building_type !== "undefined"
+          if (!hasBuildingTypeField) {
+            console.warn("🧹 Cache missing building_type field, refetching from API...")
+          } else {
           console.log("💾 Loading from cache:", cachedData.length, "buildings")
           setLoadingProgress({ loaded: 0, total: cachedData.length, status: "Загрузка из кэша..." })
 
@@ -242,6 +342,7 @@ export default function BuildingsWithoutGasPage() {
           await new Promise(resolve => setTimeout(resolve, 200))
           setLoading(false)
           return
+          }
         }
       }
 
@@ -249,7 +350,7 @@ export default function BuildingsWithoutGasPage() {
       setLoadingProgress({ loaded: 0, total: 0, status: "Подключение к серверу..." })
 
       // ✅ Fetch with streaming to track download progress
-      const response = await fetch("http://localhost:8000/api/v1/address/buildings-without-gas/all-sources/")
+      const response = await fetch("https://admin.smartalmaty.kz/api/v1/address/buildings-without-gas/all-sources/")
 
       if (!response.ok) {
         throw new Error(`API returned ${response.status}`)
@@ -687,10 +788,32 @@ export default function BuildingsWithoutGasPage() {
       // ALSECO-specific building type filter (ИЖС vs не ИЖС)
       if (building.building_category === "general") {
         const rawType = (building.building_type_raw || "").trim()
-        const matchesIzhs = deferredShowAlsecoIzhsTypes && IZHS_RESIDENTIAL_TYPES.includes(rawType)
-        const matchesNonIzhs = deferredShowAlsecoNonIzhsTypes && IZHS_NON_RESIDENTIAL_TYPES.includes(rawType)
-        if (!matchesIzhs && !matchesNonIzhs) return false
-        if (building.is_not_in_almaty === true) return false
+        if (!rawType) return false
+        const allowAnyType =
+          deferredShowAlsecoIzhsTypes &&
+          deferredShowAlsecoNonIzhsTypes &&
+          allAlsecoIzhsSelected &&
+          allAlsecoNonIzhsSelected
+
+        if (!allowAnyType) {
+          const isIzhsType = rawType === "Не указано" || alsecoIzhsLabelSet.has(rawType)
+          const allowAnyNonIzhsType =
+            deferredShowAlsecoNonIzhsTypes && allAlsecoNonIzhsSelected
+          const matchesIzhs =
+            deferredShowAlsecoIzhsTypes &&
+            deferredSelectedAlsecoIzhsTypes[rawType === "Не указано" ? "Дом" : rawType]
+          const matchesNonIzhs =
+            deferredShowAlsecoNonIzhsTypes &&
+            (deferredSelectedAlsecoNonIzhsTypes[rawType] || (allowAnyNonIzhsType && !isIzhsType))
+          if (!matchesIzhs && !matchesNonIzhs) return false
+        }
+        const isNotInAlmaty = building.is_not_in_almaty === true
+        const allowAnyLocation = deferredShowAlsecoInAlmaty && deferredShowAlsecoNotInAlmaty
+        if (!allowAnyLocation) {
+          if (deferredShowAlsecoInAlmaty && isNotInAlmaty) return false
+          if (deferredShowAlsecoNotInAlmaty && !isNotInAlmaty) return false
+          if (!deferredShowAlsecoInAlmaty && !deferredShowAlsecoNotInAlmaty) return false
+        }
       }
 
       // Filter for seasonal/unused buildings only
@@ -726,6 +849,13 @@ export default function BuildingsWithoutGasPage() {
     deferredShowSusn,
     deferredShowAlsecoIzhsTypes,
     deferredShowAlsecoNonIzhsTypes,
+    deferredSelectedAlsecoIzhsTypes,
+    deferredSelectedAlsecoNonIzhsTypes,
+    allAlsecoIzhsSelected,
+    allAlsecoNonIzhsSelected,
+    alsecoIzhsLabelSet,
+    deferredShowAlsecoInAlmaty,
+    deferredShowAlsecoNotInAlmaty,
   ])
 
   // Category-specific counts
@@ -929,6 +1059,28 @@ export default function BuildingsWithoutGasPage() {
                     </div>
                     <div className="w-3 h-3 rounded-full bg-orange-500"></div>
                   </label>
+                  <div className={`grid grid-cols-1 gap-2 px-3 ${showAlseco ? "opacity-100" : "opacity-60"}`}>
+                    <label className={`flex items-center gap-3 ${showAlseco ? "cursor-pointer" : "cursor-not-allowed"}`}>
+                      <input
+                        type="checkbox"
+                        checked={showAlsecoInAlmaty}
+                        onChange={(e) => setShowAlsecoInAlmaty(e.target.checked)}
+                        disabled={!showAlseco}
+                        className="w-3.5 h-3.5 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
+                      />
+                      <span className="text-[11px] text-slate-600">В Алматы</span>
+                    </label>
+                    <label className={`flex items-center gap-3 ${showAlseco ? "cursor-pointer" : "cursor-not-allowed"}`}>
+                      <input
+                        type="checkbox"
+                        checked={showAlsecoNotInAlmaty}
+                        onChange={(e) => setShowAlsecoNotInAlmaty(e.target.checked)}
+                        disabled={!showAlseco}
+                        className="w-3.5 h-3.5 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
+                      />
+                      <span className="text-[11px] text-slate-600">Не в Алматы</span>
+                    </label>
+                  </div>
 
                   {/* ИЖС */}
                   <label className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors">
@@ -979,6 +1131,20 @@ export default function BuildingsWithoutGasPage() {
                       <span className="text-[10px] text-slate-400 ml-2">из ALSECO</span>
                     </div>
                   </label>
+                  <div className={`grid grid-cols-1 gap-2 px-3 ${showAlseco && showAlsecoIzhsTypes ? "opacity-100" : "opacity-60"}`}>
+                    {alsecoIzhsLabels.map((label) => (
+                      <label key={label} className={`flex items-center gap-3 ${showAlseco && showAlsecoIzhsTypes ? "cursor-pointer" : "cursor-not-allowed"}`}>
+                        <input
+                          type="checkbox"
+                          checked={!!selectedAlsecoIzhsTypes[label]}
+                          onChange={(e) => setSelectedAlsecoIzhsTypes(prev => ({ ...prev, [label]: e.target.checked }))}
+                          disabled={!showAlseco || !showAlsecoIzhsTypes}
+                          className="w-3.5 h-3.5 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
+                        />
+                        <span className="text-[11px] text-slate-600">{label}</span>
+                      </label>
+                    ))}
+                  </div>
 
                   <div className="h-px bg-slate-200"></div>
 
@@ -995,6 +1161,20 @@ export default function BuildingsWithoutGasPage() {
                       <span className="text-[10px] text-slate-400 ml-2">из ALSECO</span>
                     </div>
                   </label>
+                  <div className={`grid grid-cols-1 gap-2 px-3 ${showAlseco && showAlsecoNonIzhsTypes ? "opacity-100" : "opacity-60"}`}>
+                    {alsecoNonIzhsLabels.map((label) => (
+                      <label key={label} className={`flex items-center gap-3 ${showAlseco && showAlsecoNonIzhsTypes ? "cursor-pointer" : "cursor-not-allowed"}`}>
+                        <input
+                          type="checkbox"
+                          checked={!!selectedAlsecoNonIzhsTypes[label]}
+                          onChange={(e) => setSelectedAlsecoNonIzhsTypes(prev => ({ ...prev, [label]: e.target.checked }))}
+                          disabled={!showAlseco || !showAlsecoNonIzhsTypes}
+                          className="w-3.5 h-3.5 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
+                        />
+                        <span className="text-[11px] text-slate-600">{label}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
               </section>
 
@@ -1017,6 +1197,17 @@ export default function BuildingsWithoutGasPage() {
                 <div className="grid grid-cols-1 gap-2">
                   <button onClick={() => fetchBuildings(true)} disabled={loading} className="flex items-center gap-3 px-4 h-10 rounded-xl text-xs font-semibold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200">
                     <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Обновить данные
+                  </button>
+
+                  <button
+                    onClick={async () => {
+                      await clearBuildingsCache()
+                      fetchBuildings(true)
+                    }}
+                    disabled={loading}
+                    className="flex items-center gap-3 px-4 h-10 rounded-xl text-xs font-semibold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  >
+                    <X className="h-4 w-4" /> Очистить кэш
                   </button>
                   
                   <button onClick={() => setShowHeatmap(!showHeatmap)} className={`flex items-center gap-3 px-4 h-10 rounded-xl text-xs font-semibold transition-all ${showHeatmap ? "bg-orange-500 text-white shadow-md shadow-orange-200" : "bg-slate-100 text-slate-600"}`}>

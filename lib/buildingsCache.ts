@@ -12,6 +12,10 @@ interface CachedData {
 // Open or create IndexedDB
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
+    if (typeof indexedDB === "undefined") {
+      reject(new Error("IndexedDB is not available"))
+      return
+    }
     const request = indexedDB.open(DB_NAME, DB_VERSION)
 
     request.onerror = () => reject(request.error)
@@ -29,6 +33,7 @@ function openDB(): Promise<IDBDatabase> {
 // Save data to cache
 export async function saveBuildingsToCache(data: any[]): Promise<void> {
   try {
+    if (typeof indexedDB === "undefined") return
     const db = await openDB()
     const transaction = db.transaction([STORE_NAME], "readwrite")
     const store = transaction.objectStore(STORE_NAME)
@@ -55,6 +60,7 @@ export async function saveBuildingsToCache(data: any[]): Promise<void> {
 // Get data from cache
 export async function getBuildingsFromCache(): Promise<any[] | null> {
   try {
+    if (typeof indexedDB === "undefined") return null
     const db = await openDB()
     const transaction = db.transaction([STORE_NAME], "readonly")
     const store = transaction.objectStore(STORE_NAME)
@@ -96,6 +102,7 @@ export async function getBuildingsFromCache(): Promise<any[] | null> {
 // Clear cache (useful for debugging or manual refresh)
 export async function clearBuildingsCache(): Promise<void> {
   try {
+    if (typeof indexedDB === "undefined") return
     const db = await openDB()
     const transaction = db.transaction([STORE_NAME], "readwrite")
     const store = transaction.objectStore(STORE_NAME)

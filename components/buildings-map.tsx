@@ -327,8 +327,27 @@ export default function BuildingsMap({
     mapInstanceRef.current = map
 
     return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove()
+      const currentMap = mapInstanceRef.current
+      if (currentMap) {
+        if (heatLayerRef.current) {
+          currentMap.removeLayer(heatLayerRef.current)
+          heatLayerRef.current = null
+        }
+        if (clusterGroupRef.current) {
+          clusterGroupRef.current.clearLayers()
+          currentMap.removeLayer(clusterGroupRef.current)
+          clusterGroupRef.current = null
+        }
+        if (districtLayerRef.current) {
+          currentMap.removeLayer(districtLayerRef.current)
+          districtLayerRef.current = null
+        }
+        if (renovationLayerRef.current) {
+          currentMap.removeLayer(renovationLayerRef.current)
+          renovationLayerRef.current = null
+        }
+        currentMap.off()
+        currentMap.remove()
         mapInstanceRef.current = null
       }
     }
@@ -338,6 +357,7 @@ export default function BuildingsMap({
     if (!mapInstanceRef.current || typeof window === "undefined") return
 
     const map = mapInstanceRef.current
+    let cancelled = false
 
     // Clear existing layers
     if (heatLayerRef.current) {
@@ -356,6 +376,8 @@ export default function BuildingsMap({
       map.removeLayer(renovationLayerRef.current)
       renovationLayerRef.current = null
     }
+
+    if (cancelled || !mapInstanceRef.current) return
 
     if (showHeatmap) {
       const VectorGrid = (L as any).vectorGrid;
@@ -416,8 +438,10 @@ export default function BuildingsMap({
           buffer: 512, // Larger buffer helps with labels/edges
         });
 
-        heatLayer.addTo(map);
-        heatLayerRef.current = heatLayer;
+        if (!cancelled && mapInstanceRef.current) {
+          heatLayer.addTo(map);
+          heatLayerRef.current = heatLayer;
+        }
       }
     } else {
       // Cluster markers for performance on large datasets
@@ -657,8 +681,10 @@ export default function BuildingsMap({
         cluster.zoomToBounds({ padding: [50, 50] })
       })
 
-      clusterGroup.addTo(map)
-      clusterGroupRef.current = clusterGroup
+      if (!cancelled && mapInstanceRef.current) {
+        clusterGroup.addTo(map)
+        clusterGroupRef.current = clusterGroup
+      }
 
       console.log(`✅ Successfully created ${markersCreated} markers on the map`)
     }
@@ -805,8 +831,32 @@ export default function BuildingsMap({
     // Auto-fit bounds only on first load, not on subsequent re-renders
     if (buildings.length > 0 && !hasAutoFitted.current) {
       const bounds = L.latLngBounds(buildings.map((b) => [b.latitude, b.longitude]))
-      map.fitBounds(bounds, { padding: [50, 50] })
-      hasAutoFitted.current = true
+      if (!cancelled && mapInstanceRef.current) {
+        map.fitBounds(bounds, { padding: [50, 50] })
+        hasAutoFitted.current = true
+      }
+    }
+    return () => {
+      cancelled = true
+      if (!mapInstanceRef.current) return
+      const activeMap = mapInstanceRef.current
+      if (heatLayerRef.current) {
+        activeMap.removeLayer(heatLayerRef.current)
+        heatLayerRef.current = null
+      }
+      if (clusterGroupRef.current) {
+        clusterGroupRef.current.clearLayers()
+        activeMap.removeLayer(clusterGroupRef.current)
+        clusterGroupRef.current = null
+      }
+      if (districtLayerRef.current) {
+        activeMap.removeLayer(districtLayerRef.current)
+        districtLayerRef.current = null
+      }
+      if (renovationLayerRef.current) {
+        activeMap.removeLayer(renovationLayerRef.current)
+        renovationLayerRef.current = null
+      }
     }
   }, [buildings, showHeatmap, showRenovationAreas, renovationAreas, districts, selectedDistrictId])
 

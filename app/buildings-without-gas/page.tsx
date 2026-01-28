@@ -151,6 +151,10 @@ export default function BuildingsWithoutGasPage() {
   const [showIzhsResidential, setShowIzhsResidential] = useState(true)
   const [showIzhsNonResidential, setShowIzhsNonResidential] = useState(false)
 
+  // ALSECO building type filters (ИЖС vs не ИЖС)
+  const [showAlsecoIzhsTypes, setShowAlsecoIzhsTypes] = useState(true)
+  const [showAlsecoNonIzhsTypes, setShowAlsecoNonIzhsTypes] = useState(false)
+
   useEffect(() => {
     fetchBuildings()
     fetchRenovationAreas()
@@ -231,7 +235,7 @@ export default function BuildingsWithoutGasPage() {
       setLoadingProgress({ loaded: 0, total: 0, status: "Подключение к серверу..." })
 
       // ✅ Fetch with streaming to track download progress
-      const response = await fetch("https://admin.smartalmaty.kz/api/v1/address/buildings-without-gas/all-sources/")
+      const response = await fetch("http://localhost:8000/api/v1/address/buildings-without-gas/all-sources/")
 
       if (!response.ok) {
         throw new Error(`API returned ${response.status}`)
@@ -666,6 +670,15 @@ export default function BuildingsWithoutGasPage() {
         (showSusn && building.building_category === "susn")
       if (!matchesCategory) return false
 
+      // ALSECO-specific building type filter (ИЖС vs не ИЖС)
+      if (building.building_category === "general") {
+        const rawType = (building.building_type_raw || "").trim()
+        const matchesIzhs = showAlsecoIzhsTypes && IZHS_RESIDENTIAL_TYPES.includes(rawType)
+        const matchesNonIzhs = showAlsecoNonIzhsTypes && IZHS_NON_RESIDENTIAL_TYPES.includes(rawType)
+        if (!matchesIzhs && !matchesNonIzhs) return false
+        if (building.is_not_in_almaty === true) return false
+      }
+
       // Filter for seasonal/unused buildings only
       if (showOnlySeasonalUnused && building.is_seasonal_or_unused !== true) return false
 
@@ -685,7 +698,7 @@ export default function BuildingsWithoutGasPage() {
 
       return matchesDistrict && matchesSearch && matchesType && matchesYear && matchesFloors && matchesApartments
     })
-  }, [buildings, districtFilter, searchQuery, buildingTypeFilter, yearFilter, floorsFilter, apartmentsFilter, showOnlySeasonalUnused, showAlseco, showIzhs, showSusn])
+  }, [buildings, districtFilter, searchQuery, buildingTypeFilter, yearFilter, floorsFilter, apartmentsFilter, showOnlySeasonalUnused, showAlseco, showIzhs, showSusn, showAlsecoIzhsTypes, showAlsecoNonIzhsTypes])
 
   // Category-specific counts
   const generalBuildings = buildings.filter((b) => b.building_category === "general")
@@ -917,6 +930,42 @@ export default function BuildingsWithoutGasPage() {
                       <span className="text-[10px] text-slate-400 ml-2">({categoryCounts.susn.toLocaleString()})</span>
                     </div>
                     <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                  </label>
+                </div>
+              </section>
+
+              {/* ALSECO building type toggle */}
+              <section>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Фильтр ALSECO</label>
+                <div className="space-y-2">
+                  <label className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-colors ${showAlseco ? "bg-slate-50 border-slate-200 hover:bg-slate-100 cursor-pointer" : "bg-slate-100 border-slate-200 opacity-60 cursor-not-allowed"}`}>
+                    <input
+                      type="checkbox"
+                      checked={showAlsecoIzhsTypes}
+                      onChange={(e) => setShowAlsecoIzhsTypes(e.target.checked)}
+                      disabled={!showAlseco}
+                      className="w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
+                    />
+                    <div className="flex-1">
+                      <span className="text-xs font-semibold text-slate-700">Показывать ИЖС типы</span>
+                      <span className="text-[10px] text-slate-400 ml-2">из ALSECO</span>
+                    </div>
+                  </label>
+
+                  <div className="h-px bg-slate-200"></div>
+
+                  <label className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-colors ${showAlseco ? "bg-slate-50 border-slate-200 hover:bg-slate-100 cursor-pointer" : "bg-slate-100 border-slate-200 opacity-60 cursor-not-allowed"}`}>
+                    <input
+                      type="checkbox"
+                      checked={showAlsecoNonIzhsTypes}
+                      onChange={(e) => setShowAlsecoNonIzhsTypes(e.target.checked)}
+                      disabled={!showAlseco}
+                      className="w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
+                    />
+                    <div className="flex-1">
+                      <span className="text-xs font-semibold text-slate-700">Показывать не ИЖС</span>
+                      <span className="text-[10px] text-slate-400 ml-2">из ALSECO</span>
+                    </div>
                   </label>
                 </div>
               </section>

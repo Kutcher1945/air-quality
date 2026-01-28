@@ -1030,8 +1030,8 @@ export default function BuildingsWithoutGasPage() {
         <div className="absolute top-0 left-0 bottom-0 w-[300px] pointer-events-auto z-20 flex flex-col bg-white/95 backdrop-blur-md border-r border-slate-200 shadow-xl">
           {/* Unified Header */}
           <div className="h-[72px] px-5 flex items-center gap-3 border-b border-slate-200 shrink-0">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 shadow-lg shadow-slate-200">
-              <Building2 className="h-5 w-5 text-white" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 shadow-lg shadow-slate-200 overflow-hidden">
+              <img src="/logo.png" alt="Логотип" className="h-7 w-7 object-contain" />
             </div>
             <div>
               <p className="text-[10px] font-bold tracking-[0.1em] text-slate-400 uppercase leading-tight">ИНФРАСТРУКТУРА / АЛМАТЫ</p>

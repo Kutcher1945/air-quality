@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef, useDeferredValue } from "react"
 import dynamic from "next/dynamic"
 import { HeaderMenu } from "@/components/header-menu"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -154,6 +154,20 @@ export default function BuildingsWithoutGasPage() {
   // ALSECO building type filters (ИЖС vs не ИЖС)
   const [showAlsecoIzhsTypes, setShowAlsecoIzhsTypes] = useState(true)
   const [showAlsecoNonIzhsTypes, setShowAlsecoNonIzhsTypes] = useState(false)
+
+  // Defer heavy filtering inputs to keep UI responsive on large datasets
+  const deferredSearchQuery = useDeferredValue(searchQuery)
+  const deferredDistrictFilter = useDeferredValue(districtFilter)
+  const deferredBuildingTypeFilter = useDeferredValue(buildingTypeFilter)
+  const deferredYearFilter = useDeferredValue(yearFilter)
+  const deferredFloorsFilter = useDeferredValue(floorsFilter)
+  const deferredApartmentsFilter = useDeferredValue(apartmentsFilter)
+  const deferredShowOnlySeasonalUnused = useDeferredValue(showOnlySeasonalUnused)
+  const deferredShowAlseco = useDeferredValue(showAlseco)
+  const deferredShowIzhs = useDeferredValue(showIzhs)
+  const deferredShowSusn = useDeferredValue(showSusn)
+  const deferredShowAlsecoIzhsTypes = useDeferredValue(showAlsecoIzhsTypes)
+  const deferredShowAlsecoNonIzhsTypes = useDeferredValue(showAlsecoNonIzhsTypes)
 
   useEffect(() => {
     fetchBuildings()
@@ -665,40 +679,54 @@ export default function BuildingsWithoutGasPage() {
     return buildings.filter((building) => {
       // Filter by category checkboxes
       const matchesCategory =
-        (showAlseco && building.building_category === "general") ||
-        (showIzhs && building.building_category === "izhs") ||
-        (showSusn && building.building_category === "susn")
+        (deferredShowAlseco && building.building_category === "general") ||
+        (deferredShowIzhs && building.building_category === "izhs") ||
+        (deferredShowSusn && building.building_category === "susn")
       if (!matchesCategory) return false
 
       // ALSECO-specific building type filter (ИЖС vs не ИЖС)
       if (building.building_category === "general") {
         const rawType = (building.building_type_raw || "").trim()
-        const matchesIzhs = showAlsecoIzhsTypes && IZHS_RESIDENTIAL_TYPES.includes(rawType)
-        const matchesNonIzhs = showAlsecoNonIzhsTypes && IZHS_NON_RESIDENTIAL_TYPES.includes(rawType)
+        const matchesIzhs = deferredShowAlsecoIzhsTypes && IZHS_RESIDENTIAL_TYPES.includes(rawType)
+        const matchesNonIzhs = deferredShowAlsecoNonIzhsTypes && IZHS_NON_RESIDENTIAL_TYPES.includes(rawType)
         if (!matchesIzhs && !matchesNonIzhs) return false
         if (building.is_not_in_almaty === true) return false
       }
 
       // Filter for seasonal/unused buildings only
-      if (showOnlySeasonalUnused && building.is_seasonal_or_unused !== true) return false
+      if (deferredShowOnlySeasonalUnused && building.is_seasonal_or_unused !== true) return false
 
-      const matchesDistrict = districtFilter === "all" || building.district === districtFilter
+      const matchesDistrict = deferredDistrictFilter === "all" || building.district === deferredDistrictFilter
       const matchesSearch =
-        searchQuery === "" ||
-        building.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        building.district.toLowerCase().includes(searchQuery.toLowerCase())
+        deferredSearchQuery === "" ||
+        building.address.toLowerCase().includes(deferredSearchQuery.toLowerCase()) ||
+        building.district.toLowerCase().includes(deferredSearchQuery.toLowerCase())
 
       // Filter by building type (keeping for backward compatibility)
-      const matchesType = buildingTypeFilter === "all" || building.building_category === buildingTypeFilter
+      const matchesType = deferredBuildingTypeFilter === "all" || building.building_category === deferredBuildingTypeFilter
 
       // Advanced filters
-      const matchesYear = !yearFilter || (building.year_built && building.year_built >= yearFilter.min && building.year_built <= yearFilter.max)
-      const matchesFloors = !floorsFilter || (building.floors && building.floors >= floorsFilter.min && building.floors <= floorsFilter.max)
-      const matchesApartments = !apartmentsFilter || (building.apartments && building.apartments >= apartmentsFilter.min && building.apartments <= apartmentsFilter.max)
+      const matchesYear = !deferredYearFilter || (building.year_built && building.year_built >= deferredYearFilter.min && building.year_built <= deferredYearFilter.max)
+      const matchesFloors = !deferredFloorsFilter || (building.floors && building.floors >= deferredFloorsFilter.min && building.floors <= deferredFloorsFilter.max)
+      const matchesApartments = !deferredApartmentsFilter || (building.apartments && building.apartments >= deferredApartmentsFilter.min && building.apartments <= deferredApartmentsFilter.max)
 
       return matchesDistrict && matchesSearch && matchesType && matchesYear && matchesFloors && matchesApartments
     })
-  }, [buildings, districtFilter, searchQuery, buildingTypeFilter, yearFilter, floorsFilter, apartmentsFilter, showOnlySeasonalUnused, showAlseco, showIzhs, showSusn, showAlsecoIzhsTypes, showAlsecoNonIzhsTypes])
+  }, [
+    buildings,
+    deferredDistrictFilter,
+    deferredSearchQuery,
+    deferredBuildingTypeFilter,
+    deferredYearFilter,
+    deferredFloorsFilter,
+    deferredApartmentsFilter,
+    deferredShowOnlySeasonalUnused,
+    deferredShowAlseco,
+    deferredShowIzhs,
+    deferredShowSusn,
+    deferredShowAlsecoIzhsTypes,
+    deferredShowAlsecoNonIzhsTypes,
+  ])
 
   // Category-specific counts
   const generalBuildings = buildings.filter((b) => b.building_category === "general")

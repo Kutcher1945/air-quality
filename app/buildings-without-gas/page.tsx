@@ -156,6 +156,8 @@ export default function BuildingsWithoutGasPage() {
   // ALSECO building type filters (ИЖС vs не ИЖС)
   const [showAlsecoIzhsTypes, setShowAlsecoIzhsTypes] = useState(true)
   const [showAlsecoNonIzhsTypes, setShowAlsecoNonIzhsTypes] = useState(true)
+  const [showAlsecoIzhsSubfilters, setShowAlsecoIzhsSubfilters] = useState(true)
+  const [showAlsecoNonIzhsSubfilters, setShowAlsecoNonIzhsSubfilters] = useState(true)
   const [selectedAlsecoIzhsTypes, setSelectedAlsecoIzhsTypes] = useState<Record<string, boolean>>({
     "Частный дом": true,
     "Коттедж": true,
@@ -264,6 +266,37 @@ export default function BuildingsWithoutGasPage() {
     [alsecoNonIzhsLabels, deferredSelectedAlsecoNonIzhsTypes]
   )
   const alsecoIzhsLabelSet = useMemo(() => new Set(alsecoIzhsLabels), [alsecoIzhsLabels])
+  const alsecoNonIzhsLabelSet = useMemo(() => new Set(alsecoNonIzhsLabels), [alsecoNonIzhsLabels])
+
+  const alsecoTypeCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    const allowAnyLocation = deferredShowAlsecoInAlmaty && deferredShowAlsecoNotInAlmaty
+    for (const b of buildings) {
+      if (b.building_category !== "general") continue
+      const rawType = (b.building_type_raw || "").trim()
+      if (!rawType) continue
+      if (!allowAnyLocation) {
+        const isNotInAlmaty = b.is_not_in_almaty === true
+        if (deferredShowAlsecoInAlmaty && isNotInAlmaty) continue
+        if (deferredShowAlsecoNotInAlmaty && !isNotInAlmaty) continue
+        if (!deferredShowAlsecoInAlmaty && !deferredShowAlsecoNotInAlmaty) continue
+      }
+
+      const label = rawType === "Не указано" ? "Дом" : rawType
+      if (label in counts) {
+        counts[label]++
+      } else if (alsecoIzhsLabelSet.has(label) || alsecoNonIzhsLabelSet.has(label)) {
+        counts[label] = 1
+      }
+    }
+    return counts
+  }, [
+    buildings,
+    deferredShowAlsecoInAlmaty,
+    deferredShowAlsecoNotInAlmaty,
+    alsecoIzhsLabelSet,
+    alsecoNonIzhsLabelSet,
+  ])
 
   useEffect(() => {
     fetchBuildings()
@@ -1118,7 +1151,7 @@ export default function BuildingsWithoutGasPage() {
               <section>
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Фильтр ALSECO</label>
                 <div className="space-y-2">
-                  <label className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-colors ${showAlseco ? "bg-slate-50 border-slate-200 hover:bg-slate-100 cursor-pointer" : "bg-slate-100 border-slate-200 opacity-60 cursor-not-allowed"}`}>
+                  <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-colors ${showAlseco ? "bg-slate-50 border-slate-200 hover:bg-slate-100" : "bg-slate-100 border-slate-200 opacity-60"}`}>
                     <input
                       type="checkbox"
                       checked={showAlsecoIzhsTypes}
@@ -1130,7 +1163,17 @@ export default function BuildingsWithoutGasPage() {
                       <span className="text-xs font-semibold text-slate-700">Показывать ИЖС типы</span>
                       <span className="text-[10px] text-slate-400 ml-2">из ALSECO</span>
                     </div>
-                  </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowAlsecoIzhsSubfilters((prev) => !prev)}
+                      disabled={!showAlseco}
+                      className={`text-slate-400 hover:text-slate-600 transition-transform ${showAlsecoIzhsSubfilters ? "rotate-180" : "rotate-0"} ${showAlseco ? "" : "cursor-not-allowed"}`}
+                      aria-label="Свернуть/развернуть ИЖС типы"
+                    >
+                      ▼
+                    </button>
+                  </div>
+                  {showAlsecoIzhsSubfilters && (
                   <div className={`grid grid-cols-1 gap-2 px-3 ${showAlseco && showAlsecoIzhsTypes ? "opacity-100" : "opacity-60"}`}>
                     {alsecoIzhsLabels.map((label) => (
                       <label key={label} className={`flex items-center gap-3 ${showAlseco && showAlsecoIzhsTypes ? "cursor-pointer" : "cursor-not-allowed"}`}>
@@ -1141,14 +1184,18 @@ export default function BuildingsWithoutGasPage() {
                           disabled={!showAlseco || !showAlsecoIzhsTypes}
                           className="w-3.5 h-3.5 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
                         />
-                        <span className="text-[11px] text-slate-600">{label}</span>
+                        <span className="text-[11px] text-slate-600">
+                          {label}
+                          <span className="text-[10px] text-slate-400 ml-2">({(alsecoTypeCounts[label] || 0).toLocaleString()})</span>
+                        </span>
                       </label>
                     ))}
                   </div>
+                  )}
 
                   <div className="h-px bg-slate-200"></div>
 
-                  <label className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-colors ${showAlseco ? "bg-slate-50 border-slate-200 hover:bg-slate-100 cursor-pointer" : "bg-slate-100 border-slate-200 opacity-60 cursor-not-allowed"}`}>
+                  <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-colors ${showAlseco ? "bg-slate-50 border-slate-200 hover:bg-slate-100" : "bg-slate-100 border-slate-200 opacity-60"}`}>
                     <input
                       type="checkbox"
                       checked={showAlsecoNonIzhsTypes}
@@ -1160,7 +1207,17 @@ export default function BuildingsWithoutGasPage() {
                       <span className="text-xs font-semibold text-slate-700">Показывать не ИЖС</span>
                       <span className="text-[10px] text-slate-400 ml-2">из ALSECO</span>
                     </div>
-                  </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowAlsecoNonIzhsSubfilters((prev) => !prev)}
+                      disabled={!showAlseco}
+                      className={`text-slate-400 hover:text-slate-600 transition-transform ${showAlsecoNonIzhsSubfilters ? "rotate-180" : "rotate-0"} ${showAlseco ? "" : "cursor-not-allowed"}`}
+                      aria-label="Свернуть/развернуть не ИЖС типы"
+                    >
+                      ▼
+                    </button>
+                  </div>
+                  {showAlsecoNonIzhsSubfilters && (
                   <div className={`grid grid-cols-1 gap-2 px-3 ${showAlseco && showAlsecoNonIzhsTypes ? "opacity-100" : "opacity-60"}`}>
                     {alsecoNonIzhsLabels.map((label) => (
                       <label key={label} className={`flex items-center gap-3 ${showAlseco && showAlsecoNonIzhsTypes ? "cursor-pointer" : "cursor-not-allowed"}`}>
@@ -1171,10 +1228,14 @@ export default function BuildingsWithoutGasPage() {
                           disabled={!showAlseco || !showAlsecoNonIzhsTypes}
                           className="w-3.5 h-3.5 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
                         />
-                        <span className="text-[11px] text-slate-600">{label}</span>
+                        <span className="text-[11px] text-slate-600">
+                          {label}
+                          <span className="text-[10px] text-slate-400 ml-2">({(alsecoTypeCounts[label] || 0).toLocaleString()})</span>
+                        </span>
                       </label>
                     ))}
                   </div>
+                  )}
                 </div>
               </section>
 
@@ -1199,7 +1260,7 @@ export default function BuildingsWithoutGasPage() {
                     <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Обновить данные
                   </button>
 
-                  <button
+                  {/* <button
                     onClick={async () => {
                       await clearBuildingsCache()
                       fetchBuildings(true)
@@ -1208,7 +1269,7 @@ export default function BuildingsWithoutGasPage() {
                     className="flex items-center gap-3 px-4 h-10 rounded-xl text-xs font-semibold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200"
                   >
                     <X className="h-4 w-4" /> Очистить кэш
-                  </button>
+                  </button> */}
                   
                   <button onClick={() => setShowHeatmap(!showHeatmap)} className={`flex items-center gap-3 px-4 h-10 rounded-xl text-xs font-semibold transition-all ${showHeatmap ? "bg-orange-500 text-white shadow-md shadow-orange-200" : "bg-slate-100 text-slate-600"}`}>
                     <Flame className="h-4 w-4" /> Тепловая карта

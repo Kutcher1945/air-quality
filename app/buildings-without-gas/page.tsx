@@ -940,6 +940,17 @@ export default function BuildingsWithoutGasPage() {
     (showAlseco ? categoryCounts.general : 0) +
     (showIzhs ? categoryCounts.izhs : 0) +
     (showSusn ? categoryCounts.susn : 0)
+
+  // "In Almaty" counts for selected categories (matches stats card logic)
+  const inAlmatyCounts = {
+    general: generalBuildings.filter((b) => !b.is_not_in_almaty).length,
+    izhs: izhsBuildings.filter((b) => !b.is_not_in_almaty).length,
+    susn: susnBuildings.filter((b) => !b.is_not_in_almaty).length,
+  }
+  const selectedCategoriesInAlmaty =
+    (showAlseco ? inAlmatyCounts.general : 0) +
+    (showIzhs ? inAlmatyCounts.izhs : 0) +
+    (showSusn ? inAlmatyCounts.susn : 0)
   const filteredCounts = {
     general: filteredBuildings.filter((b) => b.building_category === "general").length,
     izhs: filteredBuildings.filter((b) => b.building_category === "izhs").length,
@@ -977,13 +988,13 @@ export default function BuildingsWithoutGasPage() {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-600/10 via-transparent to-orange-500/5 pointer-events-none"></div>
 
           {/* Left: Logo + Title */}
-          <div className="relative flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 overflow-hidden">
-              <img src="/logo.png" alt="Логотип" className="h-5 w-5 object-contain" />
+          <div className="relative flex items-center gap-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 overflow-hidden">
+              <img src="/logo.png" alt="Логотип" className="h-full w-full object-contain p-1" />
             </div>
             <div>
-              <p className="text-[8px] font-semibold tracking-[0.15em] text-blue-300/60 uppercase leading-none">Smart Almaty</p>
-              <h1 className="text-sm font-bold text-white tracking-tight">Здания без газа</h1>
+              <p className="text-[9px] font-semibold tracking-[0.15em] text-blue-300/70 uppercase leading-none">Ситуационный центр</p>
+              <h1 className="text-base font-bold text-white tracking-tight">Здания без газа</h1>
             </div>
           </div>
 
@@ -1128,7 +1139,7 @@ export default function BuildingsWithoutGasPage() {
                 </div>
                 <div className="text-right">
                   <p className={`text-sm font-bold tabular-nums leading-tight transition-opacity ${isPending ? 'text-slate-400' : 'text-slate-700'}`}>
-                    {filteredBuildings.length.toLocaleString()}
+                    {selectedCategoriesInAlmaty.toLocaleString()}
                     <span className="text-xs font-normal text-slate-400 ml-1">/ {selectedCategoriesTotal.toLocaleString()}</span>
                   </p>
                 </div>

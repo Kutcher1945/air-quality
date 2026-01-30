@@ -48,7 +48,7 @@ function transformBuildingsData(apiBuildings) {
       district_id: b.district_id,
       latitude: b.lat ?? b.latitude ?? null,
       longitude: b.lon ?? b.longitude ?? null,
-      has_gas: false,
+      has_gas: b.gas_connected ?? b.has_gas ?? null,
       building_type: category === "izhs"
         ? "Индивидуальное жилищное строительство"
         : category === "susn"

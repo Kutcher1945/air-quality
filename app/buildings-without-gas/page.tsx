@@ -74,7 +74,7 @@ interface Building {
   district: string
   latitude: number
   longitude: number
-  has_gas: boolean
+  has_gas: boolean | null  // null = unknown, true = connected, false = not connected
   building_type: string
   building_type_raw?: string | null  // Raw building type from database (e.g., "Частный дом", "Коттедж")
   building_category: "general" | "izhs" | "susn"
@@ -149,6 +149,11 @@ export default function BuildingsWithoutGasPage() {
   const [showSusn, setShowSusn] = useState(false)
   const [showAlsecoInAlmaty, setShowAlsecoInAlmaty] = useState(true)
   const [showAlsecoNotInAlmaty, setShowAlsecoNotInAlmaty] = useState(false)
+
+  // Gas connection filters (all selected by default)
+  const [showWithGas, setShowWithGas] = useState(true)
+  const [showWithoutGas, setShowWithoutGas] = useState(true)
+  const [showUnknownGas, setShowUnknownGas] = useState(true)
 
   // Selected category for stats panel
   const [selectedStatsCategory, setSelectedStatsCategory] = useState<"general" | "izhs" | "susn">("general")
@@ -263,6 +268,9 @@ export default function BuildingsWithoutGasPage() {
   const deferredSelectedDistrictId = useDeferredValue(selectedDistrictId)
   const deferredShowHeatmap = useDeferredValue(showHeatmap)
   const deferredShowRenovationAreas = useDeferredValue(showRenovationAreas)
+  const deferredShowWithGas = useDeferredValue(showWithGas)
+  const deferredShowWithoutGas = useDeferredValue(showWithoutGas)
+  const deferredShowUnknownGas = useDeferredValue(showUnknownGas)
 
   const allAlsecoIzhsSelected = useMemo(
     () => alsecoIzhsLabels.every((label) => deferredSelectedAlsecoIzhsTypes[label]),
@@ -324,6 +332,17 @@ export default function BuildingsWithoutGasPage() {
       if (interval) clearInterval(interval)
     }
   }, [loading])
+
+  // Debug: Log gas filter changes
+  useEffect(() => {
+    console.log("🔥 GAS FILTER STATE CHANGED:", {
+      showWithGas,
+      showWithoutGas,
+      showUnknownGas,
+      allChecked: showWithGas && showWithoutGas && showUnknownGas,
+      noneChecked: !showWithGas && !showWithoutGas && !showUnknownGas,
+    })
+  }, [showWithGas, showWithoutGas, showUnknownGas])
 
   const handleBuildingClick = useCallback((building: Building) => {
     setSelectedBuilding(building)
@@ -392,7 +411,7 @@ export default function BuildingsWithoutGasPage() {
       setLoadingProgress({ loaded: 0, total: 0, status: "Подключение к серверу..." })
 
       // ✅ Fetch with streaming to track download progress
-      const response = await fetch("https://admin.smartalmaty.kz/api/v1/address/buildings-without-gas/all-sources/")
+      const response = await fetch("http://localhost:8000/api/v1/address/buildings-without-gas/all-sources/")
 
       if (!response.ok) {
         throw new Error(`API returned ${response.status}`)
@@ -470,6 +489,26 @@ export default function BuildingsWithoutGasPage() {
       })
 
       console.log("📍 Map will display:", buildingsData.length, "markers")
+
+      // Debug: Check gas connection values
+      const gasStats = {
+        total: buildingsData.length,
+        withGas: buildingsData.filter(b => b.has_gas === true).length,
+        withoutGas: buildingsData.filter(b => b.has_gas === false).length,
+        nullGas: buildingsData.filter(b => b.has_gas === null || b.has_gas === undefined).length,
+      }
+      console.log("🔥 GAS STATISTICS:", gasStats)
+      console.log("🔥 Sample buildings with gas (TRUE):", buildingsData.filter(b => b.has_gas === true).slice(0, 3))
+      console.log("🔥 Sample buildings without gas (FALSE):", buildingsData.filter(b => b.has_gas === false).slice(0, 3))
+      console.log("🔥 Sample buildings with unknown gas (NULL):", buildingsData.filter(b => b.has_gas === null || b.has_gas === undefined).slice(0, 3))
+
+      // Also log raw API data to see what's coming from backend
+      console.log("🔥 Sample RAW API data (first 5):", apiBuildings.slice(0, 5).map((b: any) => ({
+        id: b.id,
+        address: b.address,
+        gas_connected: b.gas_connected,
+        has_gas: b.has_gas,
+      })))
 
       setLoadingProgress({ loaded: buildingsData.length, total: buildingsData.length, status: "Готово!" })
       setBuildings(buildingsData)
@@ -681,7 +720,7 @@ export default function BuildingsWithoutGasPage() {
         district_id: b.district_id,
         latitude: b.lat ?? b.latitude ?? null,
         longitude: b.lon ?? b.longitude ?? null,
-        has_gas: false,
+        has_gas: b.gas_connected ?? b.has_gas ?? null,  // Prioritize gas_connected field from backend
         building_type: category === "izhs"
           ? "Индивидуальное жилищное строительство"
           : category === "susn"
@@ -827,6 +866,26 @@ export default function BuildingsWithoutGasPage() {
         (deferredShowSusn && building.building_category === "susn")
       if (!matchesCategory) return false
 
+      // Filter by gas connection (three-state: true/false/null)
+      const hasGas = building.has_gas
+      const matchesGas =
+        (deferredShowWithGas && hasGas === true) ||
+        (deferredShowWithoutGas && hasGas === false) ||
+        (deferredShowUnknownGas && hasGas === null)
+
+      // Debug: Log filter behavior (sample 0.1% to avoid spam)
+      if (!matchesGas && Math.random() < 0.001) {
+        console.log("🔥 Gas filter excluding building:", {
+          address: building.address,
+          has_gas: hasGas,
+          showWithGas: deferredShowWithGas,
+          showWithoutGas: deferredShowWithoutGas,
+          showUnknownGas: deferredShowUnknownGas,
+        })
+      }
+
+      if (!matchesGas) return false
+
       // ALSECO-specific building type filter (ИЖС vs не ИЖС)
       if (building.building_category === "general") {
         const rawType = (building.building_type_raw || "").trim()
@@ -898,6 +957,9 @@ export default function BuildingsWithoutGasPage() {
     alsecoIzhsLabelSet,
     deferredShowAlsecoInAlmaty,
     deferredShowAlsecoNotInAlmaty,
+    deferredShowWithGas,
+    deferredShowWithoutGas,
+    deferredShowUnknownGas,
   ])
 
   // Deferred buildings for map to keep UI responsive during heavy filtering
@@ -1373,6 +1435,52 @@ export default function BuildingsWithoutGasPage() {
                     <span className="text-xs text-slate-400 ml-2">({categoryCounts.susn.toLocaleString()})</span>
                   </div>
                   <div className="h-3 w-3 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-sm shadow-blue-200"></div>
+                </label>
+              </div>
+            </div>
+
+            {/* Gas Connection Filters */}
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <button
+                onClick={() => document.getElementById('gas-filters')?.classList.toggle('hidden')}
+                className="w-full px-4 py-3.5 flex items-center justify-between hover:bg-slate-50/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-sm">
+                    <Filter className="h-4 w-4 text-white" />
+                  </div>
+                  <span className="text-sm font-semibold text-slate-700">Газоснабжение</span>
+                </div>
+                <ChevronDown className="h-4 w-4 text-slate-400" />
+              </button>
+
+              <div id="gas-filters" className="px-4 pb-4 pt-2 space-y-1.5">
+                <label className="flex items-center gap-2.5 py-1.5 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={showWithoutGas}
+                    onChange={(e) => startTransition(() => setShowWithoutGas(e.target.checked))}
+                    className="h-4 w-4 rounded border-slate-200 text-cyan-500 focus:ring-cyan-500/20"
+                  />
+                  <span className="text-xs text-slate-600 group-hover:text-slate-800 transition-colors">Не подключен к газу</span>
+                </label>
+                <label className="flex items-center gap-2.5 py-1.5 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={showWithGas}
+                    onChange={(e) => startTransition(() => setShowWithGas(e.target.checked))}
+                    className="h-4 w-4 rounded border-slate-200 text-cyan-500 focus:ring-cyan-500/20"
+                  />
+                  <span className="text-xs text-slate-600 group-hover:text-slate-800 transition-colors">Подключен к газу</span>
+                </label>
+                <label className="flex items-center gap-2.5 py-1.5 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={showUnknownGas}
+                    onChange={(e) => startTransition(() => setShowUnknownGas(e.target.checked))}
+                    className="h-4 w-4 rounded border-slate-200 text-cyan-500 focus:ring-cyan-500/20"
+                  />
+                  <span className="text-xs text-slate-600 group-hover:text-slate-800 transition-colors">Не указано</span>
                 </label>
               </div>
             </div>

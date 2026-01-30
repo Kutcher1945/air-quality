@@ -18,7 +18,7 @@ interface Building {
   district: string
   latitude: number
   longitude: number
-  has_gas: boolean
+  has_gas: boolean | null
   building_type: string
   building_type_raw?: string | null
   building_category: "general" | "izhs" | "susn"

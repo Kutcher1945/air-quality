@@ -193,6 +193,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
     const onBuildingClickRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(onBuildingClick);
     const hasAutoFitted = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(false);
     const canvasRendererRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const isUnmountingRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(false);
     const heatmapLegendItems = [
         {
             color: '#22c55e',
@@ -228,7 +229,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                     children: "Зданий без газа"
                 }, void 0, false, {
                     fileName: "[project]/components/buildings-map.tsx",
-                    lineNumber: 252,
+                    lineNumber: 253,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -243,7 +244,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                                     }
                                 }, void 0, false, {
                                     fileName: "[project]/components/buildings-map.tsx",
-                                    lineNumber: 258,
+                                    lineNumber: 259,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -251,24 +252,24 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                                     children: item.label
                                 }, void 0, false, {
                                     fileName: "[project]/components/buildings-map.tsx",
-                                    lineNumber: 262,
+                                    lineNumber: 263,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, index, true, {
                             fileName: "[project]/components/buildings-map.tsx",
-                            lineNumber: 257,
+                            lineNumber: 258,
                             columnNumber: 13
                         }, this))
                 }, void 0, false, {
                     fileName: "[project]/components/buildings-map.tsx",
-                    lineNumber: 255,
+                    lineNumber: 256,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/components/buildings-map.tsx",
-            lineNumber: 251,
+            lineNumber: 252,
             columnNumber: 7
         }, this);
     };
@@ -293,6 +294,8 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "BuildingsMap.useEffect": ()=>{
             if (("TURBOPACK compile-time value", "object") === "undefined" || !mapRef.current || mapInstanceRef.current) return;
+            // Reset unmounting flag on mount
+            isUnmountingRef.current = false;
             // Center of Almaty
             const mapCenter = [
                 43.238293,
@@ -335,24 +338,42 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
             mapInstanceRef.current = map;
             return ({
                 "BuildingsMap.useEffect": ()=>{
+                    isUnmountingRef.current = true;
                     const currentMap = mapInstanceRef.current;
                     if (currentMap) {
+                        // Stop all pending animations and redraws first
+                        currentMap.stop();
                         if (heatLayerRef.current) {
-                            currentMap.removeLayer(heatLayerRef.current);
+                            try {
+                                currentMap.removeLayer(heatLayerRef.current);
+                            } catch (e) {}
                             heatLayerRef.current = null;
                         }
                         if (clusterGroupRef.current) {
-                            clusterGroupRef.current.clearLayers();
-                            currentMap.removeLayer(clusterGroupRef.current);
+                            try {
+                                clusterGroupRef.current.clearLayers();
+                                currentMap.removeLayer(clusterGroupRef.current);
+                            } catch (e) {}
                             clusterGroupRef.current = null;
                         }
                         if (districtLayerRef.current) {
-                            currentMap.removeLayer(districtLayerRef.current);
+                            try {
+                                currentMap.removeLayer(districtLayerRef.current);
+                            } catch (e) {}
                             districtLayerRef.current = null;
                         }
                         if (renovationLayerRef.current) {
-                            currentMap.removeLayer(renovationLayerRef.current);
+                            try {
+                                currentMap.removeLayer(renovationLayerRef.current);
+                            } catch (e) {}
                             renovationLayerRef.current = null;
+                        }
+                        // Clear canvas renderer
+                        if (canvasRendererRef.current) {
+                            try {
+                                canvasRendererRef.current.remove();
+                            } catch (e) {}
+                            canvasRendererRef.current = null;
                         }
                         currentMap.off();
                         currentMap.remove();
@@ -364,27 +385,38 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
     }["BuildingsMap.useEffect"], []);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "BuildingsMap.useEffect": ()=>{
-            if (!mapInstanceRef.current || ("TURBOPACK compile-time value", "object") === "undefined") return;
+            if (!mapInstanceRef.current || ("TURBOPACK compile-time value", "object") === "undefined" || isUnmountingRef.current) return;
             const map = mapInstanceRef.current;
             let cancelled = false;
+            // Helper function to safely remove layers
+            const safeRemoveLayer = {
+                "BuildingsMap.useEffect.safeRemoveLayer": (layer)=>{
+                    if (!layer || !mapInstanceRef.current || isUnmountingRef.current) return;
+                    try {
+                        mapInstanceRef.current.removeLayer(layer);
+                    } catch (e) {
+                    // Ignore errors during layer removal (canvas might be destroyed)
+                    }
+                }
+            }["BuildingsMap.useEffect.safeRemoveLayer"];
             // Clear existing layers
             if (heatLayerRef.current) {
-                map.removeLayer(heatLayerRef.current);
+                safeRemoveLayer(heatLayerRef.current);
                 heatLayerRef.current = null;
             }
             if (clusterGroupRef.current) {
-                map.removeLayer(clusterGroupRef.current);
+                safeRemoveLayer(clusterGroupRef.current);
                 clusterGroupRef.current = null;
             }
             if (districtLayerRef.current) {
-                map.removeLayer(districtLayerRef.current);
+                safeRemoveLayer(districtLayerRef.current);
                 districtLayerRef.current = null;
             }
             if (renovationLayerRef.current) {
-                map.removeLayer(renovationLayerRef.current);
+                safeRemoveLayer(renovationLayerRef.current);
                 renovationLayerRef.current = null;
             }
-            if (cancelled || !mapInstanceRef.current) return;
+            if (cancelled || !mapInstanceRef.current || isUnmountingRef.current) return;
             if (showHeatmap) {
                 const VectorGrid = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].vectorGrid;
                 if (VectorGrid) {
@@ -443,9 +475,11 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                         keepBuffer: 4,
                         buffer: 512
                     });
-                    if (!cancelled && mapInstanceRef.current) {
-                        heatLayer.addTo(map);
-                        heatLayerRef.current = heatLayer;
+                    if (!cancelled && !isUnmountingRef.current && mapInstanceRef.current) {
+                        try {
+                            heatLayer.addTo(map);
+                            heatLayerRef.current = heatLayer;
+                        } catch (e) {}
                     }
                 }
             } else {
@@ -695,9 +729,11 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                         });
                     }
                 }["BuildingsMap.useEffect"]);
-                if (!cancelled && mapInstanceRef.current) {
-                    clusterGroup.addTo(map);
-                    clusterGroupRef.current = clusterGroup;
+                if (!cancelled && !isUnmountingRef.current && mapInstanceRef.current) {
+                    try {
+                        clusterGroup.addTo(map);
+                        clusterGroupRef.current = clusterGroup;
+                    } catch (e) {}
                 }
                 console.log(`✅ Successfully created ${markersCreated} markers on the map`);
             }
@@ -729,7 +765,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                                     weight: isSelected ? 3 : 2,
                                     fillOpacity: isSelected ? 0.15 : 0.05,
                                     fillColor: isSelected ? "#3b82f6" : "#94a3b8",
-                                    renderer: canvasRendererRef.current || undefined
+                                    renderer: !isUnmountingRef.current && canvasRendererRef.current ? canvasRendererRef.current : undefined
                                 });
                                 const popupContent = `
               <div style="padding: 8px; min-width: 150px;">
@@ -765,7 +801,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                                     weight: isSelected ? 3 : 2,
                                     fillOpacity: isSelected ? 0.15 : 0.05,
                                     fillColor: isSelected ? "#3b82f6" : "#94a3b8",
-                                    renderer: canvasRendererRef.current || undefined
+                                    renderer: !isUnmountingRef.current && canvasRendererRef.current ? canvasRendererRef.current : undefined
                                 });
                                 const popupContent = `
               <div style="padding: 8px; min-width: 150px;">
@@ -782,18 +818,39 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                         }
                     }
                 }["BuildingsMap.useEffect"]);
-                districtLayer.addTo(map);
-                districtLayerRef.current = districtLayer;
-                // Zoom to selected district if one is selected
-                if (selectedDistrictId !== null && selectedDistrictBounds) {
-                    map.fitBounds(selectedDistrictBounds, {
-                        padding: [
-                            50,
-                            50
-                        ],
-                        maxZoom: 14 // Don't zoom in too close
-                    });
-                    console.log(`🎯 Zoomed to district ID ${selectedDistrictId}`);
+                if (!cancelled && !isUnmountingRef.current && mapInstanceRef.current) {
+                    try {
+                        districtLayer.addTo(map);
+                        districtLayerRef.current = districtLayer;
+                    } catch (e) {}
+                }
+                // Zoom to selected district if one is selected, or reset to Almaty view
+                if (!cancelled && !isUnmountingRef.current && mapInstanceRef.current) {
+                    if (selectedDistrictId !== null && selectedDistrictBounds) {
+                        try {
+                            map.fitBounds(selectedDistrictBounds, {
+                                padding: [
+                                    50,
+                                    50
+                                ],
+                                maxZoom: 14 // Don't zoom in too close
+                            });
+                            console.log(`🎯 Zoomed to district ID ${selectedDistrictId}`);
+                        } catch (e) {}
+                    } else if (selectedDistrictId === null) {
+                        // Reset to default Almaty view when "Все районы" is selected
+                        const almatyCenter = [
+                            43.238293,
+                            76.945465
+                        ];
+                        const defaultZoom = 11;
+                        try {
+                            map.setView(almatyCenter, defaultZoom, {
+                                animate: true
+                            });
+                            console.log(`🏙️ Reset view to all Almaty`);
+                        } catch (e) {}
+                    }
                 }
                 console.log(`✅ Successfully rendered ${districtsToRender.length} district polygon(s)`);
             }
@@ -827,7 +884,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                                 weight: 2,
                                 fillOpacity: 0.2,
                                 fillColor: "#8b5cf6",
-                                renderer: canvasRendererRef.current || undefined
+                                renderer: !isUnmountingRef.current && canvasRendererRef.current ? canvasRendererRef.current : undefined
                             });
                             // Add popup with renovation area information
                             const popupContent = `
@@ -846,9 +903,13 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                         }
                     }
                 }["BuildingsMap.useEffect"]);
-                renovationLayer.addTo(map);
-                renovationLayerRef.current = renovationLayer;
-                console.log(`✅ Successfully rendered ${renovationAreas.length} renovation areas`);
+                if (!cancelled && !isUnmountingRef.current && mapInstanceRef.current) {
+                    try {
+                        renovationLayer.addTo(map);
+                        renovationLayerRef.current = renovationLayer;
+                        console.log(`✅ Successfully rendered ${renovationAreas.length} renovation areas`);
+                    } catch (e) {}
+                }
             }
             // Auto-fit bounds only on first load, not on subsequent re-renders
             if (buildings.length > 0 && !hasAutoFitted.current) {
@@ -858,38 +919,24 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                             b.longitude
                         ]
                 }["BuildingsMap.useEffect.bounds"]));
-                if (!cancelled && mapInstanceRef.current) {
-                    map.fitBounds(bounds, {
-                        padding: [
-                            50,
-                            50
-                        ]
-                    });
-                    hasAutoFitted.current = true;
+                if (!cancelled && !isUnmountingRef.current && mapInstanceRef.current) {
+                    try {
+                        map.fitBounds(bounds, {
+                            padding: [
+                                50,
+                                50
+                            ]
+                        });
+                        hasAutoFitted.current = true;
+                    } catch (e) {}
                 }
             }
             return ({
                 "BuildingsMap.useEffect": ()=>{
                     cancelled = true;
-                    if (!mapInstanceRef.current) return;
-                    const activeMap = mapInstanceRef.current;
-                    if (heatLayerRef.current) {
-                        activeMap.removeLayer(heatLayerRef.current);
-                        heatLayerRef.current = null;
-                    }
-                    if (clusterGroupRef.current) {
-                        clusterGroupRef.current.clearLayers();
-                        activeMap.removeLayer(clusterGroupRef.current);
-                        clusterGroupRef.current = null;
-                    }
-                    if (districtLayerRef.current) {
-                        activeMap.removeLayer(districtLayerRef.current);
-                        districtLayerRef.current = null;
-                    }
-                    if (renovationLayerRef.current) {
-                        activeMap.removeLayer(renovationLayerRef.current);
-                        renovationLayerRef.current = null;
-                    }
+                // Note: We don't clean up layers here because the effect body already
+                // clears them at the start. Cleaning here would cause race conditions
+                // with the new effect that runs immediately after.
                 }
             })["BuildingsMap.useEffect"];
         }
@@ -911,7 +958,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 className: "jsx-8c726aafc29b0ebc"
             }, void 0, false, {
                 fileName: "[project]/components/buildings-map.tsx",
-                lineNumber: 873,
+                lineNumber: 917,
                 columnNumber: 23
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -919,13 +966,13 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 className: "jsx-8c726aafc29b0ebc" + " " + "h-full w-full"
             }, void 0, false, {
                 fileName: "[project]/components/buildings-map.tsx",
-                lineNumber: 874,
+                lineNumber: 918,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true);
 }
-_s(BuildingsMap, "nulmqLULq+B0hgSxzU1Q6pEqdL8=");
+_s(BuildingsMap, "7SaWjT9dZme8uKHqqxP88kXfg3o=");
 _c = BuildingsMap;
 var _c;
 __turbopack_context__.k.register(_c, "BuildingsMap");

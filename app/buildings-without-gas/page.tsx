@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo, useRef, useDeferredValue } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef, useDeferredValue, useTransition } from "react"
 import dynamic from "next/dynamic"
 import { HeaderMenu } from "@/components/header-menu"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Building2, MapPin, AlertCircle, CheckCircle, Flame, Download, X, Calendar, Layers, Home, HelpCircle, RefreshCw } from "lucide-react"
+import { Building2, MapPin, AlertCircle, CheckCircle, Flame, Download, X, Calendar, Layers, Home, HelpCircle, RefreshCw, Search, ChevronDown, Filter, Database, Settings } from "lucide-react"
 import { getBuildingsFromCache, saveBuildingsToCache, clearBuildingsCache } from "@/lib/buildingsCache"
 
 // Динамически загружаем карту для избежания SSR проблем
@@ -138,6 +138,10 @@ export default function BuildingsWithoutGasPage() {
   const [showHelp, setShowHelp] = useState(false)
   const [selectedDistrictId, setSelectedDistrictId] = useState<number | null>(null)
   const [showOnlySeasonalUnused, setShowOnlySeasonalUnused] = useState(false)
+  const [showDistrictDropdown, setShowDistrictDropdown] = useState(false)
+
+  // useTransition for non-blocking UI updates
+  const [isPending, startTransition] = useTransition()
 
   // Category visibility checkboxes
   const [showAlseco, setShowAlseco] = useState(true)
@@ -256,6 +260,9 @@ export default function BuildingsWithoutGasPage() {
   const deferredShowAlsecoNotInAlmaty = useDeferredValue(showAlsecoNotInAlmaty)
   const deferredSelectedAlsecoIzhsTypes = useDeferredValue(selectedAlsecoIzhsTypes)
   const deferredSelectedAlsecoNonIzhsTypes = useDeferredValue(selectedAlsecoNonIzhsTypes)
+  const deferredSelectedDistrictId = useDeferredValue(selectedDistrictId)
+  const deferredShowHeatmap = useDeferredValue(showHeatmap)
+  const deferredShowRenovationAreas = useDeferredValue(showRenovationAreas)
 
   const allAlsecoIzhsSelected = useMemo(
     () => alsecoIzhsLabels.every((label) => deferredSelectedAlsecoIzhsTypes[label]),
@@ -324,21 +331,23 @@ export default function BuildingsWithoutGasPage() {
   }, [])
 
   const handleDistrictFilterChange = useCallback((districtName: string) => {
-    setDistrictFilter(districtName)
+    startTransition(() => {
+      setDistrictFilter(districtName)
 
-    // Find the district ID from the name
-    if (districtName === "all") {
-      setSelectedDistrictId(null)
-    } else {
-      // Find district ID by matching name in DISTRICT_LABELS
-      const districtId = Object.entries(DISTRICT_LABELS).find(([_, name]) => name === districtName)?.[0]
-      if (districtId) {
-        setSelectedDistrictId(parseInt(districtId))
-      } else {
+      // Find the district ID from the name
+      if (districtName === "all") {
         setSelectedDistrictId(null)
+      } else {
+        // Find district ID by matching name in DISTRICT_LABELS
+        const districtId = Object.entries(DISTRICT_LABELS).find(([_, name]) => name === districtName)?.[0]
+        if (districtId) {
+          setSelectedDistrictId(parseInt(districtId))
+        } else {
+          setSelectedDistrictId(null)
+        }
       }
-    }
-  }, [])
+    })
+  }, [startTransition])
 
   const fetchBuildings = async (forceRefresh = false) => {
     try {
@@ -891,6 +900,9 @@ export default function BuildingsWithoutGasPage() {
     deferredShowAlsecoNotInAlmaty,
   ])
 
+  // Deferred buildings for map to keep UI responsive during heavy filtering
+  const deferredFilteredBuildings = useDeferredValue(filteredBuildings)
+
   // Category-specific counts
   const generalBuildings = buildings.filter((b) => b.building_category === "general")
   const izhsBuildings = buildings.filter((b) => b.building_category === "izhs")
@@ -905,6 +917,17 @@ export default function BuildingsWithoutGasPage() {
   const districtNames = Array.from(new Set(visibleBuildings.map((b) => b.district)))
     .filter((name) => name !== "Район 9" && name !== "Не указан")
     .sort()
+
+  // District counts for dropdown
+  const districtCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: visibleBuildings.length }
+    for (const b of visibleBuildings) {
+      if (b.district && b.district !== "Район 9" && b.district !== "Не указан") {
+        counts[b.district] = (counts[b.district] || 0) + 1
+      }
+    }
+    return counts
+  }, [visibleBuildings])
 
   const categoryCounts = {
     general: generalBuildings.length,
@@ -947,7 +970,70 @@ export default function BuildingsWithoutGasPage() {
 
   return (
     <>
-      <main className="relative h-screen w-screen overflow-hidden">
+      <main className="relative h-screen w-screen overflow-hidden flex flex-col">
+        {/* Top Header Bar */}
+        <header className="relative z-30 h-14 shrink-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-b border-slate-700/50 px-4 flex items-center justify-between">
+          {/* Background accent */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-600/10 via-transparent to-orange-500/5 pointer-events-none"></div>
+
+          {/* Left: Logo + Title */}
+          <div className="relative flex items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 overflow-hidden">
+              <img src="/logo.png" alt="Логотип" className="h-5 w-5 object-contain" />
+            </div>
+            <div>
+              <p className="text-[8px] font-semibold tracking-[0.15em] text-blue-300/60 uppercase leading-none">Smart Almaty</p>
+              <h1 className="text-sm font-bold text-white tracking-tight">Здания без газа</h1>
+            </div>
+          </div>
+
+
+          {/* Right: Action Buttons */}
+          <div className="relative flex items-center gap-2">
+            <button
+              onClick={() => startTransition(() => setShowHeatmap(!showHeatmap))}
+              className={`h-9 px-3 flex items-center gap-2 rounded-lg text-xs font-semibold transition-all ${
+                showHeatmap
+                  ? "bg-orange-500 text-white shadow-lg shadow-orange-500/25"
+                  : "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white border border-white/10"
+              }`}
+            >
+              <Flame className="h-4 w-4" />
+              <span className="hidden sm:inline">Тепловая карта</span>
+            </button>
+            <button
+              onClick={() => startTransition(() => setShowRenovationAreas(!showRenovationAreas))}
+              className={`h-9 px-3 flex items-center gap-2 rounded-lg text-xs font-semibold transition-all ${
+                showRenovationAreas
+                  ? "bg-purple-500 text-white shadow-lg shadow-purple-500/25"
+                  : "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white border border-white/10"
+              }`}
+            >
+              <Layers className="h-4 w-4" />
+              <span className="hidden sm:inline">Реновация</span>
+            </button>
+            <div className="w-px h-6 bg-white/10 mx-1"></div>
+            <button
+              onClick={exportToCSV}
+              className="h-9 px-3 flex items-center gap-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white/70 hover:text-white transition-all text-xs font-medium"
+              title="Экспорт CSV"
+            >
+              <Download className="h-4 w-4" />
+              <span className="hidden sm:inline">CSV</span>
+            </button>
+            <button
+              onClick={() => fetchBuildings(true)}
+              disabled={loading}
+              className="h-9 w-9 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white/70 hover:text-white transition-all disabled:opacity-50"
+              title="Обновить данные"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+        </header>
+
+        {/* Main Content Area */}
+        <div className="relative flex-1 overflow-hidden">
         {/* Full-screen Map Background */}
         <div className="absolute inset-0 z-0">
           {loading ? (
@@ -1013,12 +1099,12 @@ export default function BuildingsWithoutGasPage() {
             </div>
           ) : (
             <BuildingsMap
-              buildings={filteredBuildings.filter(b => b.latitude && b.longitude)}
+              buildings={deferredFilteredBuildings.filter(b => b.latitude && b.longitude)}
               renovationAreas={renovationAreas}
               districts={districts}
-              selectedDistrictId={selectedDistrictId}
-              showHeatmap={showHeatmap}
-              showRenovationAreas={showRenovationAreas}
+              selectedDistrictId={deferredSelectedDistrictId}
+              showHeatmap={deferredShowHeatmap}
+              showRenovationAreas={deferredShowRenovationAreas}
               onBuildingClick={handleBuildingClick}
             />
           )}
@@ -1027,365 +1113,385 @@ export default function BuildingsWithoutGasPage() {
         {/* Floating UI Elements */}
         <div className="relative z-10 h-full w-full pointer-events-none">
         {/* Left Sidebar - Controls & Filters */}
-        <div className="absolute top-0 left-0 bottom-0 w-[300px] pointer-events-auto z-20 flex flex-col bg-white/95 backdrop-blur-md border-r border-slate-200 shadow-xl">
-          {/* Unified Header */}
-          <div className="h-[72px] px-5 flex items-center gap-3 border-b border-slate-200 shrink-0">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 shadow-lg shadow-slate-200 overflow-hidden">
-              <img src="/logo.png" alt="Логотип" className="h-7 w-7 object-contain" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold tracking-[0.1em] text-slate-400 uppercase leading-tight">ИНФРАСТРУКТУРА / АЛМАТЫ</p>
-              <h1 className="text-sm font-bold text-slate-900 leading-tight">Здания без газа</h1>
+        <div className="absolute top-0 left-0 bottom-0 w-[300px] pointer-events-auto z-20 flex flex-col bg-white/95 backdrop-blur-xl border-r border-slate-200/80 shadow-xl">
+          {/* Sidebar Header with Stats */}
+          <div className="px-4 py-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/30">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Фильтры</p>
+              <div className="flex items-center gap-2">
+                <div className={`h-6 w-6 rounded-lg flex items-center justify-center transition-colors ${isPending ? 'bg-amber-100' : 'bg-blue-100'}`}>
+                  {isPending ? (
+                    <div className="h-3 w-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Database className="h-3 w-3 text-blue-500" />
+                  )}
+                </div>
+                <div className="text-right">
+                  <p className={`text-sm font-bold tabular-nums leading-tight transition-opacity ${isPending ? 'text-slate-400' : 'text-slate-700'}`}>
+                    {filteredBuildings.length.toLocaleString()}
+                    <span className="text-xs font-normal text-slate-400 ml-1">/ {selectedCategoriesTotal.toLocaleString()}</span>
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar">
-            {/* Stats Summary Section - Color matched to theme */}
-            <div className="p-5 bg-slate-50/50 border-b border-slate-100">
-              <div className="flex items-end justify-between">
-                <span className="text-[10px] font-bold text-slate-500 uppercase">Найдено объектов</span>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-xl font-black text-slate-900 tabular-nums leading-none">
-                    {filteredBuildings.length.toLocaleString()}
-                  </span>
-                  <span className="text-xs font-medium text-slate-400">/ {selectedCategoriesTotal.toLocaleString()}</span>
+          <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4 space-y-4">
+
+            {/* Search + District Row */}
+            <div className="space-y-3">
+              {/* Search Input */}
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                 </div>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Поиск по адресу..."
+                  className="h-11 w-full rounded-xl border-2 border-slate-100 bg-white pl-11 pr-10 text-sm font-medium placeholder:text-slate-300 transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none"
+                />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery("")} className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-all">
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* District Select - Custom Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowDistrictDropdown(!showDistrictDropdown)}
+                  className={`h-11 w-full rounded-xl border-2 bg-white pl-4 pr-4 text-sm font-medium text-slate-700 cursor-pointer outline-none transition-all flex items-center gap-3 ${
+                    showDistrictDropdown ? "border-blue-500 ring-4 ring-blue-500/10" : "border-slate-100 hover:border-slate-200"
+                  }`}
+                >
+                  <MapPin className={`h-4 w-4 shrink-0 ${districtFilter !== "all" ? "text-blue-500" : "text-slate-400"}`} />
+                  <span className="flex-1 text-left truncate">
+                    {districtFilter === "all" ? "Все районы" : districtFilter}
+                  </span>
+                  {districtFilter !== "all" && (
+                    <span className="px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-600 text-[10px] font-semibold">
+                      {districtCounts[districtFilter]?.toLocaleString() || 0}
+                    </span>
+                  )}
+                  <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${showDistrictDropdown ? "rotate-180" : ""}`} />
+                </button>
+
+                {/* Dropdown Menu */}
+                {showDistrictDropdown && (
+                  <>
+                    {/* Backdrop */}
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setShowDistrictDropdown(false)}
+                    />
+                    {/* Dropdown */}
+                    <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                      {/* All Districts Option */}
+                      <button
+                        onClick={() => {
+                          handleDistrictFilterChange("all")
+                          setShowDistrictDropdown(false)
+                        }}
+                        className={`w-full px-4 py-2.5 flex items-center gap-3 transition-colors ${
+                          districtFilter === "all"
+                            ? "bg-blue-50 text-blue-700"
+                            : "hover:bg-slate-50 text-slate-700"
+                        }`}
+                      >
+                        <div className={`h-6 w-6 rounded-lg flex items-center justify-center ${
+                          districtFilter === "all" ? "bg-blue-500 text-white" : "bg-slate-100 text-slate-400"
+                        }`}>
+                          <MapPin className="h-3.5 w-3.5" />
+                        </div>
+                        <span className="flex-1 text-left text-sm font-medium">Все районы</span>
+                        <span className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold ${
+                          districtFilter === "all" ? "bg-blue-100 text-blue-600" : "bg-slate-100 text-slate-500"
+                        }`}>
+                          {districtCounts.all?.toLocaleString() || 0}
+                        </span>
+                        {districtFilter === "all" && (
+                          <CheckCircle className="h-4 w-4 text-blue-500" />
+                        )}
+                      </button>
+
+                      <div className="h-px bg-slate-100" />
+
+                      {/* District List */}
+                      <div className="max-h-[280px] overflow-y-auto custom-scrollbar">
+                        {districtNames.map((district, index) => (
+                          <button
+                            key={district}
+                            onClick={() => {
+                              handleDistrictFilterChange(district)
+                              setShowDistrictDropdown(false)
+                            }}
+                            className={`w-full px-4 py-2.5 flex items-center gap-3 transition-colors ${
+                              districtFilter === district
+                                ? "bg-blue-50 text-blue-700"
+                                : "hover:bg-slate-50 text-slate-700"
+                            }`}
+                          >
+                            <div className={`h-6 w-6 rounded-lg flex items-center justify-center text-[10px] font-bold ${
+                              districtFilter === district ? "bg-blue-500 text-white" : "bg-slate-100 text-slate-500"
+                            }`}>
+                              {index + 1}
+                            </div>
+                            <span className="flex-1 text-left text-sm font-medium truncate">{district}</span>
+                            <span className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold tabular-nums ${
+                              districtFilter === district ? "bg-blue-100 text-blue-600" : "bg-slate-100 text-slate-500"
+                            }`}>
+                              {districtCounts[district]?.toLocaleString() || 0}
+                            </span>
+                            {districtFilter === district && (
+                              <CheckCircle className="h-4 w-4 text-blue-500 shrink-0" />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
-            <div className="p-5 space-y-6">
-              {/* Search Section */}
-              <section>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Поиск по адресу</label>
-                <div className="relative group">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Название улицы, номер..."
-                    className="h-10 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none"
-                  />
-                  {searchQuery && (
-                    <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                      <X className="h-4 w-4" />
-                    </button>
+            {/* Categories Section - Card Style */}
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <button
+                onClick={() => document.getElementById('categories-content')?.classList.toggle('hidden')}
+                className="w-full px-4 py-3.5 flex items-center justify-between hover:bg-slate-50/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm">
+                    <Filter className="h-4 w-4 text-white" />
+                  </div>
+                  <span className="text-sm font-semibold text-slate-700">Категории данных</span>
+                </div>
+                <ChevronDown className="h-4 w-4 text-slate-400" />
+              </button>
+
+              <div id="categories-content" className="px-4 pb-4 space-y-2">
+                {/* ALSECO */}
+                <div className="rounded-xl border-2 border-orange-100 bg-gradient-to-r from-orange-50/50 to-transparent overflow-hidden">
+                  <label className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-orange-50/50 transition-colors">
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        checked={showAlseco}
+                        onChange={(e) => startTransition(() => setShowAlseco(e.target.checked))}
+                        className="peer sr-only"
+                      />
+                      <div className="h-5 w-5 rounded-lg border-2 border-slate-200 bg-white peer-checked:border-orange-500 peer-checked:bg-orange-500 transition-all flex items-center justify-center">
+                        {showAlseco && <CheckCircle className="h-3.5 w-3.5 text-white" />}
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <span className="text-sm font-semibold text-slate-700">ALSECO</span>
+                      <span className="text-xs text-slate-400 ml-2">({categoryCounts.general.toLocaleString()})</span>
+                    </div>
+                    <div className="h-3 w-3 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shadow-sm shadow-orange-200"></div>
+                  </label>
+                  {showAlseco && (
+                    <div className="px-4 pb-3 pt-1 space-y-1.5 border-t border-orange-100/50" onClick={(e) => e.stopPropagation()}>
+                      <label className="flex items-center gap-2.5 py-1 cursor-pointer group" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={showAlsecoInAlmaty}
+                          onChange={(e) => {
+                            e.stopPropagation()
+                            startTransition(() => setShowAlsecoInAlmaty(e.target.checked))
+                          }}
+                          className="h-4 w-4 rounded border-slate-200 text-orange-500 focus:ring-orange-500/20"
+                        />
+                        <span className="text-xs text-slate-500 group-hover:text-slate-700 transition-colors">В Алматы</span>
+                      </label>
+                      <label className="flex items-center gap-2.5 py-1 cursor-pointer group" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={showAlsecoNotInAlmaty}
+                          onChange={(e) => {
+                            e.stopPropagation()
+                            startTransition(() => setShowAlsecoNotInAlmaty(e.target.checked))
+                          }}
+                          className="h-4 w-4 rounded border-slate-200 text-orange-500 focus:ring-orange-500/20"
+                        />
+                        <span className="text-xs text-slate-500 group-hover:text-slate-700 transition-colors">Не в Алматы</span>
+                      </label>
+                    </div>
                   )}
                 </div>
-              </section>
 
-              {/* Category Checkboxes Section */}
-              <section>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Категории зданий</label>
-                <div className="space-y-2">
-                  {/* ALSECO */}
-                  <label className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors">
-                    <input
-                      type="checkbox"
-                      checked={showAlseco}
-                      onChange={(e) => setShowAlseco(e.target.checked)}
-                      className="w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
-                    />
-                    <div className="flex-1">
-                      <span className="text-xs font-semibold text-slate-700">ALSECO</span>
-                      <span className="text-[10px] text-slate-400 ml-2">({categoryCounts.general.toLocaleString()})</span>
-                    </div>
-                    <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                  </label>
-                  <div className={`grid grid-cols-1 gap-2 px-3 ${showAlseco ? "opacity-100" : "opacity-60"}`}>
-                    <label className={`flex items-center gap-3 ${showAlseco ? "cursor-pointer" : "cursor-not-allowed"}`}>
-                      <input
-                        type="checkbox"
-                        checked={showAlsecoInAlmaty}
-                        onChange={(e) => setShowAlsecoInAlmaty(e.target.checked)}
-                        disabled={!showAlseco}
-                        className="w-3.5 h-3.5 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
-                      />
-                      <span className="text-[11px] text-slate-600">В Алматы</span>
-                    </label>
-                    <label className={`flex items-center gap-3 ${showAlseco ? "cursor-pointer" : "cursor-not-allowed"}`}>
-                      <input
-                        type="checkbox"
-                        checked={showAlsecoNotInAlmaty}
-                        onChange={(e) => setShowAlsecoNotInAlmaty(e.target.checked)}
-                        disabled={!showAlseco}
-                        className="w-3.5 h-3.5 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
-                      />
-                      <span className="text-[11px] text-slate-600">Не в Алматы</span>
-                    </label>
-                  </div>
-
-                  {/* ИЖС */}
-                  <label className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors">
+                {/* ИЖС */}
+                <label className="flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-emerald-100 bg-gradient-to-r from-emerald-50/50 to-transparent cursor-pointer hover:bg-emerald-50/50 transition-colors">
+                  <div className="relative">
                     <input
                       type="checkbox"
                       checked={showIzhs}
-                      onChange={(e) => setShowIzhs(e.target.checked)}
-                      className="w-4 h-4 rounded border-slate-300 text-green-500 focus:ring-green-500"
+                      onChange={(e) => startTransition(() => setShowIzhs(e.target.checked))}
+                      className="peer sr-only"
                     />
-                    <div className="flex-1">
-                      <span className="text-xs font-semibold text-slate-700">Данные районных акиматов</span>
-                      <span className="text-[10px] text-slate-400 ml-2">({categoryCounts.izhs.toLocaleString()})</span>
+                    <div className="h-5 w-5 rounded-lg border-2 border-slate-200 bg-white peer-checked:border-emerald-500 peer-checked:bg-emerald-500 transition-all flex items-center justify-center">
+                      {showIzhs && <CheckCircle className="h-3.5 w-3.5 text-white" />}
                     </div>
-                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  </label>
+                  </div>
+                  <div className="flex-1">
+                    <span className="text-sm font-semibold text-slate-700">Районные акиматы</span>
+                    <span className="text-xs text-slate-400 ml-2">({categoryCounts.izhs.toLocaleString()})</span>
+                  </div>
+                  <div className="h-3 w-3 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-sm shadow-emerald-200"></div>
+                </label>
 
-                  {/* СУСН */}
-                  <label className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors">
+                {/* СУСН */}
+                <label className="flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-blue-100 bg-gradient-to-r from-blue-50/50 to-transparent cursor-pointer hover:bg-blue-50/50 transition-colors">
+                  <div className="relative">
                     <input
                       type="checkbox"
                       checked={showSusn}
-                      onChange={(e) => setShowSusn(e.target.checked)}
-                      className="w-4 h-4 rounded border-slate-300 text-blue-500 focus:ring-blue-500"
+                      onChange={(e) => startTransition(() => setShowSusn(e.target.checked))}
+                      className="peer sr-only"
                     />
-                    <div className="flex-1">
-                      <span className="text-xs font-semibold text-slate-700">СУСН</span>
-                      <span className="text-[10px] text-slate-400 ml-2">({categoryCounts.susn.toLocaleString()})</span>
+                    <div className="h-5 w-5 rounded-lg border-2 border-slate-200 bg-white peer-checked:border-blue-500 peer-checked:bg-blue-500 transition-all flex items-center justify-center">
+                      {showSusn && <CheckCircle className="h-3.5 w-3.5 text-white" />}
                     </div>
-                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                  </label>
-                </div>
-              </section>
+                  </div>
+                  <div className="flex-1">
+                    <span className="text-sm font-semibold text-slate-700">СУСН</span>
+                    <span className="text-xs text-slate-400 ml-2">({categoryCounts.susn.toLocaleString()})</span>
+                  </div>
+                  <div className="h-3 w-3 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-sm shadow-blue-200"></div>
+                </label>
+              </div>
+            </div>
 
-              {/* ALSECO building type toggle */}
-              <section>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Фильтр ALSECO</label>
-                <div className="space-y-2">
-                  <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-colors ${showAlseco ? "bg-slate-50 border-slate-200 hover:bg-slate-100" : "bg-slate-100 border-slate-200 opacity-60"}`}>
-                    <input
-                      type="checkbox"
-                      checked={showAlsecoIzhsTypes}
-                      onChange={(e) => setShowAlsecoIzhsTypes(e.target.checked)}
-                      disabled={!showAlseco}
-                      className="w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
-                    />
-                    <div className="flex-1">
-                      <span className="text-xs font-semibold text-slate-700">Показывать ИЖС типы</span>
-                      <span className="text-[10px] text-slate-400 ml-2">из ALSECO</span>
-                    </div>
+            {/* ALSECO Filters - Collapsible */}
+            {showAlseco && (
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <button
+                onClick={() => document.getElementById('alseco-filters')?.classList.toggle('hidden')}
+                className="w-full px-4 py-3.5 flex items-center justify-between hover:bg-slate-50/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-sm">
+                    <Settings className="h-4 w-4 text-white" />
+                  </div>
+                  <span className="text-sm font-semibold text-slate-700">Фильтры ALSECO</span>
+                </div>
+                <ChevronDown className="h-4 w-4 text-slate-400" />
+              </button>
+
+              <div id="alseco-filters" className="px-4 pb-4 space-y-3">
+                {/* ИЖС Types */}
+                <div className="rounded-xl bg-slate-50/80 p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="flex items-center gap-2 cursor-pointer" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={showAlsecoIzhsTypes}
+                        onChange={(e) => {
+                          e.stopPropagation()
+                          startTransition(() => setShowAlsecoIzhsTypes(e.target.checked))
+                        }}
+                        className="h-4 w-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500/20"
+                      />
+                      <span className="text-xs font-semibold text-slate-600">ИЖС типы</span>
+                    </label>
                     <button
-                      type="button"
-                      onClick={() => setShowAlsecoIzhsSubfilters((prev) => !prev)}
-                      disabled={!showAlseco}
-                      className={`text-slate-400 hover:text-slate-600 transition-transform ${showAlsecoIzhsSubfilters ? "rotate-180" : "rotate-0"} ${showAlseco ? "" : "cursor-not-allowed"}`}
-                      aria-label="Свернуть/развернуть ИЖС типы"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setShowAlsecoIzhsSubfilters(!showAlsecoIzhsSubfilters)
+                      }}
+                      className={`p-1 rounded-lg hover:bg-slate-200/50 transition-all ${showAlsecoIzhsSubfilters ? 'rotate-180' : ''}`}
                     >
-                      ▼
+                      <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
                     </button>
                   </div>
-                  {showAlsecoIzhsSubfilters && (
-                  <div className={`grid grid-cols-1 gap-2 px-3 ${showAlseco && showAlsecoIzhsTypes ? "opacity-100" : "opacity-60"}`}>
-                    {alsecoIzhsLabels.map((label) => (
-                      <label key={label} className={`flex items-center gap-3 ${showAlseco && showAlsecoIzhsTypes ? "cursor-pointer" : "cursor-not-allowed"}`}>
-                        <input
-                          type="checkbox"
-                          checked={!!selectedAlsecoIzhsTypes[label]}
-                          onChange={(e) => setSelectedAlsecoIzhsTypes(prev => ({ ...prev, [label]: e.target.checked }))}
-                          disabled={!showAlseco || !showAlsecoIzhsTypes}
-                          className="w-3.5 h-3.5 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
-                        />
-                        <span className="text-[11px] text-slate-600">
-                          {label}
-                          <span className="text-[10px] text-slate-400 ml-2">({(alsecoTypeCounts[label] || 0).toLocaleString()})</span>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                  )}
-
-                  <div className="h-px bg-slate-200"></div>
-
-                  <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-colors ${showAlseco ? "bg-slate-50 border-slate-200 hover:bg-slate-100" : "bg-slate-100 border-slate-200 opacity-60"}`}>
-                    <input
-                      type="checkbox"
-                      checked={showAlsecoNonIzhsTypes}
-                      onChange={(e) => setShowAlsecoNonIzhsTypes(e.target.checked)}
-                      disabled={!showAlseco}
-                      className="w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
-                    />
-                    <div className="flex-1">
-                      <span className="text-xs font-semibold text-slate-700">Показывать не ИЖС</span>
-                      <span className="text-[10px] text-slate-400 ml-2">из ALSECO</span>
+                  {showAlsecoIzhsSubfilters && showAlsecoIzhsTypes && (
+                    <div className="space-y-1 mt-2 pl-1" onClick={(e) => e.stopPropagation()}>
+                      {alsecoIzhsLabels.map((label) => (
+                        <label key={label} className="flex items-center gap-2 py-0.5 cursor-pointer group" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={!!selectedAlsecoIzhsTypes[label]}
+                            onChange={(e) => {
+                              e.stopPropagation()
+                              startTransition(() => setSelectedAlsecoIzhsTypes(prev => ({ ...prev, [label]: e.target.checked })))
+                            }}
+                            className="h-3.5 w-3.5 rounded border-slate-300 text-orange-500 focus:ring-orange-500/20"
+                          />
+                          <span className="text-[11px] text-slate-500 group-hover:text-slate-700 flex-1">{label}</span>
+                          <span className="text-[10px] text-slate-300 tabular-nums">{(alsecoTypeCounts[label] || 0).toLocaleString()}</span>
+                        </label>
+                      ))}
                     </div>
+                  )}
+                </div>
+
+                {/* Non-ИЖС Types */}
+                <div className="rounded-xl bg-slate-50/80 p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="flex items-center gap-2 cursor-pointer" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={showAlsecoNonIzhsTypes}
+                        onChange={(e) => {
+                          e.stopPropagation()
+                          startTransition(() => setShowAlsecoNonIzhsTypes(e.target.checked))
+                        }}
+                        className="h-4 w-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500/20"
+                      />
+                      <span className="text-xs font-semibold text-slate-600">Не ИЖС типы</span>
+                    </label>
                     <button
-                      type="button"
-                      onClick={() => setShowAlsecoNonIzhsSubfilters((prev) => !prev)}
-                      disabled={!showAlseco}
-                      className={`text-slate-400 hover:text-slate-600 transition-transform ${showAlsecoNonIzhsSubfilters ? "rotate-180" : "rotate-0"} ${showAlseco ? "" : "cursor-not-allowed"}`}
-                      aria-label="Свернуть/развернуть не ИЖС типы"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setShowAlsecoNonIzhsSubfilters(!showAlsecoNonIzhsSubfilters)
+                      }}
+                      className={`p-1 rounded-lg hover:bg-slate-200/50 transition-all ${showAlsecoNonIzhsSubfilters ? 'rotate-180' : ''}`}
                     >
-                      ▼
+                      <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
                     </button>
                   </div>
-                  {showAlsecoNonIzhsSubfilters && (
-                  <div className={`grid grid-cols-1 gap-2 px-3 ${showAlseco && showAlsecoNonIzhsTypes ? "opacity-100" : "opacity-60"}`}>
-                    {alsecoNonIzhsLabels.map((label) => (
-                      <label key={label} className={`flex items-center gap-3 ${showAlseco && showAlsecoNonIzhsTypes ? "cursor-pointer" : "cursor-not-allowed"}`}>
-                        <input
-                          type="checkbox"
-                          checked={!!selectedAlsecoNonIzhsTypes[label]}
-                          onChange={(e) => setSelectedAlsecoNonIzhsTypes(prev => ({ ...prev, [label]: e.target.checked }))}
-                          disabled={!showAlseco || !showAlsecoNonIzhsTypes}
-                          className="w-3.5 h-3.5 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
-                        />
-                        <span className="text-[11px] text-slate-600">
-                          {label}
-                          <span className="text-[10px] text-slate-400 ml-2">({(alsecoTypeCounts[label] || 0).toLocaleString()})</span>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
+                  {showAlsecoNonIzhsSubfilters && showAlsecoNonIzhsTypes && (
+                    <div className="space-y-1 mt-2 pl-1" onClick={(e) => e.stopPropagation()}>
+                      {alsecoNonIzhsLabels.map((label) => (
+                        <label key={label} className="flex items-center gap-2 py-0.5 cursor-pointer group" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={!!selectedAlsecoNonIzhsTypes[label]}
+                            onChange={(e) => {
+                              e.stopPropagation()
+                              startTransition(() => setSelectedAlsecoNonIzhsTypes(prev => ({ ...prev, [label]: e.target.checked })))
+                            }}
+                            className="h-3.5 w-3.5 rounded border-slate-300 text-orange-500 focus:ring-orange-500/20"
+                          />
+                          <span className="text-[11px] text-slate-500 group-hover:text-slate-700 flex-1 truncate">{label}</span>
+                          <span className="text-[10px] text-slate-300 tabular-nums">{(alsecoTypeCounts[label] || 0).toLocaleString()}</span>
+                        </label>
+                      ))}
+                    </div>
                   )}
                 </div>
-              </section>
+              </div>
+            </div>
+            )}
 
-              {/* District Section */}
-              <section>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Район города</label>
-                <select
-                  value={districtFilter}
-                  onChange={(e) => handleDistrictFilterChange(e.target.value)}
-                  className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 cursor-pointer focus:border-blue-500 outline-none"
-                >
-                  <option value="all">Все районы</option>
-                  {districtNames.map((district) => <option key={district} value={district}>{district}</option>)}
-                </select>
-              </section>
-
-              {/* Layer Controls */}
-              <section>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Управление картой</label>
-                <div className="grid grid-cols-1 gap-2">
-                  <button onClick={() => fetchBuildings(true)} disabled={loading} className="flex items-center gap-3 px-4 h-10 rounded-xl text-xs font-semibold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200">
-                    <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Обновить данные
-                  </button>
-
-                  {/* <button
-                    onClick={async () => {
-                      await clearBuildingsCache()
-                      fetchBuildings(true)
-                    }}
-                    disabled={loading}
-                    className="flex items-center gap-3 px-4 h-10 rounded-xl text-xs font-semibold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  >
-                    <X className="h-4 w-4" /> Очистить кэш
-                  </button> */}
-                  
-                  <button onClick={() => setShowHeatmap(!showHeatmap)} className={`flex items-center gap-3 px-4 h-10 rounded-xl text-xs font-semibold transition-all ${showHeatmap ? "bg-orange-500 text-white shadow-md shadow-orange-200" : "bg-slate-100 text-slate-600"}`}>
-                    <Flame className="h-4 w-4" /> Тепловая карта
-                  </button>
-                  
-                  <button onClick={() => setShowRenovationAreas(!showRenovationAreas)} className={`flex items-center gap-3 px-4 h-10 rounded-xl text-xs font-semibold transition-all ${showRenovationAreas ? "bg-purple-600 text-white shadow-md shadow-purple-200" : "bg-slate-100 text-slate-600"}`}>
-                    <Layers className="h-4 w-4" /> Зоны реновации
-                  </button>
-
-                  {/* <button onClick={() => setShowAdvancedFilters(!showAdvancedFilters)} className={`flex items-center justify-between px-4 h-10 rounded-xl text-xs font-semibold transition-all ${showAdvancedFilters ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}>
-                    <div className="flex items-center gap-3"><Calendar className="h-4 w-4" /> Доп. фильтры</div>
-                    {showAdvancedFilters && <X className="h-3 w-3" />}
-                  </button> */}
-                </div>
-              </section>
-
-              {/* Advanced Filters (Inline) */}
-              {showAdvancedFilters && (
-                <section className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-200">
-                  {/* Year Filter */}
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase mb-2 flex items-center gap-2">
-                      <Calendar className="h-3 w-3" /> Год постройки
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        placeholder="От"
-                        value={yearFilter?.min || ""}
-                        onChange={(e) => setYearFilter(prev => ({ min: Number(e.target.value), max: prev?.max || 2025 }))}
-                        className="w-1/2 h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs focus:border-blue-500 outline-none"
-                      />
-                      <input
-                        type="number"
-                        placeholder="До"
-                        value={yearFilter?.max || ""}
-                        onChange={(e) => setYearFilter(prev => ({ min: prev?.min || 1900, max: Number(e.target.value) }))}
-                        className="w-1/2 h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs focus:border-blue-500 outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Floors Filter */}
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase mb-2 flex items-center gap-2">
-                      <Layers className="h-3 w-3" /> Этажность
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        placeholder="От"
-                        value={floorsFilter?.min || ""}
-                        onChange={(e) => setFloorsFilter(prev => ({ min: Number(e.target.value), max: prev?.max || 100 }))}
-                        className="w-1/2 h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs focus:border-blue-500 outline-none"
-                      />
-                      <input
-                        type="number"
-                        placeholder="До"
-                        value={floorsFilter?.max || ""}
-                        onChange={(e) => setFloorsFilter(prev => ({ min: prev?.min || 1, max: Number(e.target.value) }))}
-                        className="w-1/2 h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs focus:border-blue-500 outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Apartments Filter */}
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase mb-2 flex items-center gap-2">
-                      <Home className="h-3 w-3" /> Квартир
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        placeholder="От"
-                        value={apartmentsFilter?.min || ""}
-                        onChange={(e) => setApartmentsFilter(prev => ({ min: Number(e.target.value), max: prev?.max || 1000 }))}
-                        className="w-1/2 h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs focus:border-blue-500 outline-none"
-                      />
-                      <input
-                        type="number"
-                        placeholder="До"
-                        value={apartmentsFilter?.max || ""}
-                        onChange={(e) => setApartmentsFilter(prev => ({ min: prev?.min || 1, max: Number(e.target.value) }))}
-                        className="w-1/2 h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs focus:border-blue-500 outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      setYearFilter(null);
-                      setFloorsFilter(null);
-                      setApartmentsFilter(null);
-                    }}
-                    className="w-full h-8 rounded-lg text-[10px] font-bold bg-white text-slate-500 border border-slate-200 hover:bg-slate-100 transition-all uppercase tracking-wider"
-                  >
-                    Сбросить фильтры
-                  </button>
-                </section>
-              )}
-
-              {/* Export Section */}
-              <section className="pt-4 border-t border-slate-100 space-y-3">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Экспорт и кэш</label>
-                <div className="flex gap-2">
-                  <button onClick={exportToCSV} className="flex-1 h-10 rounded-xl border border-slate-200 bg-white text-[10px] font-bold text-slate-600 uppercase flex items-center justify-center gap-2">
-                    <Download className="h-3 w-3" /> CSV
-                  </button>
-                  <button onClick={exportToJSON} className="flex-1 h-10 rounded-xl border border-slate-200 bg-white text-[10px] font-bold text-slate-600 uppercase flex items-center justify-center gap-2">
-                    <Download className="h-3 w-3" /> JSON
-                  </button>
-                </div>
-                <button onClick={async () => { await clearBuildingsCache(); fetchBuildings(true); }} className="w-full h-9 rounded-xl bg-red-50 text-red-600 text-[10px] font-bold border border-red-100 uppercase transition-colors hover:bg-red-100">
-                  Очистить кэш
-                </button>
-              </section>
+            {/* Quick Actions - Compact */}
+            <div className="flex gap-2">
+              <button
+                onClick={exportToJSON}
+                className="flex-1 h-9 rounded-xl bg-slate-50 border border-slate-100 text-xs font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all flex items-center justify-center gap-1.5"
+              >
+                <Download className="h-3 w-3" /> JSON
+              </button>
+              <button
+                onClick={async () => { await clearBuildingsCache(); fetchBuildings(true); }}
+                className="h-9 px-3 rounded-xl bg-red-50 text-red-400 text-xs font-medium border border-red-100 hover:bg-red-100 hover:text-red-600 transition-all flex items-center justify-center gap-1.5"
+              >
+                <X className="h-3 w-3" /> Кэш
+              </button>
             </div>
           </div>
         </div>
@@ -1632,6 +1738,7 @@ export default function BuildingsWithoutGasPage() {
             </div>
           </div>
         )}
+        </div>
         </div>
       </main>
     </>

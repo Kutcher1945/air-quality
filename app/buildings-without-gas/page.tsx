@@ -931,7 +931,9 @@ export default function BuildingsWithoutGasPage() {
       // Filter for seasonal/unused buildings only
       if (deferredShowOnlySeasonalUnused && building.is_seasonal_or_unused !== true) return false
 
-      const matchesDistrict = deferredDistrictFilter === "all" || building.district === deferredDistrictFilter
+      const matchesDistrict = deferredDistrictFilter === "all"
+        || (deferredDistrictFilter === "no_district" && (building.district_id === null || building.district_id === undefined))
+        || building.district === deferredDistrictFilter
       const matchesSearch =
         deferredSearchQuery === "" ||
         building.address.toLowerCase().includes(deferredSearchQuery.toLowerCase()) ||
@@ -988,17 +990,9 @@ export default function BuildingsWithoutGasPage() {
     (showSusn && b.building_category === "susn")
   )
 
-  // Buildings filtered by selected district (for dynamic counts in checkboxes)
-  const districtFilteredBuildings = districtFilter === "all"
-    ? buildings
-    : buildings.filter((b) => b.district === districtFilter)
-
-  const districtFilteredGeneral = districtFilteredBuildings.filter((b) => b.building_category === "general")
-  const districtFilteredIzhs = districtFilteredBuildings.filter((b) => b.building_category === "izhs")
-  const districtFilteredSusn = districtFilteredBuildings.filter((b) => b.building_category === "susn")
-  // Valid Almaty districts in order
+  // Valid Almaty districts for filter dropdown (only district_id 1-8)
+  // Buildings with district_id = null are shown under "Без района"
   const VALID_ALMATY_DISTRICTS = [
-    "г.Алматы",
     "Алатауский район",
     "Алмалинский район",
     "Ауэзовский район",
@@ -1006,9 +1000,20 @@ export default function BuildingsWithoutGasPage() {
     "Жетысуский район",
     "Медеуский район",
     "Наурызбайский район",
-    "Турксибский район",
-    "БКАД За пределами города"
+    "Турксибский район"
   ]
+
+  // Buildings filtered by selected district (for dynamic counts in checkboxes)
+  // "no_district" = buildings where district_id is null (shown as "Не указан")
+  const districtFilteredBuildings = districtFilter === "all"
+    ? buildings
+    : districtFilter === "no_district"
+      ? buildings.filter((b) => b.district_id === null || b.district_id === undefined)
+      : buildings.filter((b) => b.district === districtFilter)
+
+  const districtFilteredGeneral = districtFilteredBuildings.filter((b) => b.building_category === "general")
+  const districtFilteredIzhs = districtFilteredBuildings.filter((b) => b.building_category === "izhs")
+  const districtFilteredSusn = districtFilteredBuildings.filter((b) => b.building_category === "susn")
 
   const districtNames = VALID_ALMATY_DISTRICTS.filter(validDistrict =>
     visibleBuildings.some(b => b.district === validDistrict)
@@ -1016,10 +1021,14 @@ export default function BuildingsWithoutGasPage() {
 
   // District counts for dropdown
   const districtCounts = useMemo(() => {
-    const counts: Record<string, number> = { all: visibleBuildings.length }
+    const counts: Record<string, number> = { all: visibleBuildings.length, no_district: 0 }
     for (const b of visibleBuildings) {
-      if (b.district && VALID_ALMATY_DISTRICTS.includes(b.district)) {
+      // Check if building has a valid district_id (1-8)
+      if (b.district_id !== null && b.district_id !== undefined && b.district && VALID_ALMATY_DISTRICTS.includes(b.district)) {
         counts[b.district] = (counts[b.district] || 0) + 1
+      } else {
+        // Buildings with district_id = null (Без района)
+        counts.no_district++
       }
     }
     return counts
@@ -1296,7 +1305,7 @@ export default function BuildingsWithoutGasPage() {
                 >
                   <MapPin className={`h-4 w-4 shrink-0 ${districtFilter !== "all" ? "text-blue-500" : "text-slate-400"}`} />
                   <span className="flex-1 text-left truncate">
-                    {districtFilter === "all" ? "Все районы" : districtFilter}
+                    {districtFilter === "all" ? "Все районы" : districtFilter === "no_district" ? "Без района" : districtFilter}
                   </span>
                   {districtFilter !== "all" && (
                     <span className="px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-600 text-[10px] font-semibold">
@@ -1345,6 +1354,38 @@ export default function BuildingsWithoutGasPage() {
                       </button>
 
                       <div className="h-px bg-slate-100" />
+
+                      {/* No District Option */}
+                      {districtCounts.no_district > 0 && (
+                        <button
+                          onClick={() => {
+                            handleDistrictFilterChange("no_district")
+                            setShowDistrictDropdown(false)
+                          }}
+                          className={`w-full px-4 py-2.5 flex items-center gap-3 transition-colors ${
+                            districtFilter === "no_district"
+                              ? "bg-blue-50 text-blue-700"
+                              : "hover:bg-slate-50 text-slate-700"
+                          }`}
+                        >
+                          <div className={`h-6 w-6 rounded-lg flex items-center justify-center text-[10px] font-bold ${
+                            districtFilter === "no_district" ? "bg-blue-500 text-white" : "bg-slate-100 text-slate-500"
+                          }`}>
+                            ?
+                          </div>
+                          <span className="flex-1 text-left text-sm font-medium">Без района</span>
+                          <span className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold tabular-nums ${
+                            districtFilter === "no_district" ? "bg-blue-100 text-blue-600" : "bg-slate-100 text-slate-500"
+                          }`}>
+                            {districtCounts.no_district?.toLocaleString() || 0}
+                          </span>
+                          {districtFilter === "no_district" && (
+                            <CheckCircle className="h-4 w-4 text-blue-500" />
+                          )}
+                        </button>
+                      )}
+
+                      {districtCounts.no_district > 0 && <div className="h-px bg-slate-100" />}
 
                       {/* District List */}
                       <div className="max-h-[280px] overflow-y-auto custom-scrollbar">

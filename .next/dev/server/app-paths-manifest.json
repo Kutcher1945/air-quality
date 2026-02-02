@@ -1,3 +1,4 @@
 {
-  "/buildings-without-gas/page": "app/buildings-without-gas/page.js"
+  "/buildings-without-gas/page": "app/buildings-without-gas/page.js",
+  "/page": "app/page.js"
 }

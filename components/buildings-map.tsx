@@ -586,8 +586,16 @@ export default function BuildingsMap({
 
       console.log(`🗺️ Creating markers for ${buildings.length} buildings`)
 
+      // Skip marker creation if no buildings
+      if (buildings.length === 0) {
+        console.log("⚠️ No buildings to display on map")
+        return
+      }
+
       let markersCreated = 0
       buildings.forEach((building) => {
+        // Skip buildings without valid coordinates
+        if (!building.latitude || !building.longitude) return
         // Use different colored icon based on building category and seasonal/unused status
         const icon = createMarkerIcon(
           building.building_category,
@@ -887,8 +895,9 @@ export default function BuildingsMap({
     }
 
     // Auto-fit bounds only on first load, not on subsequent re-renders
-    if (buildings.length > 0 && !hasAutoFitted.current) {
-      const bounds = L.latLngBounds(buildings.map((b) => [b.latitude, b.longitude]))
+    const validBuildings = buildings.filter(b => b.latitude && b.longitude)
+    if (validBuildings.length > 0 && !hasAutoFitted.current) {
+      const bounds = L.latLngBounds(validBuildings.map((b) => [b.latitude, b.longitude]))
       if (!cancelled && !isUnmountingRef.current && mapInstanceRef.current) {
         try {
           map.fitBounds(bounds, { padding: [50, 50] })

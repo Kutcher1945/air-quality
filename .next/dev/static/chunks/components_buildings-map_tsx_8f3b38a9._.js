@@ -588,9 +588,16 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                     }["BuildingsMap.useEffect.clusterGroup"]
                 });
                 console.log(`🗺️ Creating markers for ${buildings.length} buildings`);
+                // Skip marker creation if no buildings
+                if (buildings.length === 0) {
+                    console.log("⚠️ No buildings to display on map");
+                    return;
+                }
                 let markersCreated = 0;
                 buildings.forEach({
                     "BuildingsMap.useEffect": (building)=>{
+                        // Skip buildings without valid coordinates
+                        if (!building.latitude || !building.longitude) return;
                         // Use different colored icon based on building category and seasonal/unused status
                         const icon = createMarkerIcon(building.building_category, building.is_seasonal_or_unused, building.building_type_raw);
                         const marker = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].marker([
@@ -912,8 +919,11 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 }
             }
             // Auto-fit bounds only on first load, not on subsequent re-renders
-            if (buildings.length > 0 && !hasAutoFitted.current) {
-                const bounds = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].latLngBounds(buildings.map({
+            const validBuildings = buildings.filter({
+                "BuildingsMap.useEffect.validBuildings": (b)=>b.latitude && b.longitude
+            }["BuildingsMap.useEffect.validBuildings"]);
+            if (validBuildings.length > 0 && !hasAutoFitted.current) {
+                const bounds = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].latLngBounds(validBuildings.map({
                     "BuildingsMap.useEffect.bounds": (b)=>[
                             b.latitude,
                             b.longitude
@@ -958,7 +968,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 className: "jsx-8c726aafc29b0ebc"
             }, void 0, false, {
                 fileName: "[project]/components/buildings-map.tsx",
-                lineNumber: 917,
+                lineNumber: 926,
                 columnNumber: 23
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -966,7 +976,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 className: "jsx-8c726aafc29b0ebc" + " " + "h-full w-full"
             }, void 0, false, {
                 fileName: "[project]/components/buildings-map.tsx",
-                lineNumber: 918,
+                lineNumber: 927,
                 columnNumber: 7
             }, this)
         ]

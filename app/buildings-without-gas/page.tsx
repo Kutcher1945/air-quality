@@ -290,6 +290,8 @@ export default function BuildingsWithoutGasPage() {
     const allowAnyLocation = deferredShowAlsecoInAlmaty && deferredShowAlsecoNotInAlmaty
     for (const b of buildings) {
       if (b.building_category !== "general") continue
+      // Filter by selected district
+      if (deferredDistrictFilter !== "all" && b.district !== deferredDistrictFilter) continue
       const rawType = (b.building_type_raw || "").trim()
       if (!rawType) continue
       if (!allowAnyLocation) {
@@ -309,6 +311,7 @@ export default function BuildingsWithoutGasPage() {
     return counts
   }, [
     buildings,
+    deferredDistrictFilter,
     deferredShowAlsecoInAlmaty,
     deferredShowAlsecoNotInAlmaty,
     alsecoIzhsLabelSet,
@@ -894,7 +897,8 @@ export default function BuildingsWithoutGasPage() {
       // ALSECO-specific building type filter (ИЖС vs не ИЖС)
       if (building.building_category === "general") {
         const rawType = (building.building_type_raw || "").trim()
-        if (!rawType) return false
+        // If no building type, treat as "Дом" (default ИЖС type)
+        const effectiveType = rawType || "Дом"
         const allowAnyType =
           deferredShowAlsecoIzhsTypes &&
           deferredShowAlsecoNonIzhsTypes &&
@@ -902,12 +906,14 @@ export default function BuildingsWithoutGasPage() {
           allAlsecoNonIzhsSelected
 
         if (!allowAnyType) {
-          const isIzhsType = rawType === "Не указано" || alsecoIzhsLabelSet.has(rawType)
+          // Use effectiveType for filtering (empty rawType defaults to "Дом")
+          const typeForFilter = rawType === "Не указано" || !rawType ? "Дом" : rawType
+          const isIzhsType = alsecoIzhsLabelSet.has(typeForFilter)
           const allowAnyNonIzhsType =
             deferredShowAlsecoNonIzhsTypes && allAlsecoNonIzhsSelected
           const matchesIzhs =
             deferredShowAlsecoIzhsTypes &&
-            deferredSelectedAlsecoIzhsTypes[rawType === "Не указано" ? "Дом" : rawType]
+            deferredSelectedAlsecoIzhsTypes[typeForFilter]
           const matchesNonIzhs =
             deferredShowAlsecoNonIzhsTypes &&
             (deferredSelectedAlsecoNonIzhsTypes[rawType] || (allowAnyNonIzhsType && !isIzhsType))
@@ -970,7 +976,7 @@ export default function BuildingsWithoutGasPage() {
   // Deferred buildings for map to keep UI responsive during heavy filtering
   const deferredFilteredBuildings = useDeferredValue(filteredBuildings)
 
-  // Category-specific counts
+  // Category-specific counts (all buildings, for district dropdown)
   const generalBuildings = buildings.filter((b) => b.building_category === "general")
   const izhsBuildings = buildings.filter((b) => b.building_category === "izhs")
   const susnBuildings = buildings.filter((b) => b.building_category === "susn")
@@ -981,6 +987,15 @@ export default function BuildingsWithoutGasPage() {
     (showIzhs && b.building_category === "izhs") ||
     (showSusn && b.building_category === "susn")
   )
+
+  // Buildings filtered by selected district (for dynamic counts in checkboxes)
+  const districtFilteredBuildings = districtFilter === "all"
+    ? buildings
+    : buildings.filter((b) => b.district === districtFilter)
+
+  const districtFilteredGeneral = districtFilteredBuildings.filter((b) => b.building_category === "general")
+  const districtFilteredIzhs = districtFilteredBuildings.filter((b) => b.building_category === "izhs")
+  const districtFilteredSusn = districtFilteredBuildings.filter((b) => b.building_category === "susn")
   // Valid Almaty districts in order
   const VALID_ALMATY_DISTRICTS = [
     "г.Алматы",
@@ -1010,17 +1025,23 @@ export default function BuildingsWithoutGasPage() {
     return counts
   }, [visibleBuildings])
 
+  // Category counts - filtered by selected district
   const categoryCounts = {
-    general: generalBuildings.length,
-    izhs: izhsBuildings.length,
-    susn: susnBuildings.length,
+    general: districtFilteredGeneral.length,
+    izhs: districtFilteredIzhs.length,
+    susn: districtFilteredSusn.length,
   }
 
-  // Gas connection counts
+  // Gas connection counts - filtered by selected district and visible categories
+  const districtAndCategoryFiltered = districtFilteredBuildings.filter((b) =>
+    (showAlseco && b.building_category === "general") ||
+    (showIzhs && b.building_category === "izhs") ||
+    (showSusn && b.building_category === "susn")
+  )
   const gasCounts = {
-    withGas: visibleBuildings.filter(b => b.has_gas === true).length,
-    withoutGas: visibleBuildings.filter(b => b.has_gas === false).length,
-    unknown: visibleBuildings.filter(b => b.has_gas === null || b.has_gas === undefined).length,
+    withGas: districtAndCategoryFiltered.filter(b => b.has_gas === true).length,
+    withoutGas: districtAndCategoryFiltered.filter(b => b.has_gas === false).length,
+    unknown: districtAndCategoryFiltered.filter(b => b.has_gas === null || b.has_gas === undefined).length,
   }
 
   // Total of selected categories
@@ -1029,17 +1050,17 @@ export default function BuildingsWithoutGasPage() {
     (showIzhs ? categoryCounts.izhs : 0) +
     (showSusn ? categoryCounts.susn : 0)
 
-  // "In Almaty" counts for selected categories (matches stats card logic)
+  // "In Almaty" counts - filtered by selected district
   const inAlmatyCounts = {
-    general: generalBuildings.filter((b) => !b.is_not_in_almaty).length,
-    izhs: izhsBuildings.filter((b) => !b.is_not_in_almaty).length,
-    susn: susnBuildings.filter((b) => !b.is_not_in_almaty).length,
+    general: districtFilteredGeneral.filter((b) => !b.is_not_in_almaty).length,
+    izhs: districtFilteredIzhs.filter((b) => !b.is_not_in_almaty).length,
+    susn: districtFilteredSusn.filter((b) => !b.is_not_in_almaty).length,
   }
-  // "Not in Almaty" counts
+  // "Not in Almaty" counts - filtered by selected district
   const notInAlmatyCounts = {
-    general: generalBuildings.filter((b) => b.is_not_in_almaty).length,
-    izhs: izhsBuildings.filter((b) => b.is_not_in_almaty).length,
-    susn: susnBuildings.filter((b) => b.is_not_in_almaty).length,
+    general: districtFilteredGeneral.filter((b) => b.is_not_in_almaty).length,
+    izhs: districtFilteredIzhs.filter((b) => b.is_not_in_almaty).length,
+    susn: districtFilteredSusn.filter((b) => b.is_not_in_almaty).length,
   }
   const selectedCategoriesInAlmaty =
     (showAlseco ? inAlmatyCounts.general : 0) +
@@ -1233,7 +1254,7 @@ export default function BuildingsWithoutGasPage() {
                 </div>
                 <div className="text-right">
                   <p className={`text-sm font-bold tabular-nums leading-tight transition-opacity ${isPending ? 'text-slate-400' : 'text-slate-700'}`}>
-                    {selectedCategoriesInAlmaty.toLocaleString()}
+                    {filteredBuildings.length.toLocaleString()}
                     <span className="text-xs font-normal text-slate-400 ml-1">/ {selectedCategoriesTotal.toLocaleString()}</span>
                   </p>
                 </div>

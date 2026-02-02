@@ -91,6 +91,22 @@ interface Building {
   apartments?: number
   year_built?: number
   last_updated?: string
+  // Additional fields from Django model
+  gas_connection_available?: boolean | null
+  type_of_gas?: string | null
+  property_not_legalized?: boolean | null
+  property_not_eligible_for_gas_connection?: boolean | null
+  no_funds_for_gas_connection?: boolean | null
+  other_reason?: string | null
+  has_private_bathhouse?: boolean | null
+  bathhouse_fuel_type?: string | null
+  specialist_comment?: string | null
+  fio?: string | null
+  mobile_home_number?: string | null
+  gas_id?: number | null
+  inside_izhs?: string | null
+  inside_susn?: string | null
+  inside_alseco?: string | null
 }
 
 interface RenovationArea {
@@ -1904,52 +1920,258 @@ export default function BuildingsWithoutGasPage() {
                 </p>
               </div>
 
-              {/* Statistics Section */}
-              {/* <div className="grid grid-cols-2 gap-2">
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                  <p className="text-[9px] font-bold text-slate-400 uppercase">Этажность</p>
-                  <p className="text-lg font-bold text-slate-900">{selectedBuilding.floors || "—"}</p>
+              {/* Gas Status Alert - Dynamic */}
+              {selectedBuilding.has_gas === true ? (
+                <div className="p-4 rounded-2xl bg-green-50 border border-green-100 flex gap-3">
+                  <div className="h-8 w-8 shrink-0 rounded-full bg-green-500 flex items-center justify-center shadow-sm">
+                    <CheckCircle className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-green-900 uppercase tracking-tight">Газ подключен</h4>
+                    <p className="text-[11px] text-green-700 leading-relaxed mt-0.5">
+                      Объект имеет централизованное газоснабжение.
+                    </p>
+                  </div>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                  <p className="text-[9px] font-bold text-slate-400 uppercase">Квартиры</p>
-                  <p className="text-lg font-bold text-slate-900">{selectedBuilding.apartments || "—"}</p>
+              ) : selectedBuilding.has_gas === false ? (
+                <div className="p-4 rounded-2xl bg-orange-50 border border-orange-100 flex gap-3">
+                  <div className="h-8 w-8 shrink-0 rounded-full bg-orange-500 flex items-center justify-center shadow-sm">
+                    <AlertCircle className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-orange-900 uppercase tracking-tight">Газ отсутствует</h4>
+                    <p className="text-[11px] text-orange-700 leading-relaxed mt-0.5">
+                      Объект числится в списках на газификацию или использует альтернативные источники.
+                    </p>
+                  </div>
                 </div>
-                <div className="col-span-2 p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
-                  <p className="text-[9px] font-bold text-slate-400 uppercase">Год постройки</p>
-                  <p className="text-sm font-bold text-slate-900">{selectedBuilding.year_built || "Не указан"}</p>
+              ) : (
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex gap-3">
+                  <div className="h-8 w-8 shrink-0 rounded-full bg-slate-400 flex items-center justify-center shadow-sm">
+                    <HelpCircle className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-700 uppercase tracking-tight">Статус газа неизвестен</h4>
+                    <p className="text-[11px] text-slate-500 leading-relaxed mt-0.5">
+                      Информация о газоснабжении данного объекта отсутствует.
+                    </p>
+                  </div>
                 </div>
-              </div> */}
+              )}
 
-              {/* Technical Category */}
-              <section className="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1">Тип здания</p>
-                <p className="text-sm font-semibold text-gray-700 leading-relaxed">
-                  {selectedBuilding.building_type}
-                </p>
-              </section>
-
-              {/* Status Alert */}
-              <div className="p-4 rounded-2xl bg-orange-50 border border-orange-100 flex gap-3">
-                <div className="h-8 w-8 shrink-0 rounded-full bg-orange-500 flex items-center justify-center shadow-sm">
-                  <AlertCircle className="h-5 w-5 text-white" />
-                </div>
+              {/* Building Type Section */}
+              <section className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-3">
                 <div>
-                  <h4 className="text-xs font-bold text-orange-900 uppercase tracking-tight">Газ отсутствует</h4>
-                  <p className="text-[11px] text-orange-700 leading-relaxed mt-0.5">
-                    Объект числится в списках на газификацию или использует альтернативные источники.
+                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1">Категория</p>
+                  <p className="text-sm font-semibold text-gray-700 leading-relaxed">
+                    {selectedBuilding.building_type}
                   </p>
                 </div>
-              </div>
+                {selectedBuilding.building_type_raw && (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1">Тип здания</p>
+                    <p className="text-sm font-semibold text-gray-700 leading-relaxed">
+                      {selectedBuilding.building_type_raw}
+                    </p>
+                  </div>
+                )}
+              </section>
+
+              {/* Additional Flags */}
+              {(selectedBuilding.is_not_in_almaty || selectedBuilding.is_seasonal_or_unused) && (
+                <div className="space-y-2">
+                  {selectedBuilding.is_not_in_almaty && (
+                    <div className="p-3 rounded-xl bg-blue-50 border border-blue-100 flex items-center gap-2">
+                      <div className="h-6 w-6 rounded-full bg-blue-500 flex items-center justify-center">
+                        <MapPin className="h-3 w-3 text-white" />
+                      </div>
+                      <p className="text-xs font-medium text-blue-800">Не в Алматы</p>
+                    </div>
+                  )}
+                  {selectedBuilding.is_seasonal_or_unused && (
+                    <div className="p-3 rounded-xl bg-amber-50 border border-amber-100 flex items-center gap-2">
+                      <div className="h-6 w-6 rounded-full bg-amber-500 flex items-center justify-center">
+                        <Calendar className="h-3 w-3 text-white" />
+                      </div>
+                      <p className="text-xs font-medium text-amber-800">Сезонное / Не используется</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Contact Information */}
+              {(selectedBuilding.fio || selectedBuilding.mobile_home_number) && (
+                <div className="pt-4 border-t border-slate-100">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Контактная информация</label>
+                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-2">
+                    {selectedBuilding.fio && (
+                      <div>
+                        <p className="text-[9px] text-slate-400 uppercase">ФИО</p>
+                        <p className="text-sm font-medium text-slate-700">{selectedBuilding.fio}</p>
+                      </div>
+                    )}
+                    {selectedBuilding.mobile_home_number && (
+                      <div>
+                        <p className="text-[9px] text-slate-400 uppercase">Телефон</p>
+                        <p className="text-sm font-medium text-slate-700">{selectedBuilding.mobile_home_number}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Gas Details */}
+              {(selectedBuilding.type_of_gas || selectedBuilding.gas_connection_available !== null && selectedBuilding.gas_connection_available !== undefined) && (
+                <div className="pt-4 border-t border-slate-100">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Детали газоснабжения</label>
+                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-2">
+                    {selectedBuilding.type_of_gas && (
+                      <div className="flex justify-between">
+                        <span className="text-[10px] text-slate-500">Тип газа:</span>
+                        <span className="text-[10px] font-medium text-slate-700">{selectedBuilding.type_of_gas}</span>
+                      </div>
+                    )}
+                    {selectedBuilding.gas_connection_available !== null && selectedBuilding.gas_connection_available !== undefined && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] text-slate-500">Тех. возможность подключения:</span>
+                        <span className={`text-[10px] font-medium ${selectedBuilding.gas_connection_available ? 'text-green-600' : 'text-red-600'}`}>
+                          {selectedBuilding.gas_connection_available ? 'Да' : 'Нет'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Reasons for No Gas */}
+              {(selectedBuilding.property_not_legalized || selectedBuilding.property_not_eligible_for_gas_connection || selectedBuilding.no_funds_for_gas_connection || selectedBuilding.other_reason) && (
+                <div className="pt-4 border-t border-slate-100">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Причины отсутствия газа</label>
+                  <div className="space-y-2">
+                    {selectedBuilding.property_not_legalized && (
+                      <div className="p-2 rounded-lg bg-red-50 border border-red-100 flex items-center gap-2">
+                        <div className="h-5 w-5 rounded-full bg-red-500 flex items-center justify-center">
+                          <X className="h-3 w-3 text-white" />
+                        </div>
+                        <p className="text-[10px] font-medium text-red-800">Объект не узаконен</p>
+                      </div>
+                    )}
+                    {selectedBuilding.property_not_eligible_for_gas_connection && (
+                      <div className="p-2 rounded-lg bg-red-50 border border-red-100 flex items-center gap-2">
+                        <div className="h-5 w-5 rounded-full bg-red-500 flex items-center justify-center">
+                          <X className="h-3 w-3 text-white" />
+                        </div>
+                        <p className="text-[10px] font-medium text-red-800">Не подлежит газификации</p>
+                      </div>
+                    )}
+                    {selectedBuilding.no_funds_for_gas_connection && (
+                      <div className="p-2 rounded-lg bg-amber-50 border border-amber-100 flex items-center gap-2">
+                        <div className="h-5 w-5 rounded-full bg-amber-500 flex items-center justify-center">
+                          <AlertCircle className="h-3 w-3 text-white" />
+                        </div>
+                        <p className="text-[10px] font-medium text-amber-800">Нет средств на подключение</p>
+                      </div>
+                    )}
+                    {selectedBuilding.other_reason && (
+                      <div className="p-2 rounded-lg bg-slate-100 border border-slate-200">
+                        <p className="text-[9px] text-slate-400 uppercase mb-1">Другая причина</p>
+                        <p className="text-[10px] text-slate-700">{selectedBuilding.other_reason}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Bathhouse Info */}
+              {(selectedBuilding.has_private_bathhouse !== null && selectedBuilding.has_private_bathhouse !== undefined) || selectedBuilding.bathhouse_fuel_type ? (
+                <div className="pt-4 border-t border-slate-100">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Баня</label>
+                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-2">
+                    {selectedBuilding.has_private_bathhouse !== null && selectedBuilding.has_private_bathhouse !== undefined && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] text-slate-500">Частная баня:</span>
+                        <span className={`text-[10px] font-medium ${selectedBuilding.has_private_bathhouse ? 'text-green-600' : 'text-slate-500'}`}>
+                          {selectedBuilding.has_private_bathhouse ? 'Есть' : 'Нет'}
+                        </span>
+                      </div>
+                    )}
+                    {selectedBuilding.bathhouse_fuel_type && (
+                      <div className="flex justify-between">
+                        <span className="text-[10px] text-slate-500">Тип топлива бани:</span>
+                        <span className="text-[10px] font-medium text-slate-700">{selectedBuilding.bathhouse_fuel_type}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Specialist Comment */}
+              {selectedBuilding.specialist_comment && (
+                <div className="pt-4 border-t border-slate-100">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Комментарий специалиста</label>
+                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                    <p className="text-[11px] text-slate-700 leading-relaxed">{selectedBuilding.specialist_comment}</p>
+                  </div>
+                </div>
+              )}
 
               {/* Geolocation Section */}
               <div className="pt-4 border-t border-slate-100">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Геолокация</label>
                 <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 font-mono text-[10px] text-slate-500 space-y-1">
                   <div className="flex justify-between">
-                    <span>Широта:</span> <span className="font-bold">{selectedBuilding.latitude.toFixed(6)}</span>
+                    <span>Широта:</span> <span className="font-bold">{selectedBuilding.latitude?.toFixed(6) || "—"}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Долгота:</span> <span className="font-bold">{selectedBuilding.longitude.toFixed(6)}</span>
+                    <span>Долгота:</span> <span className="font-bold">{selectedBuilding.longitude?.toFixed(6) || "—"}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Territorial Affiliation */}
+              {(selectedBuilding.inside_izhs || selectedBuilding.inside_susn || selectedBuilding.inside_alseco) && (
+                <div className="pt-4 border-t border-slate-100">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Территориальная принадлежность</label>
+                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-2">
+                    {selectedBuilding.inside_izhs && (
+                      <div className="flex justify-between">
+                        <span className="text-[10px] text-slate-500">Внутри ИЖС:</span>
+                        <span className="text-[10px] font-medium text-slate-700">{selectedBuilding.inside_izhs}</span>
+                      </div>
+                    )}
+                    {selectedBuilding.inside_susn && (
+                      <div className="flex justify-between">
+                        <span className="text-[10px] text-slate-500">Внутри СУСН:</span>
+                        <span className="text-[10px] font-medium text-slate-700">{selectedBuilding.inside_susn}</span>
+                      </div>
+                    )}
+                    {selectedBuilding.inside_alseco && (
+                      <div className="flex justify-between">
+                        <span className="text-[10px] text-slate-500">Внутри Alseco:</span>
+                        <span className="text-[10px] font-medium text-slate-700">{selectedBuilding.inside_alseco}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Technical Info */}
+              <div className="pt-4 border-t border-slate-100">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Техническая информация</label>
+                <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 font-mono text-[10px] text-slate-500 space-y-1">
+                  <div className="flex justify-between">
+                    <span>ID:</span> <span className="font-bold">{selectedBuilding.id}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Район ID:</span> <span className="font-bold">{selectedBuilding.district_id ?? "—"}</span>
+                  </div>
+                  {selectedBuilding.gas_id && (
+                    <div className="flex justify-between">
+                      <span>Gas ID:</span> <span className="font-bold">{selectedBuilding.gas_id}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span>Категория:</span> <span className="font-bold uppercase">{selectedBuilding.building_category}</span>
                   </div>
                 </div>
               </div>

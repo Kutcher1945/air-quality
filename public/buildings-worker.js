@@ -64,6 +64,22 @@ function transformBuildingsData(apiBuildings) {
       is_not_in_almaty: b.is_not_in_almaty || false,
       is_seasonal_or_unused: b.is_seasonal_or_unused || false,
       geometry: b.geometry || null,
+      // Additional fields
+      gas_connection_available: b.gas_connection_available ?? null,
+      type_of_gas: b.type_of_gas || null,
+      property_not_legalized: b.property_not_legalized ?? null,
+      property_not_eligible_for_gas_connection: b.property_not_eligible_for_gas_connection ?? null,
+      no_funds_for_gas_connection: b.no_funds_for_gas_connection ?? null,
+      other_reason: b.other_reason || null,
+      has_private_bathhouse: b.has_private_bathhouse ?? null,
+      bathhouse_fuel_type: b.bathhouse_fuel_type || null,
+      specialist_comment: b.specialist_comment || null,
+      fio: b.fio || null,
+      mobile_home_number: b.mobile_home_number || null,
+      gas_id: b.gas_id ?? null,
+      inside_izhs: b.inside_izhs || null,
+      inside_susn: b.inside_susn || null,
+      inside_alseco: b.inside_alseco || null,
     })
 
     // Send progress updates every 5000 items

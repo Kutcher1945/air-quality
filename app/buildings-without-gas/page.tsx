@@ -5,7 +5,8 @@ import dynamic from "next/dynamic"
 import { HeaderMenu } from "@/components/header-menu"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Building2, MapPin, AlertCircle, CheckCircle, Flame, Download, X, Calendar, Layers, Home, HelpCircle, RefreshCw, Search, ChevronDown, Filter, Database, Settings } from "lucide-react"
+import { Building2, MapPin, AlertCircle, CheckCircle, Flame, Download, X, Calendar, Layers, Home, HelpCircle, RefreshCw, Search, ChevronDown, Filter, Database, Settings, BarChart3 } from "lucide-react"
+import Link from "next/link"
 import { getBuildingsFromCache, saveBuildingsToCache, clearBuildingsCache } from "@/lib/buildingsCache"
 
 // Динамически загружаем карту для избежания SSR проблем
@@ -1164,6 +1165,14 @@ export default function BuildingsWithoutGasPage() {
               <span className="hidden sm:inline">Реновация</span>
             </button>
             <div className="w-px h-6 bg-white/10 mx-1"></div>
+            <Link
+              href="/buildings-without-gas/analytics"
+              className="h-9 px-3 flex items-center gap-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-300 hover:text-emerald-200 transition-all text-xs font-semibold"
+              title="Аналитика"
+            >
+              <BarChart3 className="h-4 w-4" />
+              <span className="hidden sm:inline">Аналитика</span>
+            </Link>
             <button
               onClick={exportToCSV}
               className="h-9 px-3 flex items-center gap-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white/70 hover:text-white transition-all text-xs font-medium"

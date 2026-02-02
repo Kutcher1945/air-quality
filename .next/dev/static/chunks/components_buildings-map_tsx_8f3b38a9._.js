@@ -194,6 +194,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
     const hasAutoFitted = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(false);
     const canvasRendererRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const isUnmountingRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(false);
+    const previousDistrictIdRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(undefined);
     const heatmapLegendItems = [
         {
             color: '#22c55e',
@@ -229,7 +230,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                     children: "Зданий без газа"
                 }, void 0, false, {
                     fileName: "[project]/components/buildings-map.tsx",
-                    lineNumber: 253,
+                    lineNumber: 254,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -244,7 +245,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                                     }
                                 }, void 0, false, {
                                     fileName: "[project]/components/buildings-map.tsx",
-                                    lineNumber: 259,
+                                    lineNumber: 260,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -252,24 +253,24 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                                     children: item.label
                                 }, void 0, false, {
                                     fileName: "[project]/components/buildings-map.tsx",
-                                    lineNumber: 263,
+                                    lineNumber: 264,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, index, true, {
                             fileName: "[project]/components/buildings-map.tsx",
-                            lineNumber: 258,
+                            lineNumber: 259,
                             columnNumber: 13
                         }, this))
                 }, void 0, false, {
                     fileName: "[project]/components/buildings-map.tsx",
-                    lineNumber: 256,
+                    lineNumber: 257,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/components/buildings-map.tsx",
-            lineNumber: 252,
+            lineNumber: 253,
             columnNumber: 7
         }, this);
     };
@@ -832,7 +833,10 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                     } catch (e) {}
                 }
                 // Zoom to selected district if one is selected, or reset to Almaty view
-                if (!cancelled && !isUnmountingRef.current && mapInstanceRef.current) {
+                // Only change view if district selection actually changed (not on every re-render)
+                const districtChanged = previousDistrictIdRef.current !== selectedDistrictId;
+                if (!cancelled && !isUnmountingRef.current && mapInstanceRef.current && districtChanged) {
+                    previousDistrictIdRef.current = selectedDistrictId;
                     if (selectedDistrictId !== null && selectedDistrictBounds) {
                         try {
                             map.fitBounds(selectedDistrictBounds, {
@@ -845,7 +849,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                             console.log(`🎯 Zoomed to district ID ${selectedDistrictId}`);
                         } catch (e) {}
                     } else if (selectedDistrictId === null) {
-                        // Reset to default Almaty view when "Все районы" is selected
+                        // Reset to default Almaty view when "Все районы" or "Без района" is selected
                         const almatyCenter = [
                             43.238293,
                             76.945465
@@ -968,7 +972,7 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 className: "jsx-8c726aafc29b0ebc"
             }, void 0, false, {
                 fileName: "[project]/components/buildings-map.tsx",
-                lineNumber: 926,
+                lineNumber: 930,
                 columnNumber: 23
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -976,13 +980,13 @@ function BuildingsMap({ buildings, renovationAreas = [], districts = [], selecte
                 className: "jsx-8c726aafc29b0ebc" + " " + "h-full w-full"
             }, void 0, false, {
                 fileName: "[project]/components/buildings-map.tsx",
-                lineNumber: 927,
+                lineNumber: 931,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true);
 }
-_s(BuildingsMap, "7SaWjT9dZme8uKHqqxP88kXfg3o=");
+_s(BuildingsMap, "S0uUlvNOdGeM1PcLd5zOH3/TZsg=");
 _c = BuildingsMap;
 var _c;
 __turbopack_context__.k.register(_c, "BuildingsMap");

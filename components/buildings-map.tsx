@@ -237,6 +237,7 @@ export default function BuildingsMap({
   const hasAutoFitted = useRef(false)
   const canvasRendererRef = useRef<L.Canvas | null>(null)
   const isUnmountingRef = useRef(false)
+  const previousDistrictIdRef = useRef<number | null | undefined>(undefined)
 
   const heatmapLegendItems = [
     { color: '#22c55e', label: '0 зданий' },
@@ -818,7 +819,10 @@ export default function BuildingsMap({
       }
 
       // Zoom to selected district if one is selected, or reset to Almaty view
-      if (!cancelled && !isUnmountingRef.current && mapInstanceRef.current) {
+      // Only change view if district selection actually changed (not on every re-render)
+      const districtChanged = previousDistrictIdRef.current !== selectedDistrictId
+      if (!cancelled && !isUnmountingRef.current && mapInstanceRef.current && districtChanged) {
+        previousDistrictIdRef.current = selectedDistrictId
         if (selectedDistrictId !== null && selectedDistrictBounds) {
           try {
             map.fitBounds(selectedDistrictBounds, {
@@ -828,7 +832,7 @@ export default function BuildingsMap({
             console.log(`🎯 Zoomed to district ID ${selectedDistrictId}`)
           } catch (e) { /* ignore zoom errors during transitions */ }
         } else if (selectedDistrictId === null) {
-          // Reset to default Almaty view when "Все районы" is selected
+          // Reset to default Almaty view when "Все районы" or "Без района" is selected
           const almatyCenter: [number, number] = [43.238293, 76.945465]
           const defaultZoom = 11
           try {

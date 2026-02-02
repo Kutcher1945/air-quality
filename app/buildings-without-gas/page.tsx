@@ -12,6 +12,7 @@ import { getBuildingsFromCache, saveBuildingsToCache, clearBuildingsCache } from
 const BuildingsMap = dynamic(() => import("../../components/buildings-map"), { ssr: false })
 
 const DISTRICT_LABELS: Record<string, string> = {
+  "0": "г.Алматы",
   "1": "Алатауский район",
   "2": "Алмалинский район",
   "3": "Ауэзовский район",
@@ -20,6 +21,7 @@ const DISTRICT_LABELS: Record<string, string> = {
   "6": "Медеуский район",
   "7": "Наурызбайский район",
   "8": "Турксибский район",
+  "9": "БКАД За пределами города"
 }
 
 // Residential building types for ИЖС filter
@@ -701,13 +703,16 @@ export default function BuildingsWithoutGasPage() {
         category = "susn"
       }
 
-      // District label lookup
+      // District label lookup - prioritize district_id mapping for consistency
       let districtLabel: string
-      if (b.district && typeof b.district === "string") {
-        districtLabel = b.district
-      } else if (b.district_id && DISTRICT_LABELS[String(b.district_id)]) {
+      if (b.district_id !== null && b.district_id !== undefined && DISTRICT_LABELS[String(b.district_id)]) {
+        // Use district_id mapping if available (most reliable)
         districtLabel = DISTRICT_LABELS[String(b.district_id)]
-      } else if (b.district_id) {
+      } else if (b.district && typeof b.district === "string") {
+        // Fallback to raw district text from API
+        districtLabel = b.district
+      } else if (b.district_id !== null && b.district_id !== undefined) {
+        // Fallback for unmapped district_id
         districtLabel = `Район ${b.district_id}`
       } else {
         districtLabel = "Не указан"
@@ -976,15 +981,29 @@ export default function BuildingsWithoutGasPage() {
     (showIzhs && b.building_category === "izhs") ||
     (showSusn && b.building_category === "susn")
   )
-  const districtNames = Array.from(new Set(visibleBuildings.map((b) => b.district)))
-    .filter((name) => name !== "Район 9" && name !== "Не указан")
-    .sort()
+  // Valid Almaty districts in order
+  const VALID_ALMATY_DISTRICTS = [
+    "г.Алматы",
+    "Алатауский район",
+    "Алмалинский район",
+    "Ауэзовский район",
+    "Бостандыкский район",
+    "Жетысуский район",
+    "Медеуский район",
+    "Наурызбайский район",
+    "Турксибский район",
+    "БКАД За пределами города"
+  ]
+
+  const districtNames = VALID_ALMATY_DISTRICTS.filter(validDistrict =>
+    visibleBuildings.some(b => b.district === validDistrict)
+  )
 
   // District counts for dropdown
   const districtCounts = useMemo(() => {
     const counts: Record<string, number> = { all: visibleBuildings.length }
     for (const b of visibleBuildings) {
-      if (b.district && b.district !== "Район 9" && b.district !== "Не указан") {
+      if (b.district && VALID_ALMATY_DISTRICTS.includes(b.district)) {
         counts[b.district] = (counts[b.district] || 0) + 1
       }
     }
@@ -995,6 +1014,13 @@ export default function BuildingsWithoutGasPage() {
     general: generalBuildings.length,
     izhs: izhsBuildings.length,
     susn: susnBuildings.length,
+  }
+
+  // Gas connection counts
+  const gasCounts = {
+    withGas: visibleBuildings.filter(b => b.has_gas === true).length,
+    withoutGas: visibleBuildings.filter(b => b.has_gas === false).length,
+    unknown: visibleBuildings.filter(b => b.has_gas === null || b.has_gas === undefined).length,
   }
 
   // Total of selected categories
@@ -1462,7 +1488,8 @@ export default function BuildingsWithoutGasPage() {
                     onChange={(e) => startTransition(() => setShowWithoutGas(e.target.checked))}
                     className="h-4 w-4 rounded border-slate-200 text-cyan-500 focus:ring-cyan-500/20"
                   />
-                  <span className="text-xs text-slate-600 group-hover:text-slate-800 transition-colors">Не подключен к газу</span>
+                  <span className="flex-1 text-xs text-slate-600 group-hover:text-slate-800 transition-colors">Не подключен к газу</span>
+                  <span className="text-[10px] text-slate-400 font-medium">({gasCounts.withoutGas.toLocaleString()})</span>
                 </label>
                 <label className="flex items-center gap-2.5 py-1.5 cursor-pointer group">
                   <input
@@ -1471,7 +1498,8 @@ export default function BuildingsWithoutGasPage() {
                     onChange={(e) => startTransition(() => setShowWithGas(e.target.checked))}
                     className="h-4 w-4 rounded border-slate-200 text-cyan-500 focus:ring-cyan-500/20"
                   />
-                  <span className="text-xs text-slate-600 group-hover:text-slate-800 transition-colors">Подключен к газу</span>
+                  <span className="flex-1 text-xs text-slate-600 group-hover:text-slate-800 transition-colors">Подключен к газу</span>
+                  <span className="text-[10px] text-slate-400 font-medium">({gasCounts.withGas.toLocaleString()})</span>
                 </label>
                 <label className="flex items-center gap-2.5 py-1.5 cursor-pointer group">
                   <input
@@ -1480,7 +1508,8 @@ export default function BuildingsWithoutGasPage() {
                     onChange={(e) => startTransition(() => setShowUnknownGas(e.target.checked))}
                     className="h-4 w-4 rounded border-slate-200 text-cyan-500 focus:ring-cyan-500/20"
                   />
-                  <span className="text-xs text-slate-600 group-hover:text-slate-800 transition-colors">Не указано</span>
+                  <span className="flex-1 text-xs text-slate-600 group-hover:text-slate-800 transition-colors">Не указано</span>
+                  <span className="text-[10px] text-slate-400 font-medium">({gasCounts.unknown.toLocaleString()})</span>
                 </label>
               </div>
             </div>

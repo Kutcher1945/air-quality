@@ -2,6 +2,7 @@
 // This keeps the UI responsive while transforming ~50,000 records
 
 const DISTRICT_LABELS = {
+  "0": "г.Алматы",
   "1": "Алатауский район",
   "2": "Алмалинский район",
   "3": "Ауэзовский район",
@@ -10,6 +11,7 @@ const DISTRICT_LABELS = {
   "6": "Медеуский район",
   "7": "Наурызбайский район",
   "8": "Турксибский район",
+  "9": "БКАД За пределами города"
 }
 
 // Optimized transformation function
@@ -29,13 +31,16 @@ function transformBuildingsData(apiBuildings) {
       category = "susn"
     }
 
-    // District label lookup
+    // District label lookup - prioritize district_id mapping for consistency
     let districtLabel
-    if (b.district && typeof b.district === "string") {
-      districtLabel = b.district
-    } else if (b.district_id && DISTRICT_LABELS[String(b.district_id)]) {
+    if (b.district_id !== null && b.district_id !== undefined && DISTRICT_LABELS[String(b.district_id)]) {
+      // Use district_id mapping if available (most reliable)
       districtLabel = DISTRICT_LABELS[String(b.district_id)]
-    } else if (b.district_id) {
+    } else if (b.district && typeof b.district === "string") {
+      // Fallback to raw district text from API
+      districtLabel = b.district
+    } else if (b.district_id !== null && b.district_id !== undefined) {
+      // Fallback for unmapped district_id
       districtLabel = "Район " + b.district_id
     } else {
       districtLabel = "Не указан"

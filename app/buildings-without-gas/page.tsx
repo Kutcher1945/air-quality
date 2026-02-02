@@ -1035,6 +1035,12 @@ export default function BuildingsWithoutGasPage() {
     izhs: izhsBuildings.filter((b) => !b.is_not_in_almaty).length,
     susn: susnBuildings.filter((b) => !b.is_not_in_almaty).length,
   }
+  // "Not in Almaty" counts
+  const notInAlmatyCounts = {
+    general: generalBuildings.filter((b) => b.is_not_in_almaty).length,
+    izhs: izhsBuildings.filter((b) => b.is_not_in_almaty).length,
+    susn: susnBuildings.filter((b) => b.is_not_in_almaty).length,
+  }
   const selectedCategoriesInAlmaty =
     (showAlseco ? inAlmatyCounts.general : 0) +
     (showIzhs ? inAlmatyCounts.izhs : 0) +
@@ -1405,7 +1411,8 @@ export default function BuildingsWithoutGasPage() {
                           }}
                           className="h-4 w-4 rounded border-slate-200 text-orange-500 focus:ring-orange-500/20"
                         />
-                        <span className="text-xs text-slate-500 group-hover:text-slate-700 transition-colors">В Алматы</span>
+                        <span className="flex-1 text-xs text-slate-500 group-hover:text-slate-700 transition-colors">В Алматы</span>
+                        <span className="text-[10px] text-slate-400 font-medium">({inAlmatyCounts.general.toLocaleString()})</span>
                       </label>
                       <label className="flex items-center gap-2.5 py-1 cursor-pointer group" onClick={(e) => e.stopPropagation()}>
                         <input
@@ -1417,7 +1424,8 @@ export default function BuildingsWithoutGasPage() {
                           }}
                           className="h-4 w-4 rounded border-slate-200 text-orange-500 focus:ring-orange-500/20"
                         />
-                        <span className="text-xs text-slate-500 group-hover:text-slate-700 transition-colors">Не в Алматы</span>
+                        <span className="flex-1 text-xs text-slate-500 group-hover:text-slate-700 transition-colors">Не в Алматы</span>
+                        <span className="text-[10px] text-slate-400 font-medium">({notInAlmatyCounts.general.toLocaleString()})</span>
                       </label>
                     </div>
                   )}

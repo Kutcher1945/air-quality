@@ -80,6 +80,7 @@ function transformBuildingsData(apiBuildings) {
       inside_izhs: b.inside_izhs || null,
       inside_susn: b.inside_susn || null,
       inside_alseco: b.inside_alseco || null,
+      is_approximate: b.is_approximate ?? null,
     })
 
     // Send progress updates every 5000 items

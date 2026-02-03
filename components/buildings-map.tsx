@@ -23,6 +23,7 @@ interface Building {
   building_type_raw?: string | null
   building_category: "general" | "izhs" | "susn"
   is_seasonal_or_unused?: boolean
+  is_approximate?: boolean | null
   geometry?: {
     type: string
     coordinates: any
@@ -64,6 +65,7 @@ interface BuildingsMapProps {
   selectedDistrictId?: number | null
   showHeatmap?: boolean
   showRenovationAreas?: boolean
+  showOnlySeasonalUnused?: boolean
   onBuildingClick?: (building: Building) => void
 }
 
@@ -74,16 +76,6 @@ L.Icon.Default.mergeOptions({
   iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 })
-
-const IZHS_RESIDENTIAL_TYPES = [
-  'Не указано',
-  'Частный дом',
-  'Коттедж',
-  'Таунхаус',
-  'Сооружение',
-  'Малоэтажный жилой дом',
-  'Жилой дом',
-]
 
 const IZHS_NON_RESIDENTIAL_TYPES = [
   'Административное здание',
@@ -119,27 +111,19 @@ const IZHS_NON_RESIDENTIAL_TYPES = [
   'Спортивное сооружение',
 ]
 
-// Function to create colored marker icons based on building category
+// 3 marker designs:
+//  1. Не ИЖС типы  → purple 🏬  (kept as-is)
+//  2. is_approximate = true  → yellow 🏠  (approximate coordinates)
+//  3. is_approximate = false/null → green 🏠  (exact coordinates)
+// + ❄️ pink pin when seasonal filter is toggled on
 const createMarkerIcon = (
-  category: "general" | "izhs" | "susn",
   isSeasonalOrUnused?: boolean,
   buildingTypeRaw?: string | null,
+  showOnlySeasonalUnused?: boolean,
+  isApproximate?: boolean | null,
 ) => {
-  // Different colors for each building type
-  const colors = {
-    general: "#f97316", // Orange - General buildings without gas
-    izhs: "#3b82f6",    // Blue - Individual housing construction (ИЖС)
-    susn: "#ef4444",    // Red - Multi-family buildings (СУСН)
-  }
-
-  const emoji = {
-    general: "🏠", // House
-    izhs: "🏡",    // House with garden
-    susn: "🏢",    // Office building
-  }
-
-  // Special styling for seasonal/unused buildings
-  if (isSeasonalOrUnused) {
+  // ❄️ pink pin only when seasonal filter is actively toggled on
+  if (isSeasonalOrUnused && showOnlySeasonalUnused) {
     return L.divIcon({
       className: "custom-marker seasonal-marker",
       html: `
@@ -172,18 +156,22 @@ const createMarkerIcon = (
     })
   }
 
-  let color = colors[category]
-  let icon = emoji[category]
+  let color: string
+  let icon: string
+  const raw = (buildingTypeRaw || "").trim()
 
-  if (category === "general" && buildingTypeRaw) {
-    const raw = buildingTypeRaw.trim()
-    if (IZHS_RESIDENTIAL_TYPES.includes(raw)) {
-      color = "#10b981" // Green - ALSECO ИЖС types
-      icon = "🏡"
-    } else if (IZHS_NON_RESIDENTIAL_TYPES.includes(raw)) {
-      color = "#8b5cf6" // Purple - ALSECO не ИЖС types
-      icon = "🏬"
-    }
+  if (raw && IZHS_NON_RESIDENTIAL_TYPES.includes(raw)) {
+    // Не ИЖС типы — purple
+    color = "#8b5cf6"
+    icon = "🏬"
+  } else if (isApproximate === true) {
+    // Approximate coordinates — yellow
+    color = "#eab308"
+    icon = "🏠"
+  } else {
+    // Exact coordinates (false / null) — green
+    color = "#10b981"
+    icon = "🏠"
   }
 
   return L.divIcon({
@@ -225,6 +213,7 @@ export default function BuildingsMap({
   selectedDistrictId = null,
   showHeatmap = false,
   showRenovationAreas = false,
+  showOnlySeasonalUnused = false,
   onBuildingClick
 }: BuildingsMapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
@@ -599,9 +588,10 @@ export default function BuildingsMap({
         if (!building.latitude || !building.longitude) return
         // Use different colored icon based on building category and seasonal/unused status
         const icon = createMarkerIcon(
-          building.building_category,
           building.is_seasonal_or_unused,
           building.building_type_raw,
+          showOnlySeasonalUnused,
+          building.is_approximate,
         )
 
         const marker = L.marker([building.latitude, building.longitude], {
@@ -915,7 +905,7 @@ export default function BuildingsMap({
       // clears them at the start. Cleaning here would cause race conditions
       // with the new effect that runs immediately after.
     }
-  }, [buildings, showHeatmap, showRenovationAreas, renovationAreas, districts, selectedDistrictId])
+  }, [buildings, showHeatmap, showRenovationAreas, renovationAreas, districts, selectedDistrictId, showOnlySeasonalUnused])
 
   return (
     <>

@@ -108,6 +108,7 @@ interface Building {
   inside_izhs?: string | null
   inside_susn?: string | null
   inside_alseco?: string | null
+  is_approximate?: boolean | null
 }
 
 interface RenovationArea {
@@ -168,6 +169,8 @@ export default function BuildingsWithoutGasPage() {
   const [showSusn, setShowSusn] = useState(false)
   const [showAlsecoInAlmaty, setShowAlsecoInAlmaty] = useState(true)
   const [showAlsecoNotInAlmaty, setShowAlsecoNotInAlmaty] = useState(false)
+  const [showApproximate, setShowApproximate] = useState(true)
+  const [showExact, setShowExact] = useState(true)
 
   // Gas connection filters (all selected by default)
   const [showWithGas, setShowWithGas] = useState(true)
@@ -282,6 +285,8 @@ export default function BuildingsWithoutGasPage() {
   const deferredShowAlsecoNonIzhsTypes = useDeferredValue(showAlsecoNonIzhsTypes)
   const deferredShowAlsecoInAlmaty = useDeferredValue(showAlsecoInAlmaty)
   const deferredShowAlsecoNotInAlmaty = useDeferredValue(showAlsecoNotInAlmaty)
+  const deferredShowApproximate = useDeferredValue(showApproximate)
+  const deferredShowExact = useDeferredValue(showExact)
   const deferredSelectedAlsecoIzhsTypes = useDeferredValue(selectedAlsecoIzhsTypes)
   const deferredSelectedAlsecoNonIzhsTypes = useDeferredValue(selectedAlsecoNonIzhsTypes)
   const deferredSelectedDistrictId = useDeferredValue(selectedDistrictId)
@@ -401,8 +406,9 @@ export default function BuildingsWithoutGasPage() {
         const cachedData = await getBuildingsFromCache()
         if (cachedData && cachedData.length > 0) {
           const hasBuildingTypeField = typeof cachedData[0]?.building_type !== "undefined"
-          if (!hasBuildingTypeField) {
-            console.warn("🧹 Cache missing building_type field, refetching from API...")
+          const hasIsApproximateField = "is_approximate" in cachedData[0]
+          if (!hasBuildingTypeField || !hasIsApproximateField) {
+            console.warn("🧹 Cache missing required fields, refetching from API...")
           } else {
           console.log("💾 Loading from cache:", cachedData.length, "buildings")
           setLoadingProgress({ loaded: 0, total: cachedData.length, status: "Загрузка из кэша..." })
@@ -433,7 +439,7 @@ export default function BuildingsWithoutGasPage() {
       setLoadingProgress({ loaded: 0, total: 0, status: "Подключение к серверу..." })
 
       // ✅ Fetch with streaming to track download progress
-      const response = await fetch("https://admin.smartalmaty.kz/api/v1/address/buildings-without-gas/all-sources/")
+      const response = await fetch("http://ad/api/v1/address/buildings-without-gas/all-sources/")
 
       if (!response.ok) {
         throw new Error(`API returned ${response.status}`)
@@ -943,6 +949,15 @@ export default function BuildingsWithoutGasPage() {
           if (deferredShowAlsecoNotInAlmaty && !isNotInAlmaty) return false
           if (!deferredShowAlsecoInAlmaty && !deferredShowAlsecoNotInAlmaty) return false
         }
+
+        // Approximate / exact coordinate filter
+        const isApproximate = building.is_approximate === true
+        const allowAnyCoordType = deferredShowApproximate && deferredShowExact
+        if (!allowAnyCoordType) {
+          if (deferredShowApproximate && !isApproximate) return false
+          if (deferredShowExact && isApproximate) return false
+          if (!deferredShowApproximate && !deferredShowExact) return false
+        }
       }
 
       // Filter for seasonal/unused buildings only
@@ -987,6 +1002,8 @@ export default function BuildingsWithoutGasPage() {
     alsecoIzhsLabelSet,
     deferredShowAlsecoInAlmaty,
     deferredShowAlsecoNotInAlmaty,
+    deferredShowApproximate,
+    deferredShowExact,
     deferredShowWithGas,
     deferredShowWithoutGas,
     deferredShowUnknownGas,
@@ -1088,6 +1105,14 @@ export default function BuildingsWithoutGasPage() {
     izhs: districtFilteredIzhs.filter((b) => b.is_not_in_almaty).length,
     susn: districtFilteredSusn.filter((b) => b.is_not_in_almaty).length,
   }
+  const locationFilteredGeneral = districtFilteredGeneral.filter((b) => {
+    if (showAlsecoInAlmaty && showAlsecoNotInAlmaty) return true
+    if (showAlsecoInAlmaty && !b.is_not_in_almaty) return true
+    if (showAlsecoNotInAlmaty && b.is_not_in_almaty) return true
+    return false
+  })
+  const approximateCount = locationFilteredGeneral.filter((b) => b.is_approximate === true).length
+  const exactCount = locationFilteredGeneral.filter((b) => b.is_approximate !== true).length
   const selectedCategoriesInAlmaty =
     (showAlseco ? inAlmatyCounts.general : 0) +
     (showIzhs ? inAlmatyCounts.izhs : 0) +
@@ -1139,6 +1164,27 @@ export default function BuildingsWithoutGasPage() {
             </div>
           </div>
 
+
+          {/* Center: Marker Legend */}
+          <div className="relative flex items-center bg-black/[0.3] border border-white/[0.1] rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.25)] backdrop-blur-sm overflow-hidden">
+            {[
+              { color: "#10b981", glow: "rgba(16,185,129,0.5)", label: "Точные", emoji: "🏠" },
+              { color: "#eab308", glow: "rgba(234,179,8,0.5)", label: "Приближённые", emoji: "🏠" },
+              { color: "#8b5cf6", glow: "rgba(139,92,246,0.5)", label: "Не ИЖС", emoji: "🏬" },
+              { color: "#ec4899", glow: "rgba(236,72,153,0.5)", label: "Сезонные", emoji: "❄️" },
+            ].map((item, i) => (
+              <div key={item.label} className="flex items-center">
+                {i > 0 && <div className="w-px h-4 bg-white/[0.12]"></div>}
+                <div className="flex items-center gap-2 px-3 py-1.5">
+                  <svg width="11" height="15" viewBox="0 0 11 15" style={{ filter: `drop-shadow(0 2px 3px ${item.glow})` }}>
+                    <path d="M5.5 0C2.46 0 0 2.46 0 5.5 0 9.63 5.5 15 5.5 15S11 9.63 11 5.5C11 2.46 8.54 0 5.5 0z" fill={item.color}/>
+                    <circle cx="5.5" cy="5.5" r="2.2" fill="white" opacity="0.95"/>
+                  </svg>
+                  <span className="text-[10px] text-white/55 font-semibold tracking-[0.02em]">{item.emoji} {item.label}</span>
+                </div>
+              </div>
+            ))}
+          </div>
 
           {/* Right: Action Buttons */}
           <div className="relative flex items-center gap-2">
@@ -1265,6 +1311,7 @@ export default function BuildingsWithoutGasPage() {
               selectedDistrictId={deferredSelectedDistrictId}
               showHeatmap={deferredShowHeatmap}
               showRenovationAreas={deferredShowRenovationAreas}
+              showOnlySeasonalUnused={deferredShowOnlySeasonalUnused}
               onBuildingClick={handleBuildingClick}
             />
           )}
@@ -1513,6 +1560,39 @@ export default function BuildingsWithoutGasPage() {
                         />
                         <span className="flex-1 text-xs text-slate-500 group-hover:text-slate-700 transition-colors">Не в Алматы</span>
                         <span className="text-[10px] text-slate-400 font-medium">({notInAlmatyCounts.general.toLocaleString()})</span>
+                      </label>
+                      <div className="border-t border-orange-100/50 my-1"></div>
+                      <label className="flex items-center gap-2.5 py-1 cursor-pointer group" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={showApproximate}
+                          onChange={(e) => {
+                            e.stopPropagation()
+                            startTransition(() => setShowApproximate(e.target.checked))
+                          }}
+                          className="h-4 w-4 rounded border-slate-200 text-yellow-500 focus:ring-yellow-500/20"
+                        />
+                        <div className="flex items-center gap-1.5 flex-1">
+                          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500"></div>
+                          <span className="text-xs text-slate-500 group-hover:text-slate-700 transition-colors">Приближённые</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-medium">({approximateCount.toLocaleString()})</span>
+                      </label>
+                      <label className="flex items-center gap-2.5 py-1 cursor-pointer group" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={showExact}
+                          onChange={(e) => {
+                            e.stopPropagation()
+                            startTransition(() => setShowExact(e.target.checked))
+                          }}
+                          className="h-4 w-4 rounded border-slate-200 text-emerald-500 focus:ring-emerald-500/20"
+                        />
+                        <div className="flex items-center gap-1.5 flex-1">
+                          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                          <span className="text-xs text-slate-500 group-hover:text-slate-700 transition-colors">Точные</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-medium">({exactCount.toLocaleString()})</span>
                       </label>
                     </div>
                   )}

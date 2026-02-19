@@ -659,7 +659,7 @@ function BuildingsWithoutGasPage() {
                 status: "Подключение к серверу..."
             });
             // ✅ Fetch with streaming to track download progress
-            const response = await fetch("http://ad/api/v1/address/buildings-without-gas/all-sources/");
+            const response = await fetch("https://admin.smartalmaty.kz/api/v1/address/buildings-without-gas/all-sources/");
             if (!response.ok) {
                 throw new Error(`API returned ${response.status}`);
             }

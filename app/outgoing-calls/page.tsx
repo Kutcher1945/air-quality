@@ -31,11 +31,21 @@ interface OutgoingCall {
   record_number: string
   applicant_last_name: string
   applicant_first_name: string
+  applicant_account: string
   phone_number: string
   problem_address: string
+  problem_district: string
+  route_number: string
+  executor_go: string
+  current_executor_go: string
+  submission_source: string
+  request_status: string
   request_text: string
   request_registration_date: string
+  planned_completion_date: string
+  actual_completion_date: string
   actual_resolution_time: string
+  registrar: string
 }
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1']
@@ -79,20 +89,22 @@ export default function OutgoingCallsPage() {
   }
 
   const filteredCalls = useMemo(() => {
-    return calls.filter((call) => {
-      const matchesSearch =
-        searchQuery === "" ||
-        call.problem_address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        call.applicant_first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        call.applicant_last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        call.phone_number.includes(searchQuery) ||
-        call.record_number.toLowerCase().includes(searchQuery.toLowerCase())
+    return calls
+      .filter((call) => {
+        const matchesSearch =
+          searchQuery === "" ||
+          call.problem_address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          call.applicant_first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          call.applicant_last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          call.phone_number.includes(searchQuery) ||
+          call.record_number.toLowerCase().includes(searchQuery.toLowerCase())
 
-      const matchesSubject = subjectFilter === "all" || call.request_subject?.id === parseInt(subjectFilter)
-      const matchesSubcategory = subcategoryFilter === "all" || call.request_subcategory?.id === parseInt(subcategoryFilter)
+        const matchesSubject = subjectFilter === "all" || call.request_subject?.id === parseInt(subjectFilter)
+        const matchesSubcategory = subcategoryFilter === "all" || call.request_subcategory?.id === parseInt(subcategoryFilter)
 
-      return matchesSearch && matchesSubject && matchesSubcategory
-    })
+        return matchesSearch && matchesSubject && matchesSubcategory
+      })
+      .sort((a, b) => b.id - a.id) // Sort by ID descending (latest first)
   }, [calls, searchQuery, subjectFilter, subcategoryFilter])
 
   // Pagination
@@ -576,10 +588,20 @@ export default function OutgoingCallsPage() {
               <CardTitle>Количество обращений по темам</CardTitle>
             </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={400}>
-              <BarChart data={enhancedStats.bySubject}>
+            <ResponsiveContainer width="100%" height={500}>
+              <BarChart
+                data={enhancedStats.bySubject}
+                margin={{ top: 20, right: 30, left: 20, bottom: 120 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" angle={-45} textAnchor="end" height={150} />
+                <XAxis
+                  dataKey="name"
+                  angle={-45}
+                  textAnchor="end"
+                  height={150}
+                  interval={0}
+                  tick={{ fontSize: 12 }}
+                />
                 <YAxis />
                 <Tooltip
                   formatter={(value, name, props) => {
@@ -619,6 +641,7 @@ export default function OutgoingCallsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b bg-gray-50">
+                    <th className="text-left p-3 text-sm font-medium text-gray-600">ID</th>
                     <th className="text-left p-3 text-sm font-medium text-gray-600">№ записи</th>
                     <th className="text-left p-3 text-sm font-medium text-gray-600">Дата</th>
                     <th className="text-left p-3 text-sm font-medium text-gray-600">Заявитель</th>
@@ -631,6 +654,7 @@ export default function OutgoingCallsPage() {
                 <tbody>
                   {paginatedCalls.map((call) => (
                     <tr key={call.id} className="border-b hover:bg-gray-50">
+                      <td className="p-3 text-sm text-gray-500">{call.id}</td>
                       <td className="p-3 text-sm font-mono">{call.record_number}</td>
                       <td className="p-3 text-sm">{call.request_registration_date}</td>
                       <td className="p-3 text-sm">
@@ -741,64 +765,190 @@ export default function OutgoingCallsPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Номер записи</label>
-                    <p className="text-lg font-mono">{selectedCall.record_number}</p>
+                  {/* Basic Information */}
+                  <div className="pb-4 border-b">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">Основная информация</h3>
+
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Номер записи</label>
+                        <p className="text-base font-mono">{selectedCall.record_number || '-'}</p>
+                      </div>
+
+                      {selectedCall.request_status && (
+                        <div>
+                          <label className="text-sm font-medium text-gray-600">Статус обращения</label>
+                          <p className="text-base">
+                            <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                              {selectedCall.request_status}
+                            </span>
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Заявитель</label>
-                    <p className="text-lg">
-                      {selectedCall.applicant_last_name} {selectedCall.applicant_first_name}
-                    </p>
+                  {/* Applicant Information */}
+                  <div className="pb-4 border-b">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">Заявитель</h3>
+
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">ФИО</label>
+                        <p className="text-base">
+                          {selectedCall.applicant_last_name} {selectedCall.applicant_first_name}
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Телефон</label>
+                        <p className="text-base font-mono">{selectedCall.phone_number || '-'}</p>
+                      </div>
+
+                      {selectedCall.applicant_account && (
+                        <div>
+                          <label className="text-sm font-medium text-gray-600">Аккаунт заявителя</label>
+                          <p className="text-base">{selectedCall.applicant_account}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Телефон</label>
-                    <p className="text-lg font-mono">{selectedCall.phone_number}</p>
+                  {/* Location Information */}
+                  <div className="pb-4 border-b">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">Адрес и местоположение</h3>
+
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Адрес проблемы</label>
+                        <p className="text-base">{selectedCall.problem_address || '-'}</p>
+                      </div>
+
+                      {selectedCall.problem_district && (
+                        <div>
+                          <label className="text-sm font-medium text-gray-600">Район проблемы</label>
+                          <p className="text-base">{selectedCall.problem_district}</p>
+                        </div>
+                      )}
+
+                      {selectedCall.route_number && (
+                        <div>
+                          <label className="text-sm font-medium text-gray-600">Номер маршрута</label>
+                          <p className="text-base font-mono">{selectedCall.route_number}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Адрес проблемы</label>
-                    <p className="text-lg">{selectedCall.problem_address}</p>
+                  {/* Request Categories */}
+                  <div className="pb-4 border-b">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">Категории обращения</h3>
+
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Категория</label>
+                        <p className="text-base">{selectedCall.request_category?.name || '-'}</p>
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Подкатегория</label>
+                        <p className="text-base">{selectedCall.request_subcategory?.name || '-'}</p>
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Тема обращения</label>
+                        <p className="text-base">
+                          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                            {selectedCall.request_subject?.name || '-'}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Категория</label>
-                    <p className="text-lg">{selectedCall.request_category?.name}</p>
+                  {/* Executors */}
+                  {(selectedCall.executor_go || selectedCall.current_executor_go || selectedCall.registrar) && (
+                    <div className="pb-4 border-b">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-3">Исполнители</h3>
+
+                      <div className="space-y-3">
+                        {selectedCall.executor_go && (
+                          <div>
+                            <label className="text-sm font-medium text-gray-600">Исполнитель (ГО)</label>
+                            <p className="text-base">{selectedCall.executor_go}</p>
+                          </div>
+                        )}
+
+                        {selectedCall.current_executor_go && (
+                          <div>
+                            <label className="text-sm font-medium text-gray-600">Текущий исполнитель (ГО)</label>
+                            <p className="text-base">{selectedCall.current_executor_go}</p>
+                          </div>
+                        )}
+
+                        {selectedCall.registrar && (
+                          <div>
+                            <label className="text-sm font-medium text-gray-600">Регистратор</label>
+                            <p className="text-base">{selectedCall.registrar}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Dates */}
+                  <div className="pb-4 border-b">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">Даты</h3>
+
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Дата регистрации</label>
+                        <p className="text-base">{selectedCall.request_registration_date || '-'}</p>
+                      </div>
+
+                      {selectedCall.planned_completion_date && (
+                        <div>
+                          <label className="text-sm font-medium text-gray-600">Планируемый срок исполнения</label>
+                          <p className="text-base">{selectedCall.planned_completion_date}</p>
+                        </div>
+                      )}
+
+                      {selectedCall.actual_completion_date && (
+                        <div>
+                          <label className="text-sm font-medium text-gray-600">Фактическая дата исполнения</label>
+                          <p className="text-base">{selectedCall.actual_completion_date}</p>
+                        </div>
+                      )}
+
+                      {selectedCall.actual_resolution_time && (
+                        <div>
+                          <label className="text-sm font-medium text-gray-600">Фактический срок исполнения</label>
+                          <p className="text-base">{selectedCall.actual_resolution_time}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Подкатегория</label>
-                    <p className="text-lg">{selectedCall.request_subcategory?.name}</p>
-                  </div>
+                  {/* Additional Information */}
+                  {selectedCall.submission_source && (
+                    <div className="pb-4 border-b">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-3">Дополнительно</h3>
 
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Тема обращения</label>
-                    <p className="text-lg">
-                      <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
-                        {selectedCall.request_subject?.name}
-                      </span>
-                    </p>
-                  </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Источник поступления</label>
+                        <p className="text-base">{selectedCall.submission_source}</p>
+                      </div>
+                    </div>
+                  )}
 
+                  {/* Request Text */}
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Дата регистрации</label>
-                    <p className="text-lg">{selectedCall.request_registration_date}</p>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Дата разрешения</label>
-                    <p className="text-lg">{selectedCall.actual_resolution_time}</p>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Текст обращения</label>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">Текст обращения</h3>
                     <div className="mt-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
                       <div
                         className="text-sm leading-relaxed"
                         dangerouslySetInnerHTML={{
-                          __html: selectedCall.request_text
+                          __html: (selectedCall.request_text || '-')
                             .replace(/&quot;/g, '"')
                             .replace(/&amp;/g, '&')
                             .replace(/&lt;/g, '<')

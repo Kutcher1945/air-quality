@@ -1,11 +1,11 @@
 {
-  "[project]/components/sensor-map-yandex.tsx [app-client] (ecmascript, next/dynamic entry)": {
-    "id": "[project]/components/sensor-map-yandex.tsx [app-client] (ecmascript, next/dynamic entry)",
+  "[project]/admin_related/air-quality-data/components/sensor-map-yandex.tsx [app-client] (ecmascript, next/dynamic entry)": {
+    "id": "[project]/admin_related/air-quality-data/components/sensor-map-yandex.tsx [app-client] (ecmascript, next/dynamic entry)",
     "files": [
-      "static/chunks/node_modules_3d31df79._.js",
-      "static/chunks/components_sensor-map-yandex_tsx_b53077f4._.js",
-      "static/chunks/node_modules_2d9b6395._.css",
-      "static/chunks/components_sensor-map-yandex_tsx_46f79701._.js"
+      "static/chunks/6e244_d3cc47ba._.js",
+      "static/chunks/admin_related_air-quality-data_components_sensor-map-yandex_tsx_4c49a254._.js",
+      "static/chunks/6e244_250fd8ac._.css",
+      "static/chunks/admin_related_air-quality-data_components_sensor-map-yandex_tsx_8a81ba43._.js"
     ]
   }
 }

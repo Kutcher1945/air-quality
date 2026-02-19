@@ -1,16 +1,11 @@
-[00:00:01.668] Server  LOG      ✓ Ready in 1152ms
-[00:00:05.769] Server  LOG      ○ Compiling / ...
-[00:00:08.755] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:08.755] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
-[00:00:08.755] Browser LOG     %c[Vercel Web Analytics]%c [view] http://127.0.0.1:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://127.0.0.1:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1771503120413} /_vercel/insights/view
-[00:00:14.660] Browser LOG     %c[Vercel Web Analytics]%c [view] http://127.0.0.1:3000/outgoing-calls color: rgb(120, 120, 120) color: inherit {"dp":"/outgoing-calls","o":"http://127.0.0.1:3000/outgoing-calls","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1771503126164} /_vercel/insights/view
-[00:00:20.722] Browser LOG     ✅ Loaded 2157 outgoing calls
-[00:00:27.116] Browser LOG     ✅ Loaded 2157 outgoing calls
-[00:01:16.407] Server  LOG      ✓ Compiled in 67ms
-[00:02:02.892] Server  LOG      ✓ Compiled in 74ms
-[00:04:53.396] Server  LOG      ✓ Compiled in 68ms
-[00:05:47.030] Server  LOG      ✓ Compiled in 134ms
-[00:20:58.046] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:20:58.046] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/outgoing-calls","route":"/outgoing-calls"}
-[00:20:58.047] Browser LOG     %c[Vercel Web Analytics]%c [view] http://127.0.0.1:3000/outgoing-calls color: rgb(120, 120, 120) color: inherit {"dp":"/outgoing-calls","o":"http://127.0.0.1:3000/outgoing-calls","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1771504335190} /_vercel/insights/view
-[00:21:04.470] Browser LOG     ✅ Loaded 2157 outgoing calls
+[00:00:01.091] Server  LOG      ✓ Ready in 745ms
+[00:00:08.548] Server  LOG      ○ Compiling /outgoing-calls ...
+[00:00:10.431] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:00:10.431] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/outgoing-calls","route":"/outgoing-calls"}
+[00:00:10.431] Browser LOG     %c[Vercel Web Analytics]%c [view] http://127.0.0.1:3000/outgoing-calls color: rgb(120, 120, 120) color: inherit {"dp":"/outgoing-calls","o":"http://127.0.0.1:3000/outgoing-calls","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1771504391982} /_vercel/insights/view
+[00:00:16.975] Browser LOG     ✅ Loaded 2157 outgoing calls
+[00:01:04.370] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:01:04.370] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/outgoing-calls","route":"/outgoing-calls"}
+[00:01:04.370] Browser LOG     %c[Vercel Web Analytics]%c [view] http://127.0.0.1:3000/outgoing-calls color: rgb(120, 120, 120) color: inherit {"dp":"/outgoing-calls","o":"http://127.0.0.1:3000/outgoing-calls","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1771504444416} /_vercel/insights/view
+[00:01:10.769] Browser LOG     ✅ Loaded 2157 outgoing calls
+[00:02:59.167] Server  LOG      ✓ Compiled in 82ms

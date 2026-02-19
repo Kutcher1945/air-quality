@@ -393,7 +393,7 @@ export default function OutgoingCallsPage() {
                 name: subject.name,
                 value: subcategoryCalls.filter(c => c.request_subject?.id === subject.id).length,
                 percentage: (subcategoryCalls.filter(c => c.request_subject?.id === subject.id).length / subcategoryCalls.length * 100).toFixed(1)
-              })).filter(item => item.value > 0)
+              })).filter(item => item.value > 0).sort((a, b) => b.value - a.value)
 
               return (
                 <Card key={subcategory.id}>

@@ -1198,7 +1198,7 @@ function OutgoingCallsPage() {
                                             name: subject.name,
                                             value: subcategoryCalls.filter((c)=>c.request_subject?.id === subject.id).length,
                                             percentage: (subcategoryCalls.filter((c)=>c.request_subject?.id === subject.id).length / subcategoryCalls.length * 100).toFixed(1)
-                                        })).filter((item)=>item.value > 0);
+                                        })).filter((item)=>item.value > 0).sort((a, b)=>b.value - a.value);
                                     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$admin_related$2f$air$2d$quality$2d$data$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$admin_related$2f$air$2d$quality$2d$data$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$admin_related$2f$air$2d$quality$2d$data$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$admin_related$2f$air$2d$quality$2d$data$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardHeader"], {

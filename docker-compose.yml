@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: air-quality-web
+    ports:
+      - "3009:3000"
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Almaty
+      - NODE_ENV=production

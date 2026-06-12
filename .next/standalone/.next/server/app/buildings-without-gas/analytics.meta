@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/buildings-without-gas/layout,_N_T_/buildings-without-gas/analytics/layout,_N_T_/buildings-without-gas/analytics/page,_N_T_/buildings-without-gas/analytics"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/buildings-without-gas/analytics/__PAGE__",
+    "/buildings-without-gas/analytics",
+    "/buildings-without-gas",
+    "/_index",
+    "/_head"
+  ]
+}

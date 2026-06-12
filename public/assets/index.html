@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AQI Mascots</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f0f0f0; font-family: sans-serif; padding: 32px; }
+    h1 { text-align: center; margin-bottom: 32px; font-size: 20px; color: #333; }
+    .grid { display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; }
+
+    .card {
+      border-radius: 16px;
+      width: 300px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      position: relative;
+    }
+
+    /* Background animation fills the top area */
+    .bg-container {
+      position: relative;
+      width: 100%;
+      height: 160px;
+    }
+    .bg-lottie {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    /* Mascot overlaid top-right */
+    .mascot-lottie {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 120px;
+      height: 120px;
+      z-index: 2;
+    }
+
+    /* Bottom info bar */
+    .info {
+      padding: 10px 14px;
+      background: rgba(0,0,0,0.18);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 3;
+    }
+    .pm25 { font-size: 13px; font-weight: 600; color: white; }
+    .label { font-size: 12px; color: white; text-align: right; opacity: 0.9; }
+  </style>
+</head>
+<body>
+  <h1>AirGradient AQI Mascots</h1>
+  <div class="grid" id="grid"></div>
+
+  <script src="mascots_data.js"></script>
+  <script src="backgrounds_data.js"></script>
+  <script>
+    const levels = [
+      { key: 'very-good',     label: 'Very Good',     pm25: '3.0' },
+      { key: 'good',          label: 'Good',          pm25: '7.0' },
+      { key: 'moderate',      label: 'Moderate',      pm25: '15.0' },
+      { key: 'unhealthy',     label: 'Unhealthy',     pm25: '40.0' },
+      { key: 'very-unhealthy',label: 'Very Unhealthy',pm25: '90.0' },
+      { key: 'hazardous',     label: 'Hazardous',     pm25: '200.0' },
+    ];
+
+    const grid = document.getElementById('grid');
+
+    levels.forEach(({ key, label, pm25 }) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="bg-container">
+          <div class="bg-lottie" id="bg-${key}"></div>
+          <div class="mascot-lottie" id="m-${key}"></div>
+          <div class="info">
+            <span class="pm25">PM₂.₅: ${pm25} μg/m³</span>
+            <span class="label">${label}</span>
+          </div>
+        </div>
+      `;
+      grid.appendChild(card);
+
+      lottie.loadAnimation({
+        container: document.getElementById('bg-' + key),
+        animationData: BACKGROUNDS[key],
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+      });
+
+      lottie.loadAnimation({
+        container: document.getElementById('m-' + key),
+        animationData: MASCOTS[key],
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+      });
+    });
+  </script>
+</body>
+</html>

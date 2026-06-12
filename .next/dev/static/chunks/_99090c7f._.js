@@ -129,7 +129,7 @@ function HeaderMenu() {
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("nav", {
         className: "sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "container mx-auto px-4",
+            className: "w-full px-4",
             children: [
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "flex h-16 items-center justify-between",
@@ -533,7 +533,10 @@ function OutgoingCallsPage() {
                     const matchesSubcategory = subcategoryFilter === "all" || call.request_subcategory?.id === parseInt(subcategoryFilter);
                     return matchesSearch && matchesSubject && matchesSubcategory;
                 }
-            }["OutgoingCallsPage.useMemo[filteredCalls]"]);
+            }["OutgoingCallsPage.useMemo[filteredCalls]"]).sort({
+                "OutgoingCallsPage.useMemo[filteredCalls]": (a, b)=>b.id - a.id
+            }["OutgoingCallsPage.useMemo[filteredCalls]"]) // Sort by ID descending (latest first)
+            ;
         }
     }["OutgoingCallsPage.useMemo[filteredCalls]"], [
         calls,
@@ -676,7 +679,7 @@ function OutgoingCallsPage() {
             children: [
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$header$2d$menu$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["HeaderMenu"], {}, void 0, false, {
                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                    lineNumber: 218,
+                    lineNumber: 230,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -690,7 +693,7 @@ function OutgoingCallsPage() {
                                     className: "animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"
                                 }, void 0, false, {
                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                    lineNumber: 222,
+                                    lineNumber: 234,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -698,29 +701,29 @@ function OutgoingCallsPage() {
                                     children: "Загрузка данных..."
                                 }, void 0, false, {
                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                    lineNumber: 223,
+                                    lineNumber: 235,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                            lineNumber: 221,
+                            lineNumber: 233,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                        lineNumber: 220,
+                        lineNumber: 232,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                    lineNumber: 219,
+                    lineNumber: 231,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/app/outgoing-calls/page.tsx",
-            lineNumber: 217,
+            lineNumber: 229,
             columnNumber: 7
         }, this);
     }
@@ -730,7 +733,7 @@ function OutgoingCallsPage() {
             children: [
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$header$2d$menu$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["HeaderMenu"], {}, void 0, false, {
                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                    lineNumber: 234,
+                    lineNumber: 246,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -748,7 +751,7 @@ function OutgoingCallsPage() {
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                    lineNumber: 238,
+                                    lineNumber: 250,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -757,29 +760,29 @@ function OutgoingCallsPage() {
                                     children: "Попробовать снова"
                                 }, void 0, false, {
                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                    lineNumber: 239,
+                                    lineNumber: 251,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                            lineNumber: 237,
+                            lineNumber: 249,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                        lineNumber: 236,
+                        lineNumber: 248,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                    lineNumber: 235,
+                    lineNumber: 247,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/app/outgoing-calls/page.tsx",
-            lineNumber: 233,
+            lineNumber: 245,
             columnNumber: 7
         }, this);
     }
@@ -788,7 +791,7 @@ function OutgoingCallsPage() {
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$header$2d$menu$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["HeaderMenu"], {}, void 0, false, {
                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                lineNumber: 251,
+                lineNumber: 263,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -804,14 +807,14 @@ function OutgoingCallsPage() {
                                         className: "inline-block mr-3 h-10 w-10 text-blue-600"
                                     }, void 0, false, {
                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                        lineNumber: 257,
+                                        lineNumber: 269,
                                         columnNumber: 13
                                     }, this),
                                     "Исходящие звонки (обзвон)"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                lineNumber: 256,
+                                lineNumber: 268,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -819,13 +822,13 @@ function OutgoingCallsPage() {
                                 children: "Данные по обзвону объектов без газоснабжения"
                             }, void 0, false, {
                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                lineNumber: 260,
+                                lineNumber: 272,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                        lineNumber: 255,
+                        lineNumber: 267,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -840,12 +843,12 @@ function OutgoingCallsPage() {
                                             children: "Всего обращений"
                                         }, void 0, false, {
                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                            lineNumber: 267,
+                                            lineNumber: 279,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                        lineNumber: 266,
+                                        lineNumber: 278,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -854,18 +857,18 @@ function OutgoingCallsPage() {
                                             children: stats.total
                                         }, void 0, false, {
                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                            lineNumber: 270,
+                                            lineNumber: 282,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                        lineNumber: 269,
+                                        lineNumber: 281,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                lineNumber: 265,
+                                lineNumber: 277,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
@@ -877,12 +880,12 @@ function OutgoingCallsPage() {
                                             children: "Отфильтровано"
                                         }, void 0, false, {
                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                            lineNumber: 276,
+                                            lineNumber: 288,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                        lineNumber: 275,
+                                        lineNumber: 287,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -891,18 +894,18 @@ function OutgoingCallsPage() {
                                             children: filteredCalls.length
                                         }, void 0, false, {
                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                            lineNumber: 279,
+                                            lineNumber: 291,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                        lineNumber: 278,
+                                        lineNumber: 290,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                lineNumber: 274,
+                                lineNumber: 286,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
@@ -914,12 +917,12 @@ function OutgoingCallsPage() {
                                             children: "Тем обращений"
                                         }, void 0, false, {
                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                            lineNumber: 285,
+                                            lineNumber: 297,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                        lineNumber: 284,
+                                        lineNumber: 296,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -928,18 +931,18 @@ function OutgoingCallsPage() {
                                             children: stats.uniqueSubjects
                                         }, void 0, false, {
                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                            lineNumber: 288,
+                                            lineNumber: 300,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                        lineNumber: 287,
+                                        lineNumber: 299,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                lineNumber: 283,
+                                lineNumber: 295,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
@@ -951,12 +954,12 @@ function OutgoingCallsPage() {
                                             children: "Типов объектов"
                                         }, void 0, false, {
                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                            lineNumber: 294,
+                                            lineNumber: 306,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                        lineNumber: 293,
+                                        lineNumber: 305,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -965,24 +968,24 @@ function OutgoingCallsPage() {
                                             children: stats.uniqueSubcategories
                                         }, void 0, false, {
                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                            lineNumber: 297,
+                                            lineNumber: 309,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                        lineNumber: 296,
+                                        lineNumber: 308,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                lineNumber: 292,
+                                lineNumber: 304,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                        lineNumber: 264,
+                        lineNumber: 276,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
@@ -1002,14 +1005,14 @@ function OutgoingCallsPage() {
                                                             className: "inline-block mr-2 h-4 w-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                            lineNumber: 309,
+                                                            lineNumber: 321,
                                                             columnNumber: 19
                                                         }, this),
                                                         "Поиск"
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                    lineNumber: 308,
+                                                    lineNumber: 320,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -1020,13 +1023,13 @@ function OutgoingCallsPage() {
                                                     className: "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                    lineNumber: 312,
+                                                    lineNumber: 324,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                            lineNumber: 307,
+                                            lineNumber: 319,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1038,14 +1041,14 @@ function OutgoingCallsPage() {
                                                             className: "inline-block mr-2 h-4 w-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                            lineNumber: 324,
+                                                            lineNumber: 336,
                                                             columnNumber: 19
                                                         }, this),
                                                         "Тема обращения"
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                    lineNumber: 323,
+                                                    lineNumber: 335,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -1058,7 +1061,7 @@ function OutgoingCallsPage() {
                                                             children: "Все темы"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                            lineNumber: 332,
+                                                            lineNumber: 344,
                                                             columnNumber: 19
                                                         }, this),
                                                         subjects.map((subject)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -1066,19 +1069,19 @@ function OutgoingCallsPage() {
                                                                 children: subject.name
                                                             }, subject.id, false, {
                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                lineNumber: 334,
+                                                                lineNumber: 346,
                                                                 columnNumber: 21
                                                             }, this))
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                    lineNumber: 327,
+                                                    lineNumber: 339,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                            lineNumber: 322,
+                                            lineNumber: 334,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1090,14 +1093,14 @@ function OutgoingCallsPage() {
                                                             className: "inline-block mr-2 h-4 w-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                            lineNumber: 344,
+                                                            lineNumber: 356,
                                                             columnNumber: 19
                                                         }, this),
                                                         "Подкатегория"
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                    lineNumber: 343,
+                                                    lineNumber: 355,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -1110,7 +1113,7 @@ function OutgoingCallsPage() {
                                                             children: "Все подкатегории"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                            lineNumber: 352,
+                                                            lineNumber: 364,
                                                             columnNumber: 19
                                                         }, this),
                                                         subcategories.map((subcat)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -1118,25 +1121,25 @@ function OutgoingCallsPage() {
                                                                 children: subcat.name
                                                             }, subcat.id, false, {
                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                lineNumber: 354,
+                                                                lineNumber: 366,
                                                                 columnNumber: 21
                                                             }, this))
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                    lineNumber: 347,
+                                                    lineNumber: 359,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                            lineNumber: 342,
+                                            lineNumber: 354,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                    lineNumber: 305,
+                                    lineNumber: 317,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1149,30 +1152,30 @@ function OutgoingCallsPage() {
                                                 className: "mr-2 h-4 w-4"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                lineNumber: 364,
+                                                lineNumber: 376,
                                                 columnNumber: 17
                                             }, this),
                                             "Экспорт в CSV"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                        lineNumber: 363,
+                                        lineNumber: 375,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                    lineNumber: 362,
+                                    lineNumber: 374,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                            lineNumber: 304,
+                            lineNumber: 316,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                        lineNumber: 303,
+                        lineNumber: 315,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1183,7 +1186,7 @@ function OutgoingCallsPage() {
                                 children: "Структура потребления топлива по типам предприятий"
                             }, void 0, false, {
                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                lineNumber: 373,
+                                lineNumber: 385,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1195,7 +1198,7 @@ function OutgoingCallsPage() {
                                             name: subject.name,
                                             value: subcategoryCalls.filter((c)=>c.request_subject?.id === subject.id).length,
                                             percentage: (subcategoryCalls.filter((c)=>c.request_subject?.id === subject.id).length / subcategoryCalls.length * 100).toFixed(1)
-                                        })).filter((item)=>item.value > 0);
+                                        })).filter((item)=>item.value > 0).sort((a, b)=>b.value - a.value);
                                     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardHeader"], {
@@ -1206,7 +1209,7 @@ function OutgoingCallsPage() {
                                                         children: subcategory.name
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                        lineNumber: 389,
+                                                        lineNumber: 401,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1218,13 +1221,13 @@ function OutgoingCallsPage() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                        lineNumber: 390,
+                                                        lineNumber: 402,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                lineNumber: 388,
+                                                lineNumber: 400,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -1246,12 +1249,12 @@ function OutgoingCallsPage() {
                                                                             fill: COLORS[index % COLORS.length]
                                                                         }, `cell-${index}`, false, {
                                                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                            lineNumber: 405,
+                                                                            lineNumber: 417,
                                                                             columnNumber: 29
                                                                         }, this))
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 395,
+                                                                    lineNumber: 407,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Tooltip$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Tooltip"], {
@@ -1261,18 +1264,18 @@ function OutgoingCallsPage() {
                                                                         ]
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 408,
+                                                                    lineNumber: 420,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                            lineNumber: 394,
+                                                            lineNumber: 406,
                                                             columnNumber: 23
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                        lineNumber: 393,
+                                                        lineNumber: 405,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1290,7 +1293,7 @@ function OutgoingCallsPage() {
                                                                                 }
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                lineNumber: 417,
+                                                                                lineNumber: 429,
                                                                                 columnNumber: 29
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1298,13 +1301,13 @@ function OutgoingCallsPage() {
                                                                                 children: item.name
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                lineNumber: 421,
+                                                                                lineNumber: 433,
                                                                                 columnNumber: 29
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                        lineNumber: 416,
+                                                                        lineNumber: 428,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1317,42 +1320,42 @@ function OutgoingCallsPage() {
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                        lineNumber: 423,
+                                                                        lineNumber: 435,
                                                                         columnNumber: 27
                                                                     }, this)
                                                                 ]
                                                             }, index, true, {
                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                lineNumber: 415,
+                                                                lineNumber: 427,
                                                                 columnNumber: 25
                                                             }, this))
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                        lineNumber: 413,
+                                                        lineNumber: 425,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                lineNumber: 392,
+                                                lineNumber: 404,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, subcategory.id, true, {
                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                        lineNumber: 387,
+                                        lineNumber: 399,
                                         columnNumber: 17
                                     }, this);
                                 })
                             }, void 0, false, {
                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                lineNumber: 374,
+                                lineNumber: 386,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                        lineNumber: 372,
+                        lineNumber: 384,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1363,7 +1366,7 @@ function OutgoingCallsPage() {
                                 children: "Общая статистика по обращениям"
                             }, void 0, false, {
                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                lineNumber: 436,
+                                lineNumber: 448,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1376,12 +1379,12 @@ function OutgoingCallsPage() {
                                                     children: "Распределение по темам обращений"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                    lineNumber: 441,
+                                                    lineNumber: 453,
                                                     columnNumber: 15
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                lineNumber: 440,
+                                                lineNumber: 452,
                                                 columnNumber: 13
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -1415,7 +1418,7 @@ function OutgoingCallsPage() {
                                                                         children: `${name}: ${(percent * 100).toFixed(0)}%`
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                        lineNumber: 460,
+                                                                        lineNumber: 472,
                                                                         columnNumber: 25
                                                                     }, void 0);
                                                                 },
@@ -1427,12 +1430,12 @@ function OutgoingCallsPage() {
                                                                         opacity: entry.opacity
                                                                     }, `cell-${index}`, false, {
                                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                        lineNumber: 477,
+                                                                        lineNumber: 489,
                                                                         columnNumber: 23
                                                                     }, this))
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                lineNumber: 446,
+                                                                lineNumber: 458,
                                                                 columnNumber: 19
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Tooltip$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Tooltip"], {
@@ -1451,7 +1454,7 @@ function OutgoingCallsPage() {
                                                                 }
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                lineNumber: 484,
+                                                                lineNumber: 496,
                                                                 columnNumber: 19
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Legend$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Legend"], {
@@ -1463,29 +1466,29 @@ function OutgoingCallsPage() {
                                                                 }
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                lineNumber: 493,
+                                                                lineNumber: 505,
                                                                 columnNumber: 19
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                        lineNumber: 445,
+                                                        lineNumber: 457,
                                                         columnNumber: 17
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                    lineNumber: 444,
+                                                    lineNumber: 456,
                                                     columnNumber: 15
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                lineNumber: 443,
+                                                lineNumber: 455,
                                                 columnNumber: 13
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                        lineNumber: 439,
+                                        lineNumber: 451,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
@@ -1495,12 +1498,12 @@ function OutgoingCallsPage() {
                                                     children: "Распределение по типам объектов"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                    lineNumber: 507,
+                                                    lineNumber: 519,
                                                     columnNumber: 15
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                lineNumber: 506,
+                                                lineNumber: 518,
                                                 columnNumber: 13
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -1534,7 +1537,7 @@ function OutgoingCallsPage() {
                                                                         children: `${name}: ${(percent * 100).toFixed(0)}%`
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                        lineNumber: 526,
+                                                                        lineNumber: 538,
                                                                         columnNumber: 25
                                                                     }, void 0);
                                                                 },
@@ -1546,12 +1549,12 @@ function OutgoingCallsPage() {
                                                                         opacity: entry.opacity
                                                                     }, `cell-${index}`, false, {
                                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                        lineNumber: 543,
+                                                                        lineNumber: 555,
                                                                         columnNumber: 23
                                                                     }, this))
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                lineNumber: 512,
+                                                                lineNumber: 524,
                                                                 columnNumber: 19
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Tooltip$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Tooltip"], {
@@ -1570,7 +1573,7 @@ function OutgoingCallsPage() {
                                                                 }
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                lineNumber: 550,
+                                                                lineNumber: 562,
                                                                 columnNumber: 19
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Legend$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Legend"], {
@@ -1582,35 +1585,35 @@ function OutgoingCallsPage() {
                                                                 }
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                lineNumber: 559,
+                                                                lineNumber: 571,
                                                                 columnNumber: 19
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                        lineNumber: 511,
+                                                        lineNumber: 523,
                                                         columnNumber: 17
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                    lineNumber: 510,
+                                                    lineNumber: 522,
                                                     columnNumber: 15
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                lineNumber: 509,
+                                                lineNumber: 521,
                                                 columnNumber: 13
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                        lineNumber: 505,
+                                        lineNumber: 517,
                                         columnNumber: 11
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                lineNumber: 437,
+                                lineNumber: 449,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1621,7 +1624,7 @@ function OutgoingCallsPage() {
                                         children: "Детальная статистика по темам обращений"
                                     }, void 0, false, {
                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                        lineNumber: 573,
+                                        lineNumber: 585,
                                         columnNumber: 11
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
@@ -1631,41 +1634,51 @@ function OutgoingCallsPage() {
                                                     children: "Количество обращений по темам"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                    lineNumber: 576,
+                                                    lineNumber: 588,
                                                     columnNumber: 15
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                lineNumber: 575,
+                                                lineNumber: 587,
                                                 columnNumber: 13
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
                                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$ResponsiveContainer$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ResponsiveContainer"], {
                                                     width: "100%",
-                                                    height: 400,
+                                                    height: 500,
                                                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$chart$2f$BarChart$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["BarChart"], {
                                                         data: enhancedStats.bySubject,
+                                                        margin: {
+                                                            top: 20,
+                                                            right: 30,
+                                                            left: 20,
+                                                            bottom: 120
+                                                        },
                                                         children: [
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$CartesianGrid$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CartesianGrid"], {
                                                                 strokeDasharray: "3 3"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                lineNumber: 581,
+                                                                lineNumber: 596,
                                                                 columnNumber: 17
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$XAxis$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["XAxis"], {
                                                                 dataKey: "name",
                                                                 angle: -45,
                                                                 textAnchor: "end",
-                                                                height: 150
+                                                                height: 150,
+                                                                interval: 0,
+                                                                tick: {
+                                                                    fontSize: 12
+                                                                }
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                lineNumber: 582,
+                                                                lineNumber: 597,
                                                                 columnNumber: 17
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$YAxis$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["YAxis"], {}, void 0, false, {
                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                lineNumber: 583,
+                                                                lineNumber: 605,
                                                                 columnNumber: 17
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Tooltip$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Tooltip"], {
@@ -1684,7 +1697,7 @@ function OutgoingCallsPage() {
                                                                 }
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                lineNumber: 584,
+                                                                lineNumber: 606,
                                                                 columnNumber: 17
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$Bar$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Bar"], {
@@ -1695,40 +1708,40 @@ function OutgoingCallsPage() {
                                                                         opacity: entry.opacity
                                                                     }, `cell-${index}`, false, {
                                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                        lineNumber: 595,
+                                                                        lineNumber: 617,
                                                                         columnNumber: 21
                                                                     }, this))
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                lineNumber: 593,
+                                                                lineNumber: 615,
                                                                 columnNumber: 17
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                        lineNumber: 580,
+                                                        lineNumber: 592,
                                                         columnNumber: 15
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                    lineNumber: 579,
+                                                    lineNumber: 591,
                                                     columnNumber: 13
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                lineNumber: 578,
+                                                lineNumber: 590,
                                                 columnNumber: 11
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                        lineNumber: 574,
+                                        lineNumber: 586,
                                         columnNumber: 11
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                lineNumber: 572,
+                                lineNumber: 584,
                                 columnNumber: 9
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1739,7 +1752,7 @@ function OutgoingCallsPage() {
                                         children: "Список всех обращений"
                                     }, void 0, false, {
                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                        lineNumber: 610,
+                                        lineNumber: 632,
                                         columnNumber: 11
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
@@ -1756,12 +1769,12 @@ function OutgoingCallsPage() {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                    lineNumber: 613,
+                                                    lineNumber: 635,
                                                     columnNumber: 13
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                lineNumber: 612,
+                                                lineNumber: 634,
                                                 columnNumber: 11
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -1777,10 +1790,18 @@ function OutgoingCallsPage() {
                                                                         children: [
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
                                                                                 className: "text-left p-3 text-sm font-medium text-gray-600",
+                                                                                children: "ID"
+                                                                            }, void 0, false, {
+                                                                                fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                lineNumber: 644,
+                                                                                columnNumber: 21
+                                                                            }, this),
+                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
+                                                                                className: "text-left p-3 text-sm font-medium text-gray-600",
                                                                                 children: "№ записи"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                lineNumber: 622,
+                                                                                lineNumber: 645,
                                                                                 columnNumber: 21
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1788,7 +1809,7 @@ function OutgoingCallsPage() {
                                                                                 children: "Дата"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                lineNumber: 623,
+                                                                                lineNumber: 646,
                                                                                 columnNumber: 21
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1796,7 +1817,7 @@ function OutgoingCallsPage() {
                                                                                 children: "Заявитель"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                lineNumber: 624,
+                                                                                lineNumber: 647,
                                                                                 columnNumber: 21
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1804,7 +1825,7 @@ function OutgoingCallsPage() {
                                                                                 children: "Телефон"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                lineNumber: 625,
+                                                                                lineNumber: 648,
                                                                                 columnNumber: 21
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1812,7 +1833,7 @@ function OutgoingCallsPage() {
                                                                                 children: "Адрес"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                lineNumber: 626,
+                                                                                lineNumber: 649,
                                                                                 columnNumber: 21
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1820,7 +1841,7 @@ function OutgoingCallsPage() {
                                                                                 children: "Тема"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                lineNumber: 627,
+                                                                                lineNumber: 650,
                                                                                 columnNumber: 21
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1828,18 +1849,18 @@ function OutgoingCallsPage() {
                                                                                 children: "Действия"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                lineNumber: 628,
+                                                                                lineNumber: 651,
                                                                                 columnNumber: 21
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                        lineNumber: 621,
+                                                                        lineNumber: 643,
                                                                         columnNumber: 19
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 620,
+                                                                    lineNumber: 642,
                                                                     columnNumber: 17
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
@@ -1847,11 +1868,19 @@ function OutgoingCallsPage() {
                                                                             className: "border-b hover:bg-gray-50",
                                                                             children: [
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
+                                                                                    className: "p-3 text-sm text-gray-500",
+                                                                                    children: call.id
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 657,
+                                                                                    columnNumber: 23
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
                                                                                     className: "p-3 text-sm font-mono",
                                                                                     children: call.record_number
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                    lineNumber: 634,
+                                                                                    lineNumber: 658,
                                                                                     columnNumber: 23
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1859,7 +1888,7 @@ function OutgoingCallsPage() {
                                                                                     children: call.request_registration_date
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                    lineNumber: 635,
+                                                                                    lineNumber: 659,
                                                                                     columnNumber: 23
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1871,7 +1900,7 @@ function OutgoingCallsPage() {
                                                                                     ]
                                                                                 }, void 0, true, {
                                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                    lineNumber: 636,
+                                                                                    lineNumber: 660,
                                                                                     columnNumber: 23
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1879,7 +1908,7 @@ function OutgoingCallsPage() {
                                                                                     children: call.phone_number
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                    lineNumber: 639,
+                                                                                    lineNumber: 663,
                                                                                     columnNumber: 23
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1888,7 +1917,7 @@ function OutgoingCallsPage() {
                                                                                     children: call.problem_address
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                    lineNumber: 640,
+                                                                                    lineNumber: 664,
                                                                                     columnNumber: 23
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1898,12 +1927,12 @@ function OutgoingCallsPage() {
                                                                                         children: call.request_subject?.name
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                        lineNumber: 644,
+                                                                                        lineNumber: 668,
                                                                                         columnNumber: 25
                                                                                     }, this)
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                    lineNumber: 643,
+                                                                                    lineNumber: 667,
                                                                                     columnNumber: 23
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1919,39 +1948,39 @@ function OutgoingCallsPage() {
                                                                                             className: "h-4 w-4"
                                                                                         }, void 0, false, {
                                                                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                            lineNumber: 657,
+                                                                                            lineNumber: 681,
                                                                                             columnNumber: 27
                                                                                         }, this)
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                        lineNumber: 649,
+                                                                                        lineNumber: 673,
                                                                                         columnNumber: 25
                                                                                     }, this)
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                    lineNumber: 648,
+                                                                                    lineNumber: 672,
                                                                                     columnNumber: 23
                                                                                 }, this)
                                                                             ]
                                                                         }, call.id, true, {
                                                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                            lineNumber: 633,
+                                                                            lineNumber: 656,
                                                                             columnNumber: 21
                                                                         }, this))
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 631,
+                                                                    lineNumber: 654,
                                                                     columnNumber: 17
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                            lineNumber: 619,
+                                                            lineNumber: 641,
                                                             columnNumber: 15
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                        lineNumber: 618,
+                                                        lineNumber: 640,
                                                         columnNumber: 13
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1969,7 +1998,7 @@ function OutgoingCallsPage() {
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                lineNumber: 668,
+                                                                lineNumber: 692,
                                                                 columnNumber: 15
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1985,14 +2014,14 @@ function OutgoingCallsPage() {
                                                                                 className: "h-4 w-4 mr-1"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                lineNumber: 678,
+                                                                                lineNumber: 702,
                                                                                 columnNumber: 19
                                                                             }, this),
                                                                             "Назад"
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                        lineNumber: 672,
+                                                                        lineNumber: 696,
                                                                         columnNumber: 17
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2017,13 +2046,13 @@ function OutgoingCallsPage() {
                                                                                 children: pageNum
                                                                             }, pageNum, false, {
                                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                lineNumber: 697,
+                                                                                lineNumber: 721,
                                                                                 columnNumber: 23
                                                                             }, this);
                                                                         })
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                        lineNumber: 683,
+                                                                        lineNumber: 707,
                                                                         columnNumber: 17
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2037,43 +2066,43 @@ function OutgoingCallsPage() {
                                                                                 className: "h-4 w-4 ml-1"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                                lineNumber: 716,
+                                                                                lineNumber: 740,
                                                                                 columnNumber: 19
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                        lineNumber: 709,
+                                                                        lineNumber: 733,
                                                                         columnNumber: 17
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                lineNumber: 671,
+                                                                lineNumber: 695,
                                                                 columnNumber: 15
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                        lineNumber: 667,
+                                                        lineNumber: 691,
                                                         columnNumber: 13
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                lineNumber: 617,
+                                                lineNumber: 639,
                                                 columnNumber: 11
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                        lineNumber: 611,
+                                        lineNumber: 633,
                                         columnNumber: 11
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                                lineNumber: 609,
+                                lineNumber: 631,
                                 columnNumber: 9
                             }, this),
                             showDetailPanel && selectedCall && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -2083,7 +2112,7 @@ function OutgoingCallsPage() {
                                         onClick: ()=>setShowDetailPanel(false)
                                     }, void 0, false, {
                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                        lineNumber: 728,
+                                        lineNumber: 752,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2099,7 +2128,7 @@ function OutgoingCallsPage() {
                                                             children: "Детали обращения"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                            lineNumber: 737,
+                                                            lineNumber: 761,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2109,253 +2138,673 @@ function OutgoingCallsPage() {
                                                             children: "✕"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                            lineNumber: 738,
+                                                            lineNumber: 762,
                                                             columnNumber: 19
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                    lineNumber: 736,
+                                                    lineNumber: 760,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                     className: "space-y-4",
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "pb-4 border-b",
                                                             children: [
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                                    className: "text-sm font-medium text-gray-600",
-                                                                    children: "Номер записи"
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                                                    className: "text-lg font-semibold text-gray-800 mb-3",
+                                                                    children: "Основная информация"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 745,
+                                                                    lineNumber: 770,
                                                                     columnNumber: 21
                                                                 }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                                    className: "text-lg font-mono",
-                                                                    children: selectedCall.record_number
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 746,
-                                                                    columnNumber: 21
-                                                                }, this)
-                                                            ]
-                                                        }, void 0, true, {
-                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                            lineNumber: 744,
-                                                            columnNumber: 19
-                                                        }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            children: [
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                                    className: "text-sm font-medium text-gray-600",
-                                                                    children: "Заявитель"
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 750,
-                                                                    columnNumber: 21
-                                                                }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                                    className: "text-lg",
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                    className: "space-y-3",
                                                                     children: [
-                                                                        selectedCall.applicant_last_name,
-                                                                        " ",
-                                                                        selectedCall.applicant_first_name
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                                    className: "text-sm font-medium text-gray-600",
+                                                                                    children: "Номер записи"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 774,
+                                                                                    columnNumber: 25
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                                    className: "text-base font-mono",
+                                                                                    children: selectedCall.record_number || '-'
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 775,
+                                                                                    columnNumber: 25
+                                                                                }, this)
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                            lineNumber: 773,
+                                                                            columnNumber: 23
+                                                                        }, this),
+                                                                        selectedCall.request_status && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                                    className: "text-sm font-medium text-gray-600",
+                                                                                    children: "Статус обращения"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 780,
+                                                                                    columnNumber: 27
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                                    className: "text-base",
+                                                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                        className: "px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm",
+                                                                                        children: selectedCall.request_status
+                                                                                    }, void 0, false, {
+                                                                                        fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                        lineNumber: 782,
+                                                                                        columnNumber: 29
+                                                                                    }, this)
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 781,
+                                                                                    columnNumber: 27
+                                                                                }, this)
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                            lineNumber: 779,
+                                                                            columnNumber: 25
+                                                                        }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 751,
-                                                                    columnNumber: 21
-                                                                }, this)
-                                                            ]
-                                                        }, void 0, true, {
-                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                            lineNumber: 749,
-                                                            columnNumber: 19
-                                                        }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            children: [
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                                    className: "text-sm font-medium text-gray-600",
-                                                                    children: "Телефон"
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 757,
-                                                                    columnNumber: 21
-                                                                }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                                    className: "text-lg font-mono",
-                                                                    children: selectedCall.phone_number
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 758,
-                                                                    columnNumber: 21
-                                                                }, this)
-                                                            ]
-                                                        }, void 0, true, {
-                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                            lineNumber: 756,
-                                                            columnNumber: 19
-                                                        }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            children: [
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                                    className: "text-sm font-medium text-gray-600",
-                                                                    children: "Адрес проблемы"
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 762,
-                                                                    columnNumber: 21
-                                                                }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                                    className: "text-lg",
-                                                                    children: selectedCall.problem_address
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 763,
-                                                                    columnNumber: 21
-                                                                }, this)
-                                                            ]
-                                                        }, void 0, true, {
-                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                            lineNumber: 761,
-                                                            columnNumber: 19
-                                                        }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            children: [
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                                    className: "text-sm font-medium text-gray-600",
-                                                                    children: "Категория"
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 767,
-                                                                    columnNumber: 21
-                                                                }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                                    className: "text-lg",
-                                                                    children: selectedCall.request_category?.name
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 768,
-                                                                    columnNumber: 21
-                                                                }, this)
-                                                            ]
-                                                        }, void 0, true, {
-                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                            lineNumber: 766,
-                                                            columnNumber: 19
-                                                        }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            children: [
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                                    className: "text-sm font-medium text-gray-600",
-                                                                    children: "Подкатегория"
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
                                                                     lineNumber: 772,
                                                                     columnNumber: 21
-                                                                }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                                    className: "text-lg",
-                                                                    children: selectedCall.request_subcategory?.name
+                                                                }, this)
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                            lineNumber: 769,
+                                                            columnNumber: 19
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "pb-4 border-b",
+                                                            children: [
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                                                    className: "text-lg font-semibold text-gray-800 mb-3",
+                                                                    children: "Заявитель"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 773,
+                                                                    lineNumber: 793,
+                                                                    columnNumber: 21
+                                                                }, this),
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                    className: "space-y-3",
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                                    className: "text-sm font-medium text-gray-600",
+                                                                                    children: "ФИО"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 797,
+                                                                                    columnNumber: 25
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                                    className: "text-base",
+                                                                                    children: [
+                                                                                        selectedCall.applicant_last_name,
+                                                                                        " ",
+                                                                                        selectedCall.applicant_first_name
+                                                                                    ]
+                                                                                }, void 0, true, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 798,
+                                                                                    columnNumber: 25
+                                                                                }, this)
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                            lineNumber: 796,
+                                                                            columnNumber: 23
+                                                                        }, this),
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                                    className: "text-sm font-medium text-gray-600",
+                                                                                    children: "Телефон"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 804,
+                                                                                    columnNumber: 25
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                                    className: "text-base font-mono",
+                                                                                    children: selectedCall.phone_number || '-'
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 805,
+                                                                                    columnNumber: 25
+                                                                                }, this)
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                            lineNumber: 803,
+                                                                            columnNumber: 23
+                                                                        }, this),
+                                                                        selectedCall.applicant_account && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                                    className: "text-sm font-medium text-gray-600",
+                                                                                    children: "Аккаунт заявителя"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 810,
+                                                                                    columnNumber: 27
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                                    className: "text-base",
+                                                                                    children: selectedCall.applicant_account
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 811,
+                                                                                    columnNumber: 27
+                                                                                }, this)
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                            lineNumber: 809,
+                                                                            columnNumber: 25
+                                                                        }, this)
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                    lineNumber: 795,
                                                                     columnNumber: 21
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                            lineNumber: 771,
+                                                            lineNumber: 792,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "pb-4 border-b",
                                                             children: [
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                                    className: "text-sm font-medium text-gray-600",
-                                                                    children: "Тема обращения"
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                                                    className: "text-lg font-semibold text-gray-800 mb-3",
+                                                                    children: "Адрес и местоположение"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 777,
+                                                                    lineNumber: 819,
                                                                     columnNumber: 21
                                                                 }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                                    className: "text-lg",
-                                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                        className: "px-3 py-1 bg-blue-100 text-blue-800 rounded-full",
-                                                                        children: selectedCall.request_subject?.name
-                                                                    }, void 0, false, {
-                                                                        fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                        lineNumber: 779,
-                                                                        columnNumber: 23
-                                                                    }, this)
-                                                                }, void 0, false, {
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                    className: "space-y-3",
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                                    className: "text-sm font-medium text-gray-600",
+                                                                                    children: "Адрес проблемы"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 823,
+                                                                                    columnNumber: 25
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                                    className: "text-base",
+                                                                                    children: selectedCall.problem_address || '-'
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 824,
+                                                                                    columnNumber: 25
+                                                                                }, this)
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                            lineNumber: 822,
+                                                                            columnNumber: 23
+                                                                        }, this),
+                                                                        selectedCall.problem_district && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                                    className: "text-sm font-medium text-gray-600",
+                                                                                    children: "Район проблемы"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 829,
+                                                                                    columnNumber: 27
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                                    className: "text-base",
+                                                                                    children: selectedCall.problem_district
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 830,
+                                                                                    columnNumber: 27
+                                                                                }, this)
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                            lineNumber: 828,
+                                                                            columnNumber: 25
+                                                                        }, this),
+                                                                        selectedCall.route_number && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                                    className: "text-sm font-medium text-gray-600",
+                                                                                    children: "Номер маршрута"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 836,
+                                                                                    columnNumber: 27
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                                    className: "text-base font-mono",
+                                                                                    children: selectedCall.route_number
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 837,
+                                                                                    columnNumber: 27
+                                                                                }, this)
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                            lineNumber: 835,
+                                                                            columnNumber: 25
+                                                                        }, this)
+                                                                    ]
+                                                                }, void 0, true, {
                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 778,
+                                                                    lineNumber: 821,
                                                                     columnNumber: 21
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                            lineNumber: 776,
+                                                            lineNumber: 818,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "pb-4 border-b",
                                                             children: [
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                                    className: "text-sm font-medium text-gray-600",
-                                                                    children: "Дата регистрации"
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                                                    className: "text-lg font-semibold text-gray-800 mb-3",
+                                                                    children: "Категории обращения"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 786,
+                                                                    lineNumber: 845,
                                                                     columnNumber: 21
                                                                 }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                                    className: "text-lg",
-                                                                    children: selectedCall.request_registration_date
-                                                                }, void 0, false, {
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                    className: "space-y-3",
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                                    className: "text-sm font-medium text-gray-600",
+                                                                                    children: "Категория"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 849,
+                                                                                    columnNumber: 25
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                                    className: "text-base",
+                                                                                    children: selectedCall.request_category?.name || '-'
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 850,
+                                                                                    columnNumber: 25
+                                                                                }, this)
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                            lineNumber: 848,
+                                                                            columnNumber: 23
+                                                                        }, this),
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                                    className: "text-sm font-medium text-gray-600",
+                                                                                    children: "Подкатегория"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 854,
+                                                                                    columnNumber: 25
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                                    className: "text-base",
+                                                                                    children: selectedCall.request_subcategory?.name || '-'
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 855,
+                                                                                    columnNumber: 25
+                                                                                }, this)
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                            lineNumber: 853,
+                                                                            columnNumber: 23
+                                                                        }, this),
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                                    className: "text-sm font-medium text-gray-600",
+                                                                                    children: "Тема обращения"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 859,
+                                                                                    columnNumber: 25
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                                    className: "text-base",
+                                                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                        className: "px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm",
+                                                                                        children: selectedCall.request_subject?.name || '-'
+                                                                                    }, void 0, false, {
+                                                                                        fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                        lineNumber: 861,
+                                                                                        columnNumber: 27
+                                                                                    }, this)
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 860,
+                                                                                    columnNumber: 25
+                                                                                }, this)
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                            lineNumber: 858,
+                                                                            columnNumber: 23
+                                                                        }, this)
+                                                                    ]
+                                                                }, void 0, true, {
                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 787,
+                                                                    lineNumber: 847,
                                                                     columnNumber: 21
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                            lineNumber: 785,
+                                                            lineNumber: 844,
                                                             columnNumber: 19
                                                         }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        (selectedCall.executor_go || selectedCall.current_executor_go || selectedCall.registrar) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "pb-4 border-b",
                                                             children: [
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                                    className: "text-sm font-medium text-gray-600",
-                                                                    children: "Дата разрешения"
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                                                    className: "text-lg font-semibold text-gray-800 mb-3",
+                                                                    children: "Исполнители"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 791,
+                                                                    lineNumber: 872,
+                                                                    columnNumber: 23
+                                                                }, this),
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                    className: "space-y-3",
+                                                                    children: [
+                                                                        selectedCall.executor_go && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                                    className: "text-sm font-medium text-gray-600",
+                                                                                    children: "Исполнитель (ГО)"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 877,
+                                                                                    columnNumber: 29
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                                    className: "text-base",
+                                                                                    children: selectedCall.executor_go
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 878,
+                                                                                    columnNumber: 29
+                                                                                }, this)
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                            lineNumber: 876,
+                                                                            columnNumber: 27
+                                                                        }, this),
+                                                                        selectedCall.current_executor_go && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                                    className: "text-sm font-medium text-gray-600",
+                                                                                    children: "Текущий исполнитель (ГО)"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 884,
+                                                                                    columnNumber: 29
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                                    className: "text-base",
+                                                                                    children: selectedCall.current_executor_go
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 885,
+                                                                                    columnNumber: 29
+                                                                                }, this)
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                            lineNumber: 883,
+                                                                            columnNumber: 27
+                                                                        }, this),
+                                                                        selectedCall.registrar && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                                    className: "text-sm font-medium text-gray-600",
+                                                                                    children: "Регистратор"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 891,
+                                                                                    columnNumber: 29
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                                    className: "text-base",
+                                                                                    children: selectedCall.registrar
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 892,
+                                                                                    columnNumber: 29
+                                                                                }, this)
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                            lineNumber: 890,
+                                                                            columnNumber: 27
+                                                                        }, this)
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                    lineNumber: 874,
+                                                                    columnNumber: 23
+                                                                }, this)
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                            lineNumber: 871,
+                                                            columnNumber: 21
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "pb-4 border-b",
+                                                            children: [
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                                                    className: "text-lg font-semibold text-gray-800 mb-3",
+                                                                    children: "Даты"
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                    lineNumber: 901,
                                                                     columnNumber: 21
                                                                 }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                                    className: "text-lg",
-                                                                    children: selectedCall.actual_resolution_time
-                                                                }, void 0, false, {
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                    className: "space-y-3",
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                                    className: "text-sm font-medium text-gray-600",
+                                                                                    children: "Дата регистрации"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 905,
+                                                                                    columnNumber: 25
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                                    className: "text-base",
+                                                                                    children: selectedCall.request_registration_date || '-'
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 906,
+                                                                                    columnNumber: 25
+                                                                                }, this)
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                            lineNumber: 904,
+                                                                            columnNumber: 23
+                                                                        }, this),
+                                                                        selectedCall.planned_completion_date && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                                    className: "text-sm font-medium text-gray-600",
+                                                                                    children: "Планируемый срок исполнения"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 911,
+                                                                                    columnNumber: 27
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                                    className: "text-base",
+                                                                                    children: selectedCall.planned_completion_date
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 912,
+                                                                                    columnNumber: 27
+                                                                                }, this)
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                            lineNumber: 910,
+                                                                            columnNumber: 25
+                                                                        }, this),
+                                                                        selectedCall.actual_completion_date && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                                    className: "text-sm font-medium text-gray-600",
+                                                                                    children: "Фактическая дата исполнения"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 918,
+                                                                                    columnNumber: 27
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                                    className: "text-base",
+                                                                                    children: selectedCall.actual_completion_date
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 919,
+                                                                                    columnNumber: 27
+                                                                                }, this)
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                            lineNumber: 917,
+                                                                            columnNumber: 25
+                                                                        }, this),
+                                                                        selectedCall.actual_resolution_time && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                                    className: "text-sm font-medium text-gray-600",
+                                                                                    children: "Фактический срок исполнения"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 925,
+                                                                                    columnNumber: 27
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                                    className: "text-base",
+                                                                                    children: selectedCall.actual_resolution_time
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                                    lineNumber: 926,
+                                                                                    columnNumber: 27
+                                                                                }, this)
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                            lineNumber: 924,
+                                                                            columnNumber: 25
+                                                                        }, this)
+                                                                    ]
+                                                                }, void 0, true, {
                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 792,
+                                                                    lineNumber: 903,
                                                                     columnNumber: 21
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                            lineNumber: 790,
+                                                            lineNumber: 900,
                                                             columnNumber: 19
+                                                        }, this),
+                                                        selectedCall.submission_source && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "pb-4 border-b",
+                                                            children: [
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                                                    className: "text-lg font-semibold text-gray-800 mb-3",
+                                                                    children: "Дополнительно"
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                    lineNumber: 935,
+                                                                    columnNumber: 23
+                                                                }, this),
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                            className: "text-sm font-medium text-gray-600",
+                                                                            children: "Источник поступления"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                            lineNumber: 938,
+                                                                            columnNumber: 25
+                                                                        }, this),
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                            className: "text-base",
+                                                                            children: selectedCall.submission_source
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                            lineNumber: 939,
+                                                                            columnNumber: 25
+                                                                        }, this)
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                                    lineNumber: 937,
+                                                                    columnNumber: 23
+                                                                }, this)
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/app/outgoing-calls/page.tsx",
+                                                            lineNumber: 934,
+                                                            columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                             children: [
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                                    className: "text-sm font-medium text-gray-600",
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                                                    className: "text-lg font-semibold text-gray-800 mb-3",
                                                                     children: "Текст обращения"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 796,
+                                                                    lineNumber: 946,
                                                                     columnNumber: 21
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2363,39 +2812,39 @@ function OutgoingCallsPage() {
                                                                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                                         className: "text-sm leading-relaxed",
                                                                         dangerouslySetInnerHTML: {
-                                                                            __html: selectedCall.request_text.replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/Наименование объекта:/g, '<strong>Наименование объекта:</strong><br/>').replace(/Тип объекта:/g, '<br/><strong>Тип объекта:</strong><br/>').replace(/Район:/g, '<br/><strong>Район:</strong><br/>').replace(/Основной вид топлива:/g, '<br/><strong>Основной вид топлива:</strong><br/>').replace(/Для тех\.нужд:/g, '<br/><strong>Для тех.нужд:</strong><br/>').replace(/Должность:/g, '<br/><strong>Должность:</strong><br/>')
+                                                                            __html: (selectedCall.request_text || '-').replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/Наименование объекта:/g, '<strong>Наименование объекта:</strong><br/>').replace(/Тип объекта:/g, '<br/><strong>Тип объекта:</strong><br/>').replace(/Район:/g, '<br/><strong>Район:</strong><br/>').replace(/Основной вид топлива:/g, '<br/><strong>Основной вид топлива:</strong><br/>').replace(/Для тех\.нужд:/g, '<br/><strong>Для тех.нужд:</strong><br/>').replace(/Должность:/g, '<br/><strong>Должность:</strong><br/>')
                                                                         }
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                        lineNumber: 798,
+                                                                        lineNumber: 948,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                                    lineNumber: 797,
+                                                                    lineNumber: 947,
                                                                     columnNumber: 21
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                            lineNumber: 795,
+                                                            lineNumber: 945,
                                                             columnNumber: 19
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/outgoing-calls/page.tsx",
-                                                    lineNumber: 743,
+                                                    lineNumber: 767,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/outgoing-calls/page.tsx",
-                                            lineNumber: 735,
+                                            lineNumber: 759,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                                        lineNumber: 734,
+                                        lineNumber: 758,
                                         columnNumber: 13
                                     }, this)
                                 ]
@@ -2403,19 +2852,19 @@ function OutgoingCallsPage() {
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/outgoing-calls/page.tsx",
-                        lineNumber: 435,
+                        lineNumber: 447,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/outgoing-calls/page.tsx",
-                lineNumber: 253,
+                lineNumber: 265,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/outgoing-calls/page.tsx",
-        lineNumber: 250,
+        lineNumber: 262,
         columnNumber: 5
     }, this);
 }

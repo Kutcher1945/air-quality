@@ -150,6 +150,27 @@
   }
 }
 
+@layer utilities {
+  .scrollbar-hidden {
+    scrollbar-width: none;
+  }
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@layer components {
+  /* Inset / pressed-in card for the AQI sidebar */
+  .sidebar-card {
+    background: rgb(0 0 0 / 0.04);
+    box-shadow: inset 0 2px 6px rgb(0 0 0 / 0.09), inset 0 0 0 1px rgb(0 0 0 / 0.05);
+  }
+  .dark .sidebar-card {
+    background: rgb(0 0 0 / 0.30);
+    box-shadow: inset 0 2px 8px rgb(0 0 0 / 0.45), inset 0 0 0 1px rgb(0 0 0 / 0.25);
+  }
+}
+
 /* Leaflet map styles */
 .leaflet-container {
   height: 100%;
@@ -262,4 +283,21 @@
 
 .leaflet-tooltip-top::before {
   border-top-color: white !important;
+}
+
+/* District boundary label */
+.district-label {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: none !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18) !important;
+  border-radius: 4px !important;
+  padding: 3px 7px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  pointer-events: none !important;
+}
+.dark .district-label {
+  background: rgba(30, 41, 59, 0.9) !important;
+  color: #e2e8f0 !important;
 }

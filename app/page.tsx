@@ -2,12 +2,33 @@
 
 import dynamic from "next/dynamic"
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { ChevronLeft, ChevronRight, Moon, Sun } from "lucide-react"
+import { ChevronLeft, ChevronRight, Moon, Sun, Map, CalendarDays } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+
+// ── Calendar day hover helpers ────────────────────────────────────────────────
+function pm25ToHex(pm25: number): string {
+  if (pm25 <= 15) return "#22c55e"
+  if (pm25 <= 35) return "#eab308"
+  if (pm25 <= 55) return "#f97316"
+  if (pm25 <= 150) return "#ef4444"
+  if (pm25 <= 250) return "#a855f7"
+  return "#7f1d1d"
+}
+function pm25ToLabel(pm25: number): string {
+  if (pm25 <= 15) return "Хорошо"
+  if (pm25 <= 35) return "Умеренно"
+  if (pm25 <= 55) return "Чувствительным группам"
+  if (pm25 <= 150) return "Вредно"
+  if (pm25 <= 250) return "Очень вредно"
+  return "Опасно"
+}
+type HoveredDay = { date: string; pm25: number; x: number; y: number; above: boolean }
 import { HeaderMenu } from "@/components/header-menu"
-import type { Sensor } from "@/components/sensor-map-yandex"
+import { FilterDropdown } from "@/components/ui/filter-dropdown"
+import { AqiSidePanel } from "@/components/aqi-side-panel"
+import type { Sensor, AirSensor } from "@/components/sensor-map-yandex"
 
 interface AQIData {
   date: string
@@ -27,14 +48,15 @@ interface Statistics {
   min_pm25?: number
 }
 
+type ActiveTab = "map" | "calendar"
+
 const SensorMap = dynamic(() => import("@/components/sensor-map-yandex"), { ssr: false })
 
-const normalizeApiStats = (apiStats: any): Statistics | null => {
+const normalizeApiStats = (apiStats: Record<string, unknown> | null | undefined): Statistics | null => {
   if (!apiStats) return null
-  const pm25 = apiStats.pm25 || {}
-
+  const pm25 = (apiStats.pm25 as Record<string, number>) || {}
   return {
-    total_days: apiStats.total_days ?? 0,
+    total_days: (apiStats.total_days as number) ?? 0,
     good_days: pm25.good_days ?? 0,
     moderate_days: pm25.moderate_days ?? 0,
     sensitive_days: pm25.sensitive_days ?? 0,
@@ -50,7 +72,6 @@ const normalizeApiStats = (apiStats: any): Statistics | null => {
 const computeStatisticsFromData = (data: Record<string, number>): Statistics | null => {
   const values = Object.values(data || {})
   if (!values.length) return null
-
   return {
     total_days: values.length,
     good_days: values.filter((v) => v <= 15).length,
@@ -65,9 +86,27 @@ const computeStatisticsFromData = (data: Record<string, number>): Statistics | n
   }
 }
 
+const AQI_LEGEND = [
+  { label: "Хорошо", range: "0–15", className: "bg-aqi-good" },
+  { label: "Умеренно", range: "16–35", className: "bg-aqi-moderate" },
+  { label: "Чувствительные", range: "36–55", className: "bg-aqi-sensitive" },
+  { label: "Вредно", range: "56–150", className: "bg-aqi-unhealthy" },
+  { label: "Очень вредно", range: "151–250", className: "bg-aqi-very-unhealthy" },
+  { label: "Опасно", range: "250+", className: "bg-aqi-hazardous" },
+]
+
+function getAQICategory(aqi: number) {
+  if (aqi <= 15) return { label: "Хорошо", color: "bg-aqi-good" }
+  if (aqi <= 35) return { label: "Умеренно", color: "bg-aqi-moderate" }
+  if (aqi <= 55) return { label: "Чувствительные группы", color: "bg-aqi-sensitive" }
+  if (aqi <= 150) return { label: "Вредно", color: "bg-aqi-unhealthy" }
+  if (aqi <= 250) return { label: "Очень вредно", color: "bg-aqi-very-unhealthy" }
+  return { label: "Опасно", color: "bg-aqi-hazardous" }
+}
+
 export default function AirQualityDashboard() {
   const { resolvedTheme, setTheme } = useTheme()
-  // Default to 2025 since 2026 data is not available yet
+  const [activeTab, setActiveTab] = useState<ActiveTab>("map")
   const [currentYear, setCurrentYear] = useState(2025)
   const [aqiData, setAqiData] = useState<Record<string, number>>({})
   const [statistics, setStatistics] = useState<Statistics | null>(null)
@@ -76,52 +115,29 @@ export default function AirQualityDashboard() {
   const [sensorsLoading, setSensorsLoading] = useState(true)
   const [sensorsError, setSensorsError] = useState<string | null>(null)
   const [sensorSearch, setSensorSearch] = useState("")
+  const [sourceFilter, setSourceFilter] = useState<string | "all">("all")
   const [districtFilter, setDistrictFilter] = useState<string | "all">("all")
-  const [onlyActive, setOnlyActive] = useState(true)
-  const [onlyWithData, setOnlyWithData] = useState(false)
   const [mounted, setMounted] = useState(false)
-  const themeIsDark = resolvedTheme === "dark"
+  const [hoveredDay, setHoveredDay] = useState<HoveredDay | null>(null)
+  const [selectedSensor, setSelectedSensor] = useState<AirSensor | null>(null)
 
   const MIN_YEAR = 2019
   const MAX_YEAR = new Date().getFullYear()
-  const aqiLegend = [
-    { label: "Хорошо", range: "0-15", className: "bg-aqi-good" },
-    { label: "Умеренно", range: "16-35", className: "bg-aqi-moderate" },
-    { label: "Чувствительные", range: "36-55", className: "bg-aqi-sensitive" },
-    { label: "Вредно", range: "56-150", className: "bg-aqi-unhealthy" },
-    { label: "Очень вредно", range: "151-250", className: "bg-aqi-very-unhealthy" },
-    { label: "Опасно", range: "250+", className: "bg-aqi-hazardous" },
-  ]
+  const themeIsDark = resolvedTheme === "dark"
 
   const fetchSensors = useCallback(async () => {
     try {
       setSensorsLoading(true)
       setSensorsError(null)
-
       const response = await fetch(
-        "https://admin.smartalmaty.kz/api/v1/ecology/air-quality-sensors/?active=true",
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        },
+        "https://admin.smartalmaty.kz/api/v1/air/current/?parameter=pm25&limit=500",
+        { headers: { Accept: "application/json" } },
       )
-
-      if (!response.ok) {
-        throw new Error(`Sensors API returned ${response.status}`)
-      }
-
+      if (!response.ok) throw new Error(`Sensors API returned ${response.status}`)
       const payload = await response.json()
       const rawSensors: Sensor[] = Array.isArray(payload) ? payload : payload?.results || []
-      const cleanedSensors = rawSensors.filter(
-        (sensor) => sensor.latitude !== null && sensor.latitude !== undefined && sensor.longitude !== null && sensor.longitude !== undefined,
-      )
-
-      setSensors(cleanedSensors)
-    } catch (error) {
-      console.error("Failed to fetch sensor data:", error)
+      setSensors(rawSensors.filter((s) => s.latitude != null && s.longitude != null))
+    } catch {
       setSensors([])
       setSensorsError("Не удалось загрузить список сенсоров")
     } finally {
@@ -133,295 +149,142 @@ export default function AirQualityDashboard() {
     const fetchAirQuality = async () => {
       try {
         setLoading(true)
-
         const response = await fetch(
           `https://admin.smartalmaty.kz/api/v1/ecology/api/air-quality-calendar/?year=${currentYear}`,
-          {
-            method: "GET",
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-            },
-          },
+          { headers: { Accept: "application/json" } },
         )
-
-        if (!response.ok) {
-          throw new Error(`API returned ${response.status}`)
-        }
-
-        const contentType = response.headers.get("content-type")
-
-        if (!contentType || !contentType.includes("application/json")) {
+        if (!response.ok) throw new Error(`API returned ${response.status}`)
+        if (!response.headers.get("content-type")?.includes("application/json"))
           throw new Error("Response is not JSON")
-        }
-
         const result = await response.json()
-
         const processedData: Record<string, number> = {}
         result.data?.forEach((item: AQIData) => {
-          if (item.avg_pm25 !== null && item.avg_pm25 !== undefined) {
-            processedData[item.date] = item.avg_pm25
-          }
+          if (item.avg_pm25 != null) processedData[item.date] = item.avg_pm25
         })
-
         setAqiData(processedData)
-        const fallbackStats = computeStatisticsFromData(processedData)
-        const apiStats = normalizeApiStats(result.stats)
-        setStatistics(fallbackStats || apiStats)
-      } catch (error) {
-        console.error("Failed to fetch air quality data:", error)
+        setStatistics(computeStatisticsFromData(processedData) || normalizeApiStats(result.stats))
+      } catch {
         setAqiData({})
         setStatistics(null)
       } finally {
         setLoading(false)
       }
     }
-
     fetchAirQuality()
   }, [currentYear])
 
-  useEffect(() => {
-    fetchSensors()
-  }, [fetchSensors])
+  useEffect(() => { fetchSensors() }, [fetchSensors])
+  useEffect(() => { setMounted(true) }, [])
 
-  const districts = useMemo(() => {
+  const sources = useMemo(() => {
     const set = new Set<string>()
-    sensors.forEach((sensor) => {
-      if (sensor.district) set.add(sensor.district)
-    })
+    sensors.forEach((s) => { if (s.source) set.add(s.source) })
     return Array.from(set).sort()
   }, [sensors])
 
-  const filteredSensors = useMemo(() => {
-    return sensors.filter((sensor) => {
-      if (onlyActive && sensor.is_active === false) return false
-      if (districtFilter !== "all" && sensor.district !== districtFilter) return false
-      if (onlyWithData) {
-        const metric = sensor.latest_measurement
-        if (!metric || (metric.pm25 === null || metric.pm25 === undefined)) return false
-      }
-      if (sensorSearch.trim()) {
-        const term = sensorSearch.toLowerCase()
-        const name = sensor.name?.toLowerCase() || ""
-        const district = sensor.district?.toLowerCase() || ""
-        if (!name.includes(term) && !district.includes(term)) return false
-      }
-      return true
-    })
-  }, [sensors, onlyActive, districtFilter, onlyWithData, sensorSearch])
+  const districtNames = useMemo(() => {
+    const set = new Set<string>()
+    sensors.forEach((s) => { if (s.district_name) set.add(s.district_name) })
+    return Array.from(set).sort()
+  }, [sensors])
 
-  const activeSensors = useMemo(() => sensors.filter((sensor) => sensor.is_active !== false), [sensors])
+  const filteredSensors = useMemo(
+    () =>
+      sensors.filter((sensor) => {
+        if (sourceFilter !== "all" && sensor.source !== sourceFilter) return false
+        if (districtFilter !== "all" && sensor.district_name !== districtFilter) return false
+        if (sensorSearch.trim()) {
+          const term = sensorSearch.toLowerCase()
+          if (
+            !sensor.sensor_name?.toLowerCase().includes(term) &&
+            !sensor.source?.toLowerCase().includes(term)
+          )
+            return false
+        }
+        return true
+      }),
+    [sensors, sourceFilter, districtFilter, sensorSearch],
+  )
+
   const sensorsWithData = useMemo(
-    () => sensors.filter((sensor) => sensor.latest_measurement && sensor.latest_measurement.pm25 !== null && sensor.latest_measurement.pm25 !== undefined),
+    () => sensors.filter((s) => s.value != null),
     [sensors],
   )
 
-  const latestSensorUpdate = useMemo(() => {
-    const timestamps = sensors
-      .map((sensor) => sensor.latest_measurement?.datetime)
-      .filter((dt): dt is string => Boolean(dt))
-    if (!timestamps.length) return null
-    const mostRecent = Math.max(...timestamps.map((dt) => new Date(dt).getTime()))
-    return new Date(mostRecent).toISOString()
-  }, [sensors])
+  const activeSensors = sensors
 
-  const supplierStatistics = useMemo(() => {
-    const supplierMap = new Map<string, { sensors: Sensor[], pm25Values: number[] }>()
-
-    sensors.forEach((sensor) => {
-      const supplier = sensor.district || "Unknown"
-      if (!supplierMap.has(supplier)) {
-        supplierMap.set(supplier, { sensors: [], pm25Values: [] })
-      }
-      const supplierData = supplierMap.get(supplier)!
-      supplierData.sensors.push(sensor)
-
-      if (sensor.latest_measurement?.pm25 !== null && sensor.latest_measurement?.pm25 !== undefined) {
-        supplierData.pm25Values.push(sensor.latest_measurement.pm25)
-      }
-    })
-
-    const stats = Array.from(supplierMap.entries()).map(([supplier, data]) => {
-      const pm25Values = data.pm25Values
-      const avgPM25 = pm25Values.length > 0
-        ? pm25Values.reduce((a, b) => a + b, 0) / pm25Values.length
-        : null
-
-      return {
-        supplier,
-        totalSensors: data.sensors.length,
-        activeSensors: data.sensors.filter(s => s.is_active !== false).length,
-        sensorsWithData: pm25Values.length,
-        avgPM25,
-        goodCount: pm25Values.filter(v => v <= 15).length,
-        moderateCount: pm25Values.filter(v => v > 15 && v <= 35).length,
-        sensitiveCount: pm25Values.filter(v => v > 35 && v <= 55).length,
-        unhealthyCount: pm25Values.filter(v => v > 55 && v <= 150).length,
-        veryUnhealthyCount: pm25Values.filter(v => v > 150 && v <= 250).length,
-        hazardousCount: pm25Values.filter(v => v > 250).length,
-      }
-    })
-
-    return stats.sort((a, b) => b.totalSensors - a.totalSensors)
-  }, [sensors])
-
-  const getSupplierColor = (supplier: string) => {
-    const colors: Record<string, string> = {
-      "AirGradient": "#3b82f6",
-      "AirKaz": "#10b981",
-      "Citizen Science project sensor.community": "#f59e0b",
-      "Clarity Node": "#8b5cf6",
-      "IQAir": "#ef4444",
-      "OpenAQ": "#06b6d4",
-      "PurpleAir": "#ec4899",
-      "Reference Site": "#14b8a6",
-    }
-    if (colors[supplier]) return colors[supplier]
-
-    let hash = 0
-    for (let i = 0; i < supplier.length; i++) {
-      hash = supplier.charCodeAt(i) + ((hash << 5) - hash)
-    }
-    const hue = hash % 360
-    return `hsl(${hue}, 70%, 50%)`
-  }
-
-  const resetFilters = () => {
-    setSensorSearch("")
-    setDistrictFilter("all")
-    setOnlyActive(true)
-    setOnlyWithData(false)
-  }
-
-  const toggleTheme = () => {
-    setTheme(themeIsDark ? "light" : "dark")
-  }
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  const currentPm25 = useMemo(() => {
+    const values = sensorsWithData
+      .map((s) => s.value!)
+      .filter((v): v is number => v != null)
+      .sort((a, b) => a - b)
+    if (!values.length) return statistics?.avg_pm25 ?? 0
+    const mid = Math.floor(values.length / 2)
+    return values.length % 2 === 0 ? (values[mid - 1] + values[mid]) / 2 : values[mid]
+  }, [sensorsWithData, statistics])
 
   const lastCalendarDate = useMemo(() => {
     const dates = Object.keys(aqiData || {})
     if (!dates.length) return null
-    const maxMs = Math.max(...dates.map((d) => new Date(d).getTime()))
-    return new Date(maxMs).toISOString()
+    return new Date(Math.max(...dates.map((d) => new Date(d).getTime()))).toISOString()
   }, [aqiData])
-
-  const generateMockData = () => {
-    const mockData: Record<string, number> = {}
-    const startDate = new Date(2019, 0, 9) // January 9, 2019
-    const endDate = new Date()
-
-    let currentDate = new Date(currentYear, 0, 1)
-    const yearEnd = new Date(currentYear, 11, 31)
-
-    if (currentDate < startDate) {
-      currentDate = new Date(startDate)
-    }
-
-    while (currentDate <= yearEnd && currentDate <= endDate) {
-      if (currentDate >= startDate) {
-        const dateStr = currentDate.toISOString().split("T")[0]
-        mockData[dateStr] = Math.floor(Math.random() * 300)
-      }
-      currentDate.setDate(currentDate.getDate() + 1)
-    }
-
-    setAqiData(mockData)
-
-    const values = Object.values(mockData)
-    setStatistics({
-      total_days: values.length,
-      good_days: values.filter((v) => v <= 15).length,
-      moderate_days: values.filter((v) => v > 15 && v <= 35).length,
-      sensitive_days: values.filter((v) => v > 35 && v <= 55).length,
-      unhealthy_days: values.filter((v) => v > 55 && v <= 150).length,
-      very_unhealthy_days: values.filter((v) => v > 150 && v <= 250).length,
-      hazardous_days: values.filter((v) => v > 250).length,
-      avg_pm25: values.reduce((a, b) => a + b, 0) / values.length,
-      max_pm25: Math.max(...values),
-      min_pm25: Math.min(...values),
-    })
-  }
-
-  const getAQICategory = (aqi: number) => {
-    if (aqi <= 15) return { label: "Хорошо", color: "bg-aqi-good", textColor: "text-white" }
-    if (aqi <= 35) return { label: "Умеренно", color: "bg-aqi-moderate", textColor: "text-white" }
-    if (aqi <= 55) return { label: "Чувствительные группы", color: "bg-aqi-sensitive", textColor: "text-white" }
-    if (aqi <= 150) return { label: "Вредно", color: "bg-aqi-unhealthy", textColor: "text-white" }
-    if (aqi <= 250) return { label: "Очень вредно", color: "bg-aqi-very-unhealthy", textColor: "text-white" }
-    return { label: "Опасно", color: "bg-aqi-hazardous", textColor: "text-white" }
-  }
-
-  const getDaysInMonth = (month: number) => {
-    return new Date(currentYear, month + 1, 0).getDate()
-  }
-
-  const getFirstDayOfMonth = (month: number) => {
-    return new Date(currentYear, month, 1).getDay()
-  }
-
-  const previousYear = () => {
-    if (currentYear > MIN_YEAR) {
-      setCurrentYear(currentYear - 1)
-    }
-  }
-
-  const nextYear = () => {
-    if (currentYear < MAX_YEAR) {
-      setCurrentYear(currentYear + 1)
-    }
-  }
 
   const canGoPreviousYear = currentYear > MIN_YEAR
   const canGoNextYear = currentYear < MAX_YEAR
 
   const renderMonthCalendar = (month: number) => {
     const monthName = new Date(currentYear, month).toLocaleDateString("ru-RU", { month: "long" })
-    const daysInMonth = getDaysInMonth(month)
-    const firstDay = getFirstDayOfMonth(month)
-    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
-    const emptyDays = Array.from({ length: firstDay }, (_, i) => i)
+    const daysInMonth = new Date(currentYear, month + 1, 0).getDate()
+    const firstDay = new Date(currentYear, month, 1).getDay()
+    const numRows = Math.ceil((firstDay + daysInMonth) / 7)
 
     return (
-      <div key={month} className="bg-muted/50 rounded-lg p-4 border border-border">
-        <h3 className="text-center font-semibold text-foreground mb-3 text-sm capitalize">{monthName}</h3>
-
-        <div className="grid grid-cols-7 gap-1 mb-2">
-          {["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"].map((day) => (
-            <div
-              key={day}
-              className="text-center font-semibold text-foreground text-xs h-6 flex items-center justify-center"
-            >
-              {day}
+      <div key={month} className="flex min-h-0 flex-col rounded-lg border border-border bg-muted/50 p-1.5">
+        <h3 className="mb-0.5 shrink-0 text-center text-[10px] font-semibold capitalize text-foreground">
+          {monthName}
+        </h3>
+        <div className="mb-0.5 grid shrink-0 grid-cols-7">
+          {["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"].map((d) => (
+            <div key={d} className="flex items-center justify-center py-0.5 text-[8px] font-semibold text-muted-foreground">
+              {d}
             </div>
           ))}
         </div>
-
-        <div className="grid grid-cols-7 gap-1">
-          {emptyDays.map((i) => (
-            <div key={`empty-${i}`} className="aspect-square" />
+        <div
+          className="min-h-0 flex-1 grid grid-cols-7 gap-[2px]"
+          style={{ gridTemplateRows: `repeat(${numRows}, minmax(0, 1fr))` }}
+        >
+          {Array.from({ length: firstDay }, (_, i) => (
+            <div key={`e-${i}`} />
           ))}
-
-          {days.map((day) => {
-            const date = new Date(currentYear, month, day)
+          {Array.from({ length: daysInMonth }, (_, i) => {
+            const day = i + 1
             const dateStr = `${currentYear}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
             const aqi = aqiData[dateStr]
-            const category = aqi !== undefined ? getAQICategory(aqi) : null
-
+            const category = aqi != null ? getAQICategory(aqi) : null
             return (
               <div
                 key={day}
-                className={`aspect-square rounded-md border border-border flex flex-col items-center justify-center p-1 text-xs ${
-                  category ? category.color : "bg-background"
+                className={`relative flex flex-col items-center justify-center rounded-[3px] text-white transition-transform duration-100 ${
+                  category ? `${category.color} cursor-pointer hover:z-10 hover:scale-[1.18] hover:shadow-lg` : "bg-muted/30"
                 }`}
+                onMouseEnter={aqi != null ? (e) => {
+                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+                  const tw = 228
+                  const th = 195
+                  const gap = 10
+                  let x = rect.left + rect.width / 2 - tw / 2
+                  if (x < 8) x = 8
+                  if (x + tw > window.innerWidth - 8) x = window.innerWidth - tw - 8
+                  const above = rect.top > th + 20
+                  const y = above ? rect.top - th - gap : rect.bottom + gap
+                  setHoveredDay({ date: dateStr, pm25: aqi, x, y, above })
+                } : undefined}
+                onMouseLeave={() => setHoveredDay(null)}
               >
-                <span className={`font-semibold ${category ? category.textColor : "text-foreground"}`}>{day}</span>
-                {aqi !== undefined && (
-                  <span className={`text-xs font-bold ${category?.textColor || "text-foreground"}`}>
-                    {aqi.toFixed(0)}
-                  </span>
+                <span className="text-[9px] font-semibold leading-none">{day}</span>
+                {aqi != null && (
+                  <span className="text-[8px] font-bold leading-none opacity-90">{aqi.toFixed(0)}</span>
                 )}
               </div>
             )
@@ -432,283 +295,284 @@ export default function AirQualityDashboard() {
   }
 
   return (
-    <>
+    <div className="flex h-screen flex-col overflow-hidden bg-background">
       <HeaderMenu />
-      <main className="min-h-screen bg-background">
-        <div className="w-full px-4 pb-12 pt-8 md:px-8">
-        <header className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Air Quality / Алматы</p>
-            <h1 className="text-4xl font-bold text-foreground">Календарь качества воздуха</h1>
-            <p className="text-muted-foreground">
-              PM2.5 с 9 января 2019 по сегодня. Последние данные календаря:{" "}
-              {lastCalendarDate ? new Date(lastCalendarDate).toLocaleDateString("ru-RU") : "—"}
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={previousYear}
-              className="border-border bg-transparent"
-              disabled={!canGoPreviousYear}
+
+      {/* ── Full-height layout below header ─────────────────────────── */}
+      <div className="flex min-h-0 flex-1">
+        {/* AQI side panel — always visible */}
+        <AqiSidePanel
+          currentPm25={currentPm25}
+          aqiData={aqiData}
+          cityName="Алматы"
+          selectedSensor={selectedSensor}
+          onClearSensor={() => setSelectedSensor(null)}
+          sensors={sensors}
+          onSensorSelect={(s) => setSelectedSensor(s)}
+        />
+
+        {/* Right area: tab bar + content */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          {/* Tab bar */}
+          <div className="flex shrink-0 items-center gap-1 border-b border-border bg-background px-4">
+            <button
+              type="button"
+              onClick={() => setActiveTab("map")}
+              className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === "map"
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
             >
-              <ChevronLeft className="mr-1 h-4 w-4" />
-              Предыдущий год
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={nextYear}
-              className="border-border bg-transparent"
-              disabled={!canGoNextYear}
+              <Map className="h-4 w-4" />
+              Карта сенсоров
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("calendar")}
+              className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === "calendar"
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
             >
-              Следующий год
-              <ChevronRight className="ml-1 h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={toggleTheme}
-              className="border-border bg-transparent"
-              aria-label="Toggle theme"
-            >
-              {mounted ? (
-                themeIsDark ? (
-                  <Sun className="h-4 w-4" />
-                ) : (
-                  <Moon className="h-4 w-4" />
-                )
-              ) : (
-                <div className="h-4 w-4" />
+              <CalendarDays className="h-4 w-4" />
+              Календарь
+            </button>
+
+            {/* Right-aligned controls */}
+            <div className="ml-auto flex items-center gap-3 py-2">
+              {activeTab === "map" && (
+                <>
+                  <input
+                    type="text"
+                    value={sensorSearch}
+                    onChange={(e) => setSensorSearch(e.target.value)}
+                    placeholder="Поиск…"
+                    className="h-8 w-44 rounded-md border border-border bg-background px-3 text-sm"
+                  />
+                  <FilterDropdown
+                    value={sourceFilter}
+                    onChange={setSourceFilter}
+                    options={sources.map((s) => ({ value: s, label: s }))}
+                    allLabel="Все поставщики"
+                    searchPlaceholder="Поиск поставщика…"
+                  />
+                  <FilterDropdown
+                    value={districtFilter}
+                    onChange={setDistrictFilter}
+                    options={districtNames.map((d) => ({ value: d, label: d }))}
+                    allLabel="Все районы"
+                    searchPlaceholder="Поиск района…"
+                  />
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    {filteredSensors.length} / {sensors.length} · {sensorsWithData.length} с PM2.5
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 text-xs text-muted-foreground"
+                    onClick={() => { setSensorSearch(""); setSourceFilter("all"); setDistrictFilter("all") }}
+                  >
+                    Сброс
+                  </Button>
+                </>
               )}
-            </Button>
-          </div>
-        </header>
-
-        {statistics && (
-          <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-            <Card className="bg-card border-border">
-              <CardContent className="pt-4">
-                <p className="mb-1 text-xs text-muted-foreground">Всего дней</p>
-                <p className="text-2xl font-bold text-foreground">{statistics.total_days}</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-card border-border">
-              <CardContent className="pt-4">
-                <p className="mb-1 text-xs text-muted-foreground">Среднее PM2.5</p>
-                <p className="text-2xl font-bold text-foreground">{statistics.avg_pm25?.toFixed(1) || "—"}</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-card border-border">
-              <CardContent className="pt-4">
-                <p className="mb-1 text-xs text-muted-foreground">Хорошие дни</p>
-                <p className="text-2xl font-bold text-aqi-good">{statistics.good_days}</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-card border-border">
-              <CardContent className="pt-4">
-                <p className="mb-1 text-xs text-muted-foreground">Умеренные дни</p>
-                <p className="text-2xl font-bold text-aqi-moderate">{statistics.moderate_days}</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-card border-border">
-              <CardContent className="pt-4">
-                <p className="mb-1 text-xs text-muted-foreground">Вредные дни</p>
-                <p className="text-2xl font-bold text-aqi-unhealthy">{statistics.unhealthy_days}</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-card border-border">
-              <CardContent className="pt-4">
-                <p className="mb-1 text-xs text-muted-foreground">Опасные дни</p>
-                <p className="text-2xl font-bold text-aqi-hazardous">{statistics.hazardous_days}</p>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {supplierStatistics.length > 0 && (
-          <div className="mb-8">
-            <h2 className="mb-4 text-2xl font-bold text-foreground">Статистика по поставщикам</h2>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
-              {supplierStatistics.map((stat) => (
-                <Card key={stat.supplier} className="bg-card border-border">
-                  <CardContent className="pt-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div
-                        className="h-3 w-3 rounded-full"
-                        style={{ backgroundColor: getSupplierColor(stat.supplier) }}
-                      />
-                      <p className="text-sm font-semibold text-foreground">{stat.supplier}</p>
-                    </div>
-                    <p className="text-3xl font-bold text-foreground mb-1">{stat.totalSensors}</p>
-                    <p className="text-xs text-muted-foreground">сенсоров</p>
-                  </CardContent>
-                </Card>
-              ))}
+              {activeTab === "calendar" && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentYear((y) => y - 1)}
+                    disabled={!canGoPreviousYear}
+                    className="h-8 border-border bg-transparent"
+                  >
+                    <ChevronLeft className="mr-1 h-4 w-4" />
+                    {currentYear - 1}
+                  </Button>
+                  <span className="text-sm font-semibold text-foreground">{currentYear}</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentYear((y) => y + 1)}
+                    disabled={!canGoNextYear}
+                    className="h-8 border-border bg-transparent"
+                  >
+                    {currentYear + 1}
+                    <ChevronRight className="ml-1 h-4 w-4" />
+                  </Button>
+                </>
+              )}
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setTheme(themeIsDark ? "light" : "dark")}
+                className="h-8 w-8 border-border"
+                aria-label="Toggle theme"
+              >
+                {mounted
+                  ? themeIsDark
+                    ? <Sun className="h-4 w-4" />
+                    : <Moon className="h-4 w-4" />
+                  : <div className="h-4 w-4" />}
+              </Button>
             </div>
           </div>
-        )}
 
-        <Card className="mb-8 bg-card border-border">
-          <CardHeader className="border-b border-border">
-            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-              <div>
-                <CardTitle className="text-2xl">Карта сенсоров воздуха</CardTitle>
-                <CardDescription>
-                  {filteredSensors.length} из {sensors.length} сенсоров отображены · Активных: {activeSensors.length} · С
-                  данными PM2.5: {sensorsWithData.length}
-                </CardDescription>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={resetFilters} className="border-border">
-                  Сбросить фильтры
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4 p-4">
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-4 md:items-end">
-              <div className="flex flex-col gap-1">
-                <label className="text-sm text-muted-foreground">Поиск по названию или поставщику</label>
-                <input
-                  type="text"
-                  value={sensorSearch}
-                  onChange={(e) => setSensorSearch(e.target.value)}
-                  placeholder="Например, Алмалинский"
-                  className="h-10 rounded-md border border-border bg-background px-3 text-sm"
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-sm text-muted-foreground">Поставщик</label>
-                <select
-                  value={districtFilter}
-                  onChange={(e) => setDistrictFilter(e.target.value as string | "all")}
-                  className="h-10 rounded-md border border-border bg-background px-3 text-sm"
-                >
-                  <option value="all">Все поставщики</option>
-                  {districts.map((district) => (
-                    <option key={district} value={district}>
-                      {district}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex items-center gap-4">
-                {/* <label className="flex items-center gap-2 text-sm text-foreground">
-                  <input
-                    type="checkbox"
-                    checked={onlyActive}
-                    onChange={(e) => setOnlyActive(e.target.checked)}
-                    className="h-4 w-4"
-                  />
-                  Только активные
-                </label>
-                <label className="flex items-center gap-2 text-sm text-foreground">
-                  <input
-                    type="checkbox"
-                    checked={onlyWithData}
-                    onChange={(e) => setOnlyWithData(e.target.checked)}
-                    className="h-4 w-4"
-                  />
-                  Есть PM2.5
-                </label> */}
-              </div>
-            </div>
+          {/* ── Map tab ──────────────────────────────────────────────── */}
+          <div className={`relative min-h-0 flex-1 ${activeTab === "map" ? "flex" : "hidden"}`}>
             {sensorsLoading ? (
-              <div className="flex h-[480px] items-center justify-center text-muted-foreground">Загрузка сенсоров…</div>
+              <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                Загрузка сенсоров…
+              </div>
             ) : sensorsError ? (
-              <div className="flex h-[480px] flex-col items-center justify-center gap-3 text-center">
-                <p className="text-red-500 font-semibold">{sensorsError}</p>
-                <Button variant="outline" size="sm" onClick={fetchSensors} className="border-border">
+              <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-center">
+                <p className="font-semibold text-red-500">{sensorsError}</p>
+                <Button variant="outline" size="sm" onClick={fetchSensors}>
                   Попробовать снова
                 </Button>
               </div>
             ) : (
-              <div className="relative h-[600px]">
-                <SensorMap sensors={filteredSensors} />
-                {/* <div className="absolute right-4 top-4 z-10 hidden rounded-lg border border-border bg-background/90 p-3 shadow-lg md:block backdrop-blur-sm">
-                  <p className="mb-2 text-xs font-semibold text-muted-foreground">PM2.5 легенда</p>
-                  <div className="flex flex-col gap-2">
-                    {aqiLegend.map((item) => (
-                      <div key={item.label} className="flex items-center gap-2 text-xs">
-                        <span className={`h-3 w-3 rounded-sm ${item.className}`} />
-                        <span className="text-foreground">{item.label}</span>
-                        <span className="text-muted-foreground">{item.range}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div> */}
+              <SensorMap
+                sensors={filteredSensors}
+                onSensorSelect={(s) => setSelectedSensor(s)}
+                focusedSensor={selectedSensor}
+              />
+            )}
+
+            {/* Sensor count badge — bottom left corner of map */}
+            {!sensorsLoading && !sensorsError && (
+              <div className="absolute bottom-4 left-4 z-[1000] flex items-center gap-2 rounded-xl border border-border bg-background/90 px-3 py-2 text-xs backdrop-blur-sm">
+                <span className="font-semibold text-foreground">{activeSensors.length}</span>
+                <span className="text-muted-foreground">активных</span>
+                <span className="text-border">·</span>
+                <span className="font-semibold text-foreground">{sensorsWithData.length}</span>
+                <span className="text-muted-foreground">с PM2.5</span>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
 
-        <Card className="bg-card border-border">
-          <CardHeader className="border-b border-border">
-            <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-              <div>
-                <CardTitle className="text-2xl">{currentYear}</CardTitle>
-                <CardDescription>Отслеживайте ежедневный уровень качества воздуха за весь год</CardDescription>
+          {/* ── Calendar tab ─────────────────────────────────────────── */}
+          <div className={`min-h-0 flex-1 overflow-hidden flex-col px-3 pb-2 pt-3 ${activeTab === "calendar" ? "flex" : "hidden"}`}>
+
+            {/* Stats row — compact */}
+            {statistics && (
+              <div className="mb-2 grid shrink-0 grid-cols-6 gap-2">
+                {[
+                  { label: "Всего дней",   value: statistics.total_days,              color: "text-foreground" },
+                  { label: "Среднее PM2.5", value: statistics.avg_pm25?.toFixed(1) ?? "—", color: "text-foreground" },
+                  { label: "Хорошие",      value: statistics.good_days,              color: "text-aqi-good" },
+                  { label: "Умеренные",    value: statistics.moderate_days,           color: "text-aqi-moderate" },
+                  { label: "Вредные",      value: statistics.unhealthy_days,          color: "text-aqi-unhealthy" },
+                  { label: "Опасные",      value: statistics.hazardous_days,          color: "text-aqi-hazardous" },
+                ].map(({ label, value, color }) => (
+                  <div key={label} className="rounded-lg border border-border bg-card px-3 py-2">
+                    <p className="text-[10px] text-muted-foreground">{label}</p>
+                    <p className={`text-xl font-bold leading-tight ${color}`}>{value}</p>
+                  </div>
+                ))}
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={previousYear}
-                  className="border-border bg-transparent"
-                  disabled={!canGoPreviousYear}
-                >
-                  <ChevronLeft className="mr-1 h-4 w-4" />
-                  Предыдущий год
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={nextYear}
-                  className="border-border bg-transparent"
-                  disabled={!canGoNextYear}
-                >
-                  Следующий год
-                  <ChevronRight className="ml-1 h-4 w-4" />
-                </Button>
-              </div>
+            )}
+
+            {/* Year + data date */}
+            <div className="mb-1.5 flex shrink-0 items-baseline gap-3">
+              <span className="text-sm font-bold text-foreground">{currentYear}</span>
+              {lastCalendarDate && (
+                <span className="text-[11px] text-muted-foreground">
+                  Данные по {new Date(lastCalendarDate).toLocaleDateString("ru-RU")}
+                </span>
+              )}
             </div>
-          </CardHeader>
 
-          <CardContent className="p-6">
+            {/* Month grid — fills all remaining height, no scroll */}
             {loading ? (
-              <div className="py-12 text-center">
-                <p className="text-muted-foreground">Загрузка данных о качестве воздуха...</p>
+              <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+                Загрузка данных…
               </div>
-            ) : Object.keys(aqiData).length === 0 ? (
-              <div className="py-12 text-center">
-                <p className="mb-2 font-semibold text-red-500">Ошибка загрузки данных</p>
-                <p className="text-sm text-muted-foreground">
-                  Проверьте консоль браузера для деталей. Убедитесь, что API доступен и возвращает JSON.
-                </p>
+            ) : !Object.keys(aqiData).length ? (
+              <div className="flex flex-1 flex-col items-center justify-center gap-1">
+                <p className="font-semibold text-red-500">Ошибка загрузки данных</p>
+                <p className="text-sm text-muted-foreground">Убедитесь, что API доступен и возвращает JSON.</p>
               </div>
             ) : (
-              <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="min-h-0 flex-1 grid grid-cols-4 grid-rows-3 gap-2">
                 {Array.from({ length: 12 }, (_, i) => renderMonthCalendar(i))}
               </div>
             )}
 
-            <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
-              {aqiLegend.map((item) => (
-                <div key={item.label} className="flex items-center gap-2">
-                  <div className={`h-8 w-8 rounded ${item.className}`} />
-                  <div className="leading-tight">
-                    <p className="text-sm text-foreground">{item.label}</p>
-                    <p className="text-xs text-muted-foreground">{item.range}</p>
-                  </div>
+            {/* Legend — compact horizontal strip */}
+            <div className="mt-1.5 flex shrink-0 items-center justify-center gap-4">
+              {AQI_LEGEND.map((item) => (
+                <div key={item.label} className="flex items-center gap-1.5">
+                  <div className={`h-3 w-3 flex-shrink-0 rounded-sm ${item.className}`} />
+                  <span className="text-[10px] text-muted-foreground">{item.label} {item.range}</span>
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
-    </main>
-    </>
+
+      {/* ── Day hover tooltip ────────────────────────────────────────── */}
+      {hoveredDay && (() => {
+        const { date, pm25, x, y } = hoveredDay
+        const hex = pm25ToHex(pm25)
+        const label = pm25ToLabel(pm25)
+        const whoRatio = (pm25 / 5.0)
+        const barPct = Math.min(100, (pm25 / 60) * 100)
+        const cigs = (pm25 / 22).toFixed(2)
+        const fullDate = new Date(date).toLocaleDateString("ru-RU", {
+          day: "numeric", month: "long", year: "numeric",
+        })
+        return (
+          <div
+            className="pointer-events-none fixed z-[9999]"
+            style={{ left: x, top: y, width: 228 }}
+          >
+            <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
+              {/* Colored header strip */}
+              <div className="px-4 py-2.5" style={{ backgroundColor: hex }}>
+                <p className="text-[11px] font-semibold text-white/80">{fullDate}</p>
+                <div className="flex items-end gap-1.5">
+                  <span className="text-3xl font-black leading-none text-white">{pm25.toFixed(1)}</span>
+                  <span className="mb-0.5 text-xs font-medium text-white/75">µg/m³</span>
+                </div>
+              </div>
+
+              <div className="px-4 py-3 space-y-3">
+                {/* AQI label badge */}
+                <div className="flex items-center gap-2">
+                  <div className="h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: hex }} />
+                  <span className="text-xs font-semibold text-foreground">{label}</span>
+                </div>
+
+                {/* WHO bar */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] text-muted-foreground">Норма ВОЗ 5.0 µg/m³</span>
+                    <span className="text-[10px] font-bold" style={{ color: hex }}>{whoRatio.toFixed(1)}×</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full rounded-full"
+                      style={{ width: `${barPct}%`, backgroundColor: hex }}
+                    />
+                  </div>
+                </div>
+
+                {/* Cigarettes */}
+                <div className="flex items-center gap-2 border-t border-border pt-2.5">
+                  <span className="text-base">🚬</span>
+                  <div>
+                    <span className="text-sm font-bold text-foreground">{cigs}</span>
+                    <span className="ml-1 text-[10px] text-muted-foreground">сигарет за день</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+    </div>
   )
 }

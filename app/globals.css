@@ -37,13 +37,13 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  /* Added custom AQI color categories */
-  --aqi-good: oklch(0.65 0.22 144);
-  --aqi-moderate: oklch(0.82 0.19 84);
-  --aqi-sensitive: oklch(0.78 0.2 45);
-  --aqi-unhealthy: oklch(0.68 0.25 25);
-  --aqi-very-unhealthy: oklch(0.58 0.24 320);
-  --aqi-hazardous: oklch(0.35 0.15 320);
+  /* AQI palette — matches map markers and mascot animations */
+  --aqi-good: oklch(0.61 0.22 264);       /* blue  ≤5   (WHO annual guideline) */
+  --aqi-moderate: oklch(0.65 0.22 144);   /* green ≤15  (WHO 24h guideline) */
+  --aqi-sensitive: oklch(0.82 0.19 84);   /* yellow ≤35 (EPA moderate) */
+  --aqi-unhealthy: oklch(0.68 0.25 25);   /* red ≤55    (sensitive groups) */
+  --aqi-very-unhealthy: oklch(0.58 0.24 320); /* purple ≤150 */
+  --aqi-hazardous: oklch(0.25 0.08 25);   /* dark >150  */
 }
 
 .dark {
@@ -79,13 +79,13 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
-  /* Added dark mode AQI colors */
-  --aqi-good: oklch(0.68 0.22 144);
-  --aqi-moderate: oklch(0.82 0.19 84);
-  --aqi-sensitive: oklch(0.78 0.2 45);
+  /* AQI dark mode — same hues, slightly lighter */
+  --aqi-good: oklch(0.68 0.22 264);
+  --aqi-moderate: oklch(0.68 0.22 144);
+  --aqi-sensitive: oklch(0.82 0.19 84);
   --aqi-unhealthy: oklch(0.68 0.25 25);
   --aqi-very-unhealthy: oklch(0.58 0.24 320);
-  --aqi-hazardous: oklch(0.45 0.2 320);
+  --aqi-hazardous: oklch(0.35 0.08 25);
 }
 
 @theme inline {

@@ -2,33 +2,35 @@
 
 import dynamic from "next/dynamic"
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { ChevronLeft, ChevronRight, Moon, Sun, Map, CalendarDays } from "lucide-react"
+import { ChevronLeft, ChevronRight, Moon, Sun, Map, CalendarDays, BarChart2 } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 // ── Calendar day hover helpers ────────────────────────────────────────────────
 function pm25ToHex(pm25: number): string {
-  if (pm25 <= 15) return "#22c55e"
-  if (pm25 <= 35) return "#eab308"
-  if (pm25 <= 55) return "#f97316"
-  if (pm25 <= 150) return "#ef4444"
-  if (pm25 <= 250) return "#a855f7"
+  if (pm25 <= 5)   return "#3b82f6"
+  if (pm25 <= 15)  return "#22c55e"
+  if (pm25 <= 35)  return "#eab308"
+  if (pm25 <= 55)  return "#ef4444"
+  if (pm25 <= 150) return "#a855f7"
   return "#7f1d1d"
 }
 function pm25ToLabel(pm25: number): string {
-  if (pm25 <= 15) return "Хорошо"
-  if (pm25 <= 35) return "Умеренно"
-  if (pm25 <= 55) return "Чувствительным группам"
+  if (pm25 <= 5)   return "Отлично"
+  if (pm25 <= 15)  return "Хорошо"
+  if (pm25 <= 35)  return "Умеренно"
+  if (pm25 <= 55)  return "Чувствительным группам"
   if (pm25 <= 150) return "Вредно"
-  if (pm25 <= 250) return "Очень вредно"
-  return "Опасно"
+  return "Очень вредно"
 }
 type HoveredDay = { date: string; pm25: number; x: number; y: number; above: boolean }
 import { HeaderMenu } from "@/components/header-menu"
 import { FilterDropdown } from "@/components/ui/filter-dropdown"
 import { AqiSidePanel } from "@/components/aqi-side-panel"
+import { AnalyticsTab } from "@/components/analytics-tab"
 import type { Sensor, AirSensor } from "@/components/sensor-map-yandex"
+import type { AirMetricMode } from "@/lib/pm25"
 
 interface AQIData {
   date: string
@@ -48,7 +50,7 @@ interface Statistics {
   min_pm25?: number
 }
 
-type ActiveTab = "map" | "calendar"
+type ActiveTab = "map" | "calendar" | "analytics"
 
 const SensorMap = dynamic(() => import("@/components/sensor-map-yandex"), { ssr: false })
 
@@ -87,27 +89,28 @@ const computeStatisticsFromData = (data: Record<string, number>): Statistics | n
 }
 
 const AQI_LEGEND = [
-  { label: "Хорошо", range: "0–15", className: "bg-aqi-good" },
-  { label: "Умеренно", range: "16–35", className: "bg-aqi-moderate" },
-  { label: "Чувствительные", range: "36–55", className: "bg-aqi-sensitive" },
-  { label: "Вредно", range: "56–150", className: "bg-aqi-unhealthy" },
-  { label: "Очень вредно", range: "151–250", className: "bg-aqi-very-unhealthy" },
-  { label: "Опасно", range: "250+", className: "bg-aqi-hazardous" },
+  { label: "Отлично",          range: "0–5",    className: "bg-aqi-good" },
+  { label: "Хорошо",           range: "6–15",   className: "bg-aqi-moderate" },
+  { label: "Умеренно",         range: "16–35",  className: "bg-aqi-sensitive" },
+  { label: "Чувствительные",   range: "36–55",  className: "bg-aqi-unhealthy" },
+  { label: "Вредно",           range: "56–150", className: "bg-aqi-very-unhealthy" },
+  { label: "Очень вредно",     range: "150+",   className: "bg-aqi-hazardous" },
 ]
 
 function getAQICategory(aqi: number) {
-  if (aqi <= 15) return { label: "Хорошо", color: "bg-aqi-good" }
-  if (aqi <= 35) return { label: "Умеренно", color: "bg-aqi-moderate" }
-  if (aqi <= 55) return { label: "Чувствительные группы", color: "bg-aqi-sensitive" }
-  if (aqi <= 150) return { label: "Вредно", color: "bg-aqi-unhealthy" }
-  if (aqi <= 250) return { label: "Очень вредно", color: "bg-aqi-very-unhealthy" }
-  return { label: "Опасно", color: "bg-aqi-hazardous" }
+  if (aqi <= 5)   return { label: "Отлично",               color: "bg-aqi-good" }
+  if (aqi <= 15)  return { label: "Хорошо",                color: "bg-aqi-moderate" }
+  if (aqi <= 35)  return { label: "Умеренно",               color: "bg-aqi-sensitive" }
+  if (aqi <= 55)  return { label: "Чувствительные группы",  color: "bg-aqi-unhealthy" }
+  if (aqi <= 150) return { label: "Вредно",                 color: "bg-aqi-very-unhealthy" }
+  return { label: "Очень вредно", color: "bg-aqi-hazardous" }
 }
 
 export default function AirQualityDashboard() {
   const { resolvedTheme, setTheme } = useTheme()
   const [activeTab, setActiveTab] = useState<ActiveTab>("map")
-  const [currentYear, setCurrentYear] = useState(2025)
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
+  const [sidebarAqiData, setSidebarAqiData] = useState<Record<string, number>>({})
   const [aqiData, setAqiData] = useState<Record<string, number>>({})
   const [statistics, setStatistics] = useState<Statistics | null>(null)
   const [loading, setLoading] = useState(true)
@@ -120,6 +123,7 @@ export default function AirQualityDashboard() {
   const [mounted, setMounted] = useState(false)
   const [hoveredDay, setHoveredDay] = useState<HoveredDay | null>(null)
   const [selectedSensor, setSelectedSensor] = useState<AirSensor | null>(null)
+  const [metricMode, setMetricMode] = useState<AirMetricMode>("epa-aqi")
 
   const MIN_YEAR = 2019
   const MAX_YEAR = new Date().getFullYear()
@@ -172,6 +176,26 @@ export default function AirQualityDashboard() {
     }
     fetchAirQuality()
   }, [currentYear])
+
+  // Sidebar always shows rolling data across current + previous year (independent of calendar tab)
+  useEffect(() => {
+    const thisYear = new Date().getFullYear()
+    const prevYear = thisYear - 1
+    Promise.all([
+      fetch(`https://admin.smartalmaty.kz/api/v1/ecology/api/air-quality-calendar/?year=${prevYear}`, { headers: { Accept: "application/json" } }).then((r) => r.json()),
+      fetch(`https://admin.smartalmaty.kz/api/v1/ecology/api/air-quality-calendar/?year=${thisYear}`, { headers: { Accept: "application/json" } }).then((r) => r.json()),
+    ])
+      .then(([prev, curr]) => {
+        const merged: Record<string, number> = {}
+        for (const result of [prev, curr]) {
+          result.data?.forEach((item: AQIData) => {
+            if (item.avg_pm25 != null) merged[item.date] = item.avg_pm25
+          })
+        }
+        setSidebarAqiData(merged)
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => { fetchSensors() }, [fetchSensors])
   useEffect(() => { setMounted(true) }, [])
@@ -303,12 +327,13 @@ export default function AirQualityDashboard() {
         {/* AQI side panel — always visible */}
         <AqiSidePanel
           currentPm25={currentPm25}
-          aqiData={aqiData}
+          aqiData={sidebarAqiData}
           cityName="Алматы"
           selectedSensor={selectedSensor}
           onClearSensor={() => setSelectedSensor(null)}
           sensors={sensors}
           onSensorSelect={(s) => setSelectedSensor(s)}
+          metricMode={metricMode}
         />
 
         {/* Right area: tab bar + content */}
@@ -339,11 +364,41 @@ export default function AirQualityDashboard() {
               <CalendarDays className="h-4 w-4" />
               Календарь
             </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("analytics")}
+              className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === "analytics"
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <BarChart2 className="h-4 w-4" />
+              Аналитика
+            </button>
 
             {/* Right-aligned controls */}
             <div className="ml-auto flex items-center gap-3 py-2">
               {activeTab === "map" && (
                 <>
+                  {/* Metric mode toggle */}
+                  <div className="flex items-center rounded-lg border border-border bg-muted/50 p-0.5">
+                    {(["epa-aqi", "pm25"] as AirMetricMode[]).map((mode) => (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => setMetricMode(mode)}
+                        className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                          metricMode === mode
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {mode === "epa-aqi" ? "US EPA AQI" : "PM2.5 µg/m³"}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="h-4 w-px bg-border" />
                   <input
                     type="text"
                     value={sensorSearch}
@@ -437,6 +492,7 @@ export default function AirQualityDashboard() {
                 sensors={filteredSensors}
                 onSensorSelect={(s) => setSelectedSensor(s)}
                 focusedSensor={selectedSensor}
+                metricMode={metricMode}
               />
             )}
 
@@ -450,6 +506,11 @@ export default function AirQualityDashboard() {
                 <span className="text-muted-foreground">с PM2.5</span>
               </div>
             )}
+          </div>
+
+          {/* ── Analytics tab ────────────────────────────────────────── */}
+          <div className={`min-h-0 flex-1 overflow-y-auto ${activeTab === "analytics" ? "block" : "hidden"}`}>
+            <AnalyticsTab sensors={sensors} sensorsLoading={sensorsLoading} />
           </div>
 
           {/* ── Calendar tab ─────────────────────────────────────────── */}

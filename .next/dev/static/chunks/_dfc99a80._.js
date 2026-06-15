@@ -374,58 +374,66 @@ function FilterDropdown({ value, onChange, options, allLabel = "Все", placeho
         open
     ]);
     const isAll = value === "all";
+    const borderCls = open ? "border-primary/60 shadow-sm shadow-primary/10" : isAll ? "border-border" : "border-primary/50 shadow-sm";
+    const bgCls = open ? "bg-primary/5" : isAll ? "bg-background hover:bg-muted/40" : "bg-primary/8";
+    const textCls = open || !isAll ? "text-foreground" : "text-muted-foreground hover:text-foreground";
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         ref: containerRef,
         className: "relative",
         children: [
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                type: "button",
-                onClick: ()=>setOpen((v)=>!v),
-                className: `
-          group flex h-8 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium
-          transition-all duration-150 outline-none
-          ${open ? "border-primary/60 bg-primary/5 text-foreground shadow-sm shadow-primary/10" : isAll ? "border-border bg-background text-muted-foreground hover:border-border/80 hover:bg-muted/40 hover:text-foreground" : "border-primary/50 bg-primary/8 text-primary shadow-sm"}
-        `,
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: `flex h-8 items-center rounded-lg border transition-all duration-150 ${borderCls} ${bgCls}`,
                 children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                        className: "max-w-[120px] truncate",
-                        children: selectedLabel
-                    }, void 0, false, {
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                        type: "button",
+                        onClick: ()=>setOpen((v)=>!v),
+                        className: `flex h-full items-center gap-1.5 pl-3 ${isAll ? "pr-3" : "pr-1"} text-sm font-medium outline-none ${textCls}`,
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "max-w-[120px] truncate",
+                                children: selectedLabel
+                            }, void 0, false, {
+                                fileName: "[project]/components/ui/filter-dropdown.tsx",
+                                lineNumber: 80,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$down$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronDown$3e$__["ChevronDown"], {
+                                className: `h-3.5 w-3.5 flex-shrink-0 transition-transform duration-200 ${open ? "-rotate-180" : ""} ${isAll ? "opacity-50" : "opacity-70"}`
+                            }, void 0, false, {
+                                fileName: "[project]/components/ui/filter-dropdown.tsx",
+                                lineNumber: 81,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
                         fileName: "[project]/components/ui/filter-dropdown.tsx",
-                        lineNumber: 74,
+                        lineNumber: 75,
                         columnNumber: 9
                     }, this),
                     !isAll && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                         type: "button",
-                        onClick: (e)=>{
-                            e.stopPropagation();
+                        onClick: ()=>{
                             onChange("all");
                             setOpen(false);
                         },
-                        className: "ml-0.5 -mr-0.5 rounded-sm p-0.5 opacity-60 hover:opacity-100 transition-opacity",
+                        className: "flex h-full items-center pr-2 opacity-60 transition-opacity hover:opacity-100",
+                        "aria-label": "Сбросить фильтр",
                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__X$3e$__["X"], {
                             className: "h-3 w-3"
                         }, void 0, false, {
                             fileName: "[project]/components/ui/filter-dropdown.tsx",
-                            lineNumber: 81,
+                            lineNumber: 92,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/components/ui/filter-dropdown.tsx",
-                        lineNumber: 76,
+                        lineNumber: 86,
                         columnNumber: 11
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$down$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronDown$3e$__["ChevronDown"], {
-                        className: `h-3.5 w-3.5 flex-shrink-0 transition-transform duration-200 ${open ? "-rotate-180" : ""} ${isAll ? "opacity-50" : "opacity-70"}`
-                    }, void 0, false, {
-                        fileName: "[project]/components/ui/filter-dropdown.tsx",
-                        lineNumber: 84,
-                        columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/ui/filter-dropdown.tsx",
-                lineNumber: 60,
+                lineNumber: 74,
                 columnNumber: 7
             }, this),
             open && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -443,7 +451,7 @@ function FilterDropdown({ value, onChange, options, allLabel = "Все", placeho
                                 className: "h-3.5 w-3.5 flex-shrink-0 text-muted-foreground"
                             }, void 0, false, {
                                 fileName: "[project]/components/ui/filter-dropdown.tsx",
-                                lineNumber: 101,
+                                lineNumber: 109,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -454,7 +462,7 @@ function FilterDropdown({ value, onChange, options, allLabel = "Все", placeho
                                 className: "w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                             }, void 0, false, {
                                 fileName: "[project]/components/ui/filter-dropdown.tsx",
-                                lineNumber: 102,
+                                lineNumber: 110,
                                 columnNumber: 13
                             }, this),
                             search && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -465,18 +473,18 @@ function FilterDropdown({ value, onChange, options, allLabel = "Все", placeho
                                     className: "h-3 w-3"
                                 }, void 0, false, {
                                     fileName: "[project]/components/ui/filter-dropdown.tsx",
-                                    lineNumber: 111,
+                                    lineNumber: 119,
                                     columnNumber: 17
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/components/ui/filter-dropdown.tsx",
-                                lineNumber: 110,
+                                lineNumber: 118,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/ui/filter-dropdown.tsx",
-                        lineNumber: 100,
+                        lineNumber: 108,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -499,19 +507,19 @@ function FilterDropdown({ value, onChange, options, allLabel = "Все", placeho
                                             className: "h-3.5 w-3.5"
                                         }, void 0, false, {
                                             fileName: "[project]/components/ui/filter-dropdown.tsx",
-                                            lineNumber: 132,
+                                            lineNumber: 140,
                                             columnNumber: 29
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/components/ui/filter-dropdown.tsx",
-                                        lineNumber: 131,
+                                        lineNumber: 139,
                                         columnNumber: 17
                                     }, this),
                                     allLabel
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/ui/filter-dropdown.tsx",
-                                lineNumber: 120,
+                                lineNumber: 128,
                                 columnNumber: 15
                             }, this),
                             filtered.length === 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -519,7 +527,7 @@ function FilterDropdown({ value, onChange, options, allLabel = "Все", placeho
                                 children: "Ничего не найдено"
                             }, void 0, false, {
                                 fileName: "[project]/components/ui/filter-dropdown.tsx",
-                                lineNumber: 139,
+                                lineNumber: 147,
                                 columnNumber: 15
                             }, this),
                             filtered.map((opt)=>{
@@ -541,12 +549,12 @@ function FilterDropdown({ value, onChange, options, allLabel = "Все", placeho
                                                 className: "h-3.5 w-3.5"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/ui/filter-dropdown.tsx",
-                                                lineNumber: 158,
+                                                lineNumber: 166,
                                                 columnNumber: 34
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/components/ui/filter-dropdown.tsx",
-                                            lineNumber: 157,
+                                            lineNumber: 165,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -554,32 +562,32 @@ function FilterDropdown({ value, onChange, options, allLabel = "Все", placeho
                                             children: opt.label
                                         }, void 0, false, {
                                             fileName: "[project]/components/ui/filter-dropdown.tsx",
-                                            lineNumber: 160,
+                                            lineNumber: 168,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, opt.value, true, {
                                     fileName: "[project]/components/ui/filter-dropdown.tsx",
-                                    lineNumber: 145,
+                                    lineNumber: 153,
                                     columnNumber: 17
                                 }, this);
                             })
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/ui/filter-dropdown.tsx",
-                        lineNumber: 117,
+                        lineNumber: 125,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/ui/filter-dropdown.tsx",
-                lineNumber: 91,
+                lineNumber: 99,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/ui/filter-dropdown.tsx",
-        lineNumber: 58,
+        lineNumber: 72,
         columnNumber: 5
     }, this);
 }
@@ -587,6 +595,172 @@ _s(FilterDropdown, "EDhZqtZwbG5hSyJZxCwk5f25N/8=");
 _c = FilterDropdown;
 var _c;
 __turbopack_context__.k.register(_c, "FilterDropdown");
+if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
+    __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
+}
+}),
+"[project]/lib/pm25.ts [app-client] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+/**
+ * PM2.5 concentration categories and US EPA AQI (2024) calculation.
+ *
+ * Note: "levels" here are PM2.5 concentration categories (WHO/health-based),
+ * NOT the US EPA AQI index (0–500). See pm25ToEpaAqi() for the actual index.
+ *
+ * Thresholds aligned with WHO 2021 guidelines:
+ *   ≤5   → very-good  (meets WHO annual PM2.5 guideline of 5 µg/m³)
+ *   ≤15  → good       (meets WHO 24h PM2.5 guideline of 15 µg/m³)
+ *   ≤35  → moderate   (EPA 2024 "Moderate" upper bound at 35.4 µg/m³)
+ *   ≤55  → unhealthy  (unhealthy for sensitive groups)
+ *   ≤150 → very-unhealthy
+ *   >150 → hazardous
+ */ // ── Types ──────────────────────────────────────────────────────────────────────
+__turbopack_context__.s([
+    "getPm25Config",
+    ()=>getPm25Config,
+    "pm25Color",
+    ()=>pm25Color,
+    "pm25Label",
+    ()=>pm25Label,
+    "pm25ToEpaAqi",
+    ()=>pm25ToEpaAqi
+]);
+function pm25Color(pm25) {
+    if (pm25 == null) return "#9ca3af";
+    if (pm25 <= 5) return "#3b82f6";
+    if (pm25 <= 15) return "#22c55e";
+    if (pm25 <= 35) return "#eab308";
+    if (pm25 <= 55) return "#ef4444";
+    if (pm25 <= 150) return "#a855f7";
+    return "#7f1d1d";
+}
+function pm25Label(pm25) {
+    if (pm25 == null) return "Нет данных";
+    if (pm25 <= 5) return "Отлично";
+    if (pm25 <= 15) return "Хорошо";
+    if (pm25 <= 35) return "Умеренно";
+    if (pm25 <= 55) return "Чувствительным";
+    if (pm25 <= 150) return "Вредно";
+    return "Очень вредно";
+}
+function getPm25Config(pm25) {
+    if (pm25 <= 5) return {
+        level: "very-good",
+        label: "Отлично",
+        heroLabel: "Отлично",
+        heroBg: "#dbeafe",
+        barBg: "#3b82f6",
+        accent: "#3b82f6",
+        accentLight: "#dbeafe"
+    };
+    if (pm25 <= 15) return {
+        level: "good",
+        label: "Хорошо",
+        heroLabel: "Хорошо",
+        heroBg: "#dcfce7",
+        barBg: "#22c55e",
+        accent: "#22c55e",
+        accentLight: "#dcfce7"
+    };
+    if (pm25 <= 35) return {
+        level: "moderate",
+        label: "Умеренно",
+        heroLabel: "Умеренно",
+        heroBg: "#fef9c3",
+        barBg: "#eab308",
+        accent: "#ca8a04",
+        accentLight: "#fef9c3"
+    };
+    if (pm25 <= 55) return {
+        level: "unhealthy",
+        label: "Вредно для чувствительных групп",
+        heroLabel: "Чувствительным",
+        heroBg: "#fee2e2",
+        barBg: "#ef4444",
+        accent: "#ef4444",
+        accentLight: "#fee2e2"
+    };
+    if (pm25 <= 150) return {
+        level: "very-unhealthy",
+        label: "Вредно",
+        heroLabel: "Вредно",
+        heroBg: "#f3e8ff",
+        barBg: "#a855f7",
+        accent: "#a855f7",
+        accentLight: "#f3e8ff"
+    };
+    return {
+        level: "hazardous",
+        label: "Очень вредно",
+        heroLabel: "Очень вредно",
+        heroBg: "#fee2e2",
+        barBg: "#7f1d1d",
+        accent: "#7f1d1d",
+        accentLight: "#fee2e2"
+    };
+}
+// ── US EPA AQI (2024) ──────────────────────────────────────────────────────────
+/**
+ * EPA 2024 PM2.5 breakpoints (eCFR Appendix G, Table 2).
+ * Input must be 24-hour AVERAGE PM2.5, truncated to 1 decimal.
+ * Source: https://www.ecfr.gov/current/title-40/appendix-Appendix_G_to_Part_58
+ */ const EPA_2024_BREAKPOINTS = [
+    {
+        cLo: 0.0,
+        cHi: 9.0,
+        iLo: 0,
+        iHi: 50,
+        level: "very-good"
+    },
+    {
+        cLo: 9.1,
+        cHi: 35.4,
+        iLo: 51,
+        iHi: 100,
+        level: "good"
+    },
+    {
+        cLo: 35.5,
+        cHi: 55.4,
+        iLo: 101,
+        iHi: 150,
+        level: "moderate"
+    },
+    {
+        cLo: 55.5,
+        cHi: 125.4,
+        iLo: 151,
+        iHi: 200,
+        level: "unhealthy"
+    },
+    {
+        cLo: 125.5,
+        cHi: 225.4,
+        iLo: 201,
+        iHi: 300,
+        level: "very-unhealthy"
+    },
+    {
+        cLo: 225.5,
+        cHi: 325.4,
+        iLo: 301,
+        iHi: 500,
+        level: "hazardous"
+    }
+];
+function pm25ToEpaAqi(pm25_24h_avg) {
+    if (!isFinite(pm25_24h_avg) || pm25_24h_avg < 0) return null;
+    // EPA truncates to 1 decimal place (not rounds)
+    const c = Math.floor(pm25_24h_avg * 10) / 10;
+    const bp = EPA_2024_BREAKPOINTS.find((x)=>c >= x.cLo && c <= x.cHi) ?? EPA_2024_BREAKPOINTS[EPA_2024_BREAKPOINTS.length - 1];
+    const aqi = Math.round((bp.iHi - bp.iLo) / (bp.cHi - bp.cLo) * (c - bp.cLo) + bp.iLo);
+    return {
+        aqi,
+        level: bp.level,
+        label: pm25Label(c)
+    };
+}
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }
@@ -613,10 +787,12 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$left$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronLeft$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/chevron-left.js [app-client] (ecmascript) <export default as ChevronLeft>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$right$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronRight$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/chevron-right.js [app-client] (ecmascript) <export default as ChevronRight>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$left$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowLeft$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/arrow-left.js [app-client] (ecmascript) <export default as ArrowLeft>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/pm25.ts [app-client] (ecmascript)");
 ;
 ;
 var _s = __turbopack_context__.k.signature(), _s1 = __turbopack_context__.k.signature();
 "use client";
+;
 ;
 ;
 ;
@@ -745,7 +921,7 @@ function dayLabel(dateStr, index) {
         weekday: "long"
     });
 }
-function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selectedSensor, onClearSensor, sensors, onSensorSelect }) {
+function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selectedSensor, onClearSensor, sensors, onSensorSelect, metricMode = "epa-aqi" }) {
     _s();
     const [timeRange, setTimeRange] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("30d");
     const [bgAnim, setBgAnim] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
@@ -816,7 +992,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
     ]);
     // Active PM2.5: sensor value when selected, city-wide otherwise
     const activePm25 = selectedSensor != null ? selectedSensor.value ?? 0 : currentPm25;
-    const config = getAqiConfig(activePm25);
+    const config = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["getPm25Config"])(activePm25);
     // Load Lottie animations whenever AQI level changes
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "AqiSidePanel.useEffect": ()=>{
@@ -860,7 +1036,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                 day: "numeric"
                             }),
                             pm25: d.avg_value,
-                            fill: barColor(d.avg_value)
+                            fill: (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["pm25Color"])(d.avg_value)
                         })
                 }["AqiSidePanel.useMemo[chartData]"]);
             }
@@ -873,7 +1049,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                             day: "numeric"
                         }),
                         pm25,
-                        fill: barColor(pm25)
+                        fill: (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["pm25Color"])(pm25)
                     })
             }["AqiSidePanel.useMemo[chartData]"]);
         }
@@ -883,12 +1059,21 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
         aqiData,
         timeRange
     ]);
-    // 30d / 7d averages
+    // Sorted city-wide values (date-ascending) — used for slicing 30d/7d windows
+    const sortedAqiValues = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
+        "AqiSidePanel.useMemo[sortedAqiValues]": ()=>Object.entries(aqiData).sort({
+                "AqiSidePanel.useMemo[sortedAqiValues]": ([a], [b])=>a.localeCompare(b)
+            }["AqiSidePanel.useMemo[sortedAqiValues]"]).map({
+                "AqiSidePanel.useMemo[sortedAqiValues]": ([, v])=>v
+            }["AqiSidePanel.useMemo[sortedAqiValues]"])
+    }["AqiSidePanel.useMemo[sortedAqiValues]"], [
+        aqiData
+    ]);
     const avg30d = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
         "AqiSidePanel.useMemo[avg30d]": ()=>{
             const vals = selectedSensor ? sensorDaily.slice(-30).map({
                 "AqiSidePanel.useMemo[avg30d]": (d)=>d.avg_value
-            }["AqiSidePanel.useMemo[avg30d]"]) : Object.values(aqiData).slice(-30);
+            }["AqiSidePanel.useMemo[avg30d]"]) : sortedAqiValues.slice(-30);
             return vals.length ? vals.reduce({
                 "AqiSidePanel.useMemo[avg30d]": (a, b)=>a + b
             }["AqiSidePanel.useMemo[avg30d]"], 0) / vals.length : null;
@@ -896,13 +1081,13 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
     }["AqiSidePanel.useMemo[avg30d]"], [
         selectedSensor,
         sensorDaily,
-        aqiData
+        sortedAqiValues
     ]);
     const avg7d = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
         "AqiSidePanel.useMemo[avg7d]": ()=>{
             const vals = selectedSensor ? sensorDaily.slice(-7).map({
                 "AqiSidePanel.useMemo[avg7d]": (d)=>d.avg_value
-            }["AqiSidePanel.useMemo[avg7d]"]) : Object.values(aqiData).slice(-7);
+            }["AqiSidePanel.useMemo[avg7d]"]) : sortedAqiValues.slice(-7);
             return vals.length ? vals.reduce({
                 "AqiSidePanel.useMemo[avg7d]": (a, b)=>a + b
             }["AqiSidePanel.useMemo[avg7d]"], 0) / vals.length : null;
@@ -910,7 +1095,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
     }["AqiSidePanel.useMemo[avg7d]"], [
         selectedSensor,
         sensorDaily,
-        aqiData
+        sortedAqiValues
     ]);
     // Hourly heatmap source — sensor daily as { date: avg_value }
     const heatmapData = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
@@ -930,6 +1115,22 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
         sensorDaily,
         aqiData
     ]);
+    // EPA AQI from last available 24h daily average (accurate per EPA spec)
+    const epaAqi = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
+        "AqiSidePanel.useMemo[epaAqi]": ()=>{
+            if (selectedSensor) {
+                const lastDay = sensorDaily.at(-1);
+                return lastDay ? (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["pm25ToEpaAqi"])(lastDay.avg_value) : null;
+            }
+            const lastDate = Object.keys(aqiData).sort().at(-1);
+            return lastDate != null ? (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["pm25ToEpaAqi"])(aqiData[lastDate]) : null;
+        }
+    }["AqiSidePanel.useMemo[epaAqi]"], [
+        selectedSensor,
+        sensorDaily,
+        aqiData
+    ]);
+    const showEpa = metricMode === "epa-aqi";
     const cigarettes = ((avg30d ?? activePm25) * 30 / 22.2).toFixed(1);
     const whoMultiplier = activePm25 > 0 ? (activePm25 / WHO_LIMIT).toFixed(1) : "0.0";
     const insights = INSIGHTS[config.level];
@@ -956,7 +1157,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                         }
                     }, void 0, false, {
                         fileName: "[project]/components/aqi-side-panel.tsx",
-                        lineNumber: 250,
+                        lineNumber: 269,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -978,12 +1179,12 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                     className: "h-full w-full"
                                 }, void 0, false, {
                                     fileName: "[project]/components/aqi-side-panel.tsx",
-                                    lineNumber: 262,
+                                    lineNumber: 281,
                                     columnNumber: 28
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                lineNumber: 258,
+                                lineNumber: 277,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -991,24 +1192,24 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                 style: {
                                     color: config.accent
                                 },
-                                children: activePm25.toFixed(1)
+                                children: showEpa && epaAqi ? epaAqi.aqi : activePm25.toFixed(1)
                             }, void 0, false, {
                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                lineNumber: 264,
+                                lineNumber: 283,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                 className: "text-[9px] text-muted-foreground",
-                                children: "µg/m³"
+                                children: showEpa && epaAqi ? "AQI" : "µg/m³"
                             }, void 0, false, {
                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                lineNumber: 267,
+                                lineNumber: 286,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/aqi-side-panel.tsx",
-                        lineNumber: 252,
+                        lineNumber: 271,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1020,18 +1221,18 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                             className: "h-4 w-4"
                         }, void 0, false, {
                             fileName: "[project]/components/aqi-side-panel.tsx",
-                            lineNumber: 276,
+                            lineNumber: 297,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/components/aqi-side-panel.tsx",
-                        lineNumber: 270,
+                        lineNumber: 291,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/aqi-side-panel.tsx",
-                lineNumber: 242,
+                lineNumber: 261,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1057,18 +1258,18 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                         className: "h-3.5 w-3.5"
                                     }, void 0, false, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 300,
+                                        lineNumber: 321,
                                         columnNumber: 15
                                     }, this),
                                     returnToTop ? "Топ загрязнений" : "Все датчики"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                lineNumber: 292,
+                                lineNumber: 313,
                                 columnNumber: 13
                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {}, void 0, false, {
                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                lineNumber: 304,
+                                lineNumber: 325,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1081,20 +1282,20 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                         className: "h-3.5 w-3.5"
                                     }, void 0, false, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 312,
+                                        lineNumber: 333,
                                         columnNumber: 13
                                     }, this),
                                     "Свернуть"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                lineNumber: 306,
+                                lineNumber: 327,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/aqi-side-panel.tsx",
-                        lineNumber: 290,
+                        lineNumber: 311,
                         columnNumber: 9
                     }, this),
                     !selectedSensor && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1112,7 +1313,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                 children: "Обзор"
                             }, void 0, false, {
                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                lineNumber: 320,
+                                lineNumber: 341,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1127,13 +1328,13 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                 children: "Топ загрязненности"
                             }, void 0, false, {
                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                lineNumber: 332,
+                                lineNumber: 353,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/aqi-side-panel.tsx",
-                        lineNumber: 319,
+                        lineNumber: 340,
                         columnNumber: 11
                     }, this),
                     sidebarTab === "top10" && !selectedSensor && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1147,7 +1348,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                         children: sortOrder === "desc" ? "10 мест с худшим воздухом" : "10 мест с лучшим воздухом"
                                     }, void 0, false, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 351,
+                                        lineNumber: 372,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1166,25 +1367,25 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                 children: o === "desc" ? "Худшие" : "Лучшие"
                                             }, o, false, {
                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                lineNumber: 356,
+                                                lineNumber: 377,
                                                 columnNumber: 19
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 354,
+                                        lineNumber: 375,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                lineNumber: 350,
+                                lineNumber: 371,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "flex flex-col gap-2",
                                 children: top10.map((s, i)=>{
                                     const pm25 = s.value ?? 0;
-                                    const color = barColor(pm25);
+                                    const color = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["pm25Color"])(pm25);
                                     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                         type: "button",
                                         onClick: ()=>{
@@ -1201,7 +1402,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                 children: i + 1
                                             }, void 0, false, {
                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                lineNumber: 382,
+                                                lineNumber: 403,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1212,7 +1413,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                         children: s.sensor_name ?? "Сенсор"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 389,
+                                                        lineNumber: 410,
                                                         columnNumber: 23
                                                     }, this),
                                                     s.source && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1220,13 +1421,13 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                         children: s.source
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 393,
+                                                        lineNumber: 414,
                                                         columnNumber: 25
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                lineNumber: 388,
+                                                lineNumber: 409,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1237,19 +1438,19 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                 children: pm25.toFixed(1)
                                             }, void 0, false, {
                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                lineNumber: 396,
+                                                lineNumber: 417,
                                                 columnNumber: 21
                                             }, this)
                                         ]
                                     }, s.id, true, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 376,
+                                        lineNumber: 397,
                                         columnNumber: 19
                                     }, this);
                                 })
                             }, void 0, false, {
                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                lineNumber: 371,
+                                lineNumber: 392,
                                 columnNumber: 13
                             }, this),
                             restSensors.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -1263,14 +1464,14 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 409,
+                                        lineNumber: 430,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "flex flex-col gap-1",
                                         children: restSensors.map((s, i)=>{
                                             const pm25 = s.value ?? 0;
-                                            const color = barColor(pm25);
+                                            const color = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["pm25Color"])(pm25);
                                             return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                 type: "button",
                                                 onClick: ()=>{
@@ -1284,7 +1485,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                         children: i + 11
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 423,
+                                                        lineNumber: 444,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1294,7 +1495,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                         }
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 426,
+                                                        lineNumber: 447,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1302,7 +1503,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                         children: s.sensor_name ?? "Сенсор"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 430,
+                                                        lineNumber: 451,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1313,19 +1514,19 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                         children: pm25.toFixed(1)
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 433,
+                                                        lineNumber: 454,
                                                         columnNumber: 25
                                                     }, this)
                                                 ]
                                             }, s.id, true, {
                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                lineNumber: 417,
+                                                lineNumber: 438,
                                                 columnNumber: 23
                                             }, this);
                                         })
                                     }, void 0, false, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 412,
+                                        lineNumber: 433,
                                         columnNumber: 17
                                     }, this)
                                 ]
@@ -1333,7 +1534,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/aqi-side-panel.tsx",
-                        lineNumber: 349,
+                        lineNumber: 370,
                         columnNumber: 11
                     }, this),
                     selectedSensor && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1346,7 +1547,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                 }
                             }, void 0, false, {
                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                lineNumber: 451,
+                                lineNumber: 472,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1357,7 +1558,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                         children: selectedSensor.sensor_name ?? "Сенсор"
                                     }, void 0, false, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 456,
+                                        lineNumber: 477,
                                         columnNumber: 15
                                     }, this),
                                     selectedSensor.source && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1365,13 +1566,13 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                         children: selectedSensor.source
                                     }, void 0, false, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 460,
+                                        lineNumber: 481,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                lineNumber: 455,
+                                lineNumber: 476,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1382,13 +1583,13 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                 children: config.label
                             }, void 0, false, {
                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                lineNumber: 463,
+                                lineNumber: 484,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/aqi-side-panel.tsx",
-                        lineNumber: 450,
+                        lineNumber: 471,
                         columnNumber: 11
                     }, this),
                     (sidebarTab === "overview" || !!selectedSensor) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -1420,19 +1621,19 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                             }
                                         }, void 0, false, {
                                             fileName: "[project]/components/aqi-side-panel.tsx",
-                                            lineNumber: 482,
+                                            lineNumber: 503,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 481,
+                                        lineNumber: 502,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "absolute inset-0 bg-gradient-to-r from-white/55 via-white/15 to-transparent"
                                     }, void 0, false, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 490,
+                                        lineNumber: 511,
                                         columnNumber: 11
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1449,7 +1650,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                 children: heroTitle
                                             }, void 0, false, {
                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                lineNumber: 492,
+                                                lineNumber: 513,
                                                 columnNumber: 13
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1460,13 +1661,13 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                 children: config.heroLabel
                                             }, void 0, false, {
                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                lineNumber: 493,
+                                                lineNumber: 514,
                                                 columnNumber: 13
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 491,
+                                        lineNumber: 512,
                                         columnNumber: 11
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1482,12 +1683,12 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                             className: "h-full w-full"
                                         }, void 0, false, {
                                             fileName: "[project]/components/aqi-side-panel.tsx",
-                                            lineNumber: 504,
+                                            lineNumber: 525,
                                             columnNumber: 28
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 500,
+                                        lineNumber: 521,
                                         columnNumber: 11
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1495,70 +1696,143 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                         style: {
                                             backgroundColor: config.barBg
                                         },
-                                        children: [
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                className: "text-sm font-bold",
-                                                children: [
-                                                    "PM",
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("sub", {
-                                                        children: "2.5"
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 511,
-                                                        columnNumber: 17
-                                                    }, this),
-                                                    ": ",
-                                                    activePm25.toFixed(1),
-                                                    " µg/m³"
-                                                ]
-                                            }, void 0, true, {
-                                                fileName: "[project]/components/aqi-side-panel.tsx",
-                                                lineNumber: 510,
-                                                columnNumber: 13
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                className: "text-right text-[10px] leading-tight opacity-90",
-                                                children: [
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                        children: "Качество воздуха"
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 514,
-                                                        columnNumber: 15
-                                                    }, this),
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                        children: [
-                                                            "PM",
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("sub", {
-                                                                children: "2.5"
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/components/aqi-side-panel.tsx",
-                                                                lineNumber: 515,
-                                                                columnNumber: 20
-                                                            }, this),
-                                                            " (µg/m³)"
-                                                        ]
-                                                    }, void 0, true, {
-                                                        fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 515,
-                                                        columnNumber: 15
-                                                    }, this)
-                                                ]
-                                            }, void 0, true, {
-                                                fileName: "[project]/components/aqi-side-panel.tsx",
-                                                lineNumber: 513,
-                                                columnNumber: 13
-                                            }, this)
-                                        ]
-                                    }, void 0, true, {
+                                        children: showEpa && epaAqi ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "leading-none",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                            className: "text-[10px] font-semibold opacity-80",
+                                                            children: "US EPA AQI"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/components/aqi-side-panel.tsx",
+                                                            lineNumber: 534,
+                                                            columnNumber: 19
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                            className: "text-2xl font-black",
+                                                            children: epaAqi.aqi
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/components/aqi-side-panel.tsx",
+                                                            lineNumber: 535,
+                                                            columnNumber: 19
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/components/aqi-side-panel.tsx",
+                                                    lineNumber: 533,
+                                                    columnNumber: 17
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "text-right text-[10px] leading-tight opacity-90",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                            children: [
+                                                                "PM",
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("sub", {
+                                                                    children: "2.5"
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/components/aqi-side-panel.tsx",
+                                                                    lineNumber: 538,
+                                                                    columnNumber: 24
+                                                                }, this),
+                                                                " ",
+                                                                activePm25.toFixed(1),
+                                                                " µg/m³"
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/components/aqi-side-panel.tsx",
+                                                            lineNumber: 538,
+                                                            columnNumber: 19
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                            children: "на основе 24h среднего"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/components/aqi-side-panel.tsx",
+                                                            lineNumber: 539,
+                                                            columnNumber: 19
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/components/aqi-side-panel.tsx",
+                                                    lineNumber: 537,
+                                                    columnNumber: 17
+                                                }, this)
+                                            ]
+                                        }, void 0, true) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                    className: "text-sm font-bold",
+                                                    children: [
+                                                        "PM",
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("sub", {
+                                                            children: "2.5"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/components/aqi-side-panel.tsx",
+                                                            lineNumber: 545,
+                                                            columnNumber: 21
+                                                        }, this),
+                                                        ": ",
+                                                        activePm25.toFixed(1),
+                                                        " µg/m³",
+                                                        showEpa && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                            className: "ml-1.5 text-[10px] opacity-70",
+                                                            children: "(AQI недоступен)"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/components/aqi-side-panel.tsx",
+                                                            lineNumber: 546,
+                                                            columnNumber: 31
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/components/aqi-side-panel.tsx",
+                                                    lineNumber: 544,
+                                                    columnNumber: 17
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "text-right text-[10px] leading-tight opacity-90",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                            children: "Качество воздуха"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/components/aqi-side-panel.tsx",
+                                                            lineNumber: 549,
+                                                            columnNumber: 19
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                            children: [
+                                                                "PM",
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("sub", {
+                                                                    children: "2.5"
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/components/aqi-side-panel.tsx",
+                                                                    lineNumber: 550,
+                                                                    columnNumber: 24
+                                                                }, this),
+                                                                " (µg/m³)"
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/components/aqi-side-panel.tsx",
+                                                            lineNumber: 550,
+                                                            columnNumber: 19
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/components/aqi-side-panel.tsx",
+                                                    lineNumber: 548,
+                                                    columnNumber: 17
+                                                }, this)
+                                            ]
+                                        }, void 0, true)
+                                    }, void 0, false, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 506,
+                                        lineNumber: 527,
                                         columnNumber: 11
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                lineNumber: 476,
+                                lineNumber: 497,
                                 columnNumber: 9
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1577,13 +1851,13 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                                 children: "2.5"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                                lineNumber: 524,
+                                                                lineNumber: 561,
                                                                 columnNumber: 66
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 524,
+                                                        lineNumber: 561,
                                                         columnNumber: 15
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1591,13 +1865,13 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                         children: "µg/m³"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 525,
+                                                        lineNumber: 562,
                                                         columnNumber: 15
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                lineNumber: 523,
+                                                lineNumber: 560,
                                                 columnNumber: 13
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1617,18 +1891,18 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                         children: r
                                                     }, r, false, {
                                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 529,
+                                                        lineNumber: 566,
                                                         columnNumber: 17
                                                     }, this))
                                             }, void 0, false, {
                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                lineNumber: 527,
+                                                lineNumber: 564,
                                                 columnNumber: 13
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 522,
+                                        lineNumber: 559,
                                         columnNumber: 11
                                     }, this),
                                     sensorLoading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1636,7 +1910,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                         children: "Загрузка…"
                                     }, void 0, false, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 546,
+                                        lineNumber: 583,
                                         columnNumber: 13
                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$ResponsiveContainer$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ResponsiveContainer"], {
                                         width: "100%",
@@ -1657,7 +1931,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                     vertical: false
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/aqi-side-panel.tsx",
-                                                    lineNumber: 552,
+                                                    lineNumber: 589,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$XAxis$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["XAxis"], {
@@ -1671,7 +1945,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                     interval: xTickInterval
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/aqi-side-panel.tsx",
-                                                    lineNumber: 553,
+                                                    lineNumber: 590,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$YAxis$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["YAxis"], {
@@ -1684,7 +1958,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                     width: 28
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/aqi-side-panel.tsx",
-                                                    lineNumber: 560,
+                                                    lineNumber: 597,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$Bar$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Bar"], {
@@ -1700,12 +1974,12 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                             fillOpacity: 0.9
                                                         }, i, false, {
                                                             fileName: "[project]/components/aqi-side-panel.tsx",
-                                                            lineNumber: 568,
+                                                            lineNumber: 605,
                                                             columnNumber: 21
                                                         }, this))
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/aqi-side-panel.tsx",
-                                                    lineNumber: 566,
+                                                    lineNumber: 603,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Tooltip$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Tooltip"], {
@@ -1724,18 +1998,18 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                     labelFormatter: (l)=>l
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/aqi-side-panel.tsx",
-                                                    lineNumber: 571,
+                                                    lineNumber: 608,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/components/aqi-side-panel.tsx",
-                                            lineNumber: 551,
+                                            lineNumber: 588,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 550,
+                                        lineNumber: 587,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1755,7 +2029,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                         children: avg30d != null ? `${avg30d.toFixed(1)} µg/m³` : "—"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 583,
+                                                        lineNumber: 620,
                                                         columnNumber: 15
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1767,13 +2041,13 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                         children: "За 30 дней"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 586,
+                                                        lineNumber: 623,
                                                         columnNumber: 15
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                lineNumber: 582,
+                                                lineNumber: 619,
                                                 columnNumber: 13
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1784,7 +2058,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                         children: avg7d != null ? `${avg7d.toFixed(1)} µg/m³` : "—"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 591,
+                                                        lineNumber: 628,
                                                         columnNumber: 15
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1792,25 +2066,25 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                         children: "За 7 дней"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 594,
+                                                        lineNumber: 631,
                                                         columnNumber: 15
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                lineNumber: 590,
+                                                lineNumber: 627,
                                                 columnNumber: 13
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 581,
+                                        lineNumber: 618,
                                         columnNumber: 11
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                lineNumber: 521,
+                                lineNumber: 558,
                                 columnNumber: 9
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1830,12 +2104,12 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                     className: "h-20 w-20 object-contain"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/aqi-side-panel.tsx",
-                                                    lineNumber: 607,
+                                                    lineNumber: 644,
                                                     columnNumber: 15
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                lineNumber: 602,
+                                                lineNumber: 639,
                                                 columnNumber: 13
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1843,13 +2117,13 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                 children: "Советы по качеству воздуха"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                lineNumber: 613,
+                                                lineNumber: 650,
                                                 columnNumber: 13
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 601,
+                                        lineNumber: 638,
                                         columnNumber: 11
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1865,7 +2139,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                         children: "·"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 618,
+                                                        lineNumber: 655,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1875,7 +2149,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                                 children: tip.title
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                                lineNumber: 620,
+                                                                lineNumber: 657,
                                                                 columnNumber: 19
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1883,30 +2157,30 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                                 children: tip.body
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                                lineNumber: 621,
+                                                                lineNumber: 658,
                                                                 columnNumber: 19
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 619,
+                                                        lineNumber: 656,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, i, true, {
                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                lineNumber: 617,
+                                                lineNumber: 654,
                                                 columnNumber: 15
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 615,
+                                        lineNumber: 652,
                                         columnNumber: 11
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                lineNumber: 600,
+                                lineNumber: 637,
                                 columnNumber: 9
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1923,20 +2197,20 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                         children: "Выкурено сигарет"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 632,
+                                                        lineNumber: 669,
                                                         columnNumber: 15
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$info$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Info$3e$__["Info"], {
                                                         className: "h-3 w-3 text-muted-foreground"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 633,
+                                                        lineNumber: 670,
                                                         columnNumber: 15
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                lineNumber: 631,
+                                                lineNumber: 668,
                                                 columnNumber: 13
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1944,7 +2218,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                 children: cigarettes
                                             }, void 0, false, {
                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                lineNumber: 635,
+                                                lineNumber: 672,
                                                 columnNumber: 13
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1952,13 +2226,13 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                 children: "Эквивалент загрязнения воздуха за последние 30 дней."
                                             }, void 0, false, {
                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                lineNumber: 636,
+                                                lineNumber: 673,
                                                 columnNumber: 13
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 630,
+                                        lineNumber: 667,
                                         columnNumber: 11
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1972,7 +2246,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                lineNumber: 641,
+                                                lineNumber: 678,
                                                 columnNumber: 13
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1986,7 +2260,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                                 children: "Текущее"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                                lineNumber: 646,
+                                                                lineNumber: 683,
                                                                 columnNumber: 17
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1997,13 +2271,13 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                                lineNumber: 647,
+                                                                lineNumber: 684,
                                                                 columnNumber: 17
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 645,
+                                                        lineNumber: 682,
                                                         columnNumber: 15
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2014,7 +2288,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                                 children: "Предел"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                                lineNumber: 650,
+                                                                lineNumber: 687,
                                                                 columnNumber: 17
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2025,38 +2299,38 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                                lineNumber: 651,
+                                                                lineNumber: 688,
                                                                 columnNumber: 17
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                                        lineNumber: 649,
+                                                        lineNumber: 686,
                                                         columnNumber: 15
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                                lineNumber: 644,
+                                                lineNumber: 681,
                                                 columnNumber: 13
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 640,
+                                        lineNumber: 677,
                                         columnNumber: 11
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                lineNumber: 629,
+                                lineNumber: 666,
                                 columnNumber: 9
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(HourlyHeatmap, {
                                 aqiData: heatmapData
                             }, void 0, false, {
                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                lineNumber: 658,
+                                lineNumber: 695,
                                 columnNumber: 9
                             }, this)
                         ]
@@ -2064,17 +2338,17 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/aqi-side-panel.tsx",
-                lineNumber: 281,
+                lineNumber: 302,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/aqi-side-panel.tsx",
-        lineNumber: 237,
+        lineNumber: 256,
         columnNumber: 5
     }, this);
 }
-_s(AqiSidePanel, "0qhxo4TiwP99buSjDfwobA8egb0=");
+_s(AqiSidePanel, "r4rwGXgX+874W9dka9Rnt9C3bUc=");
 _c1 = AqiSidePanel;
 // ── Hourly heatmap sub-component ──────────────────────────────────────────────
 function HourlyHeatmap({ aqiData }) {
@@ -2106,14 +2380,14 @@ function HourlyHeatmap({ aqiData }) {
                         children: "2.5"
                     }, void 0, false, {
                         fileName: "[project]/components/aqi-side-panel.tsx",
-                        lineNumber: 681,
+                        lineNumber: 718,
                         columnNumber: 11
                     }, this),
                     " – За 10 дней по часам"
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/aqi-side-panel.tsx",
-                lineNumber: 680,
+                lineNumber: 717,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2121,7 +2395,7 @@ function HourlyHeatmap({ aqiData }) {
                 children: "µg/m³"
             }, void 0, false, {
                 fileName: "[project]/components/aqi-side-panel.tsx",
-                lineNumber: 683,
+                lineNumber: 720,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2143,25 +2417,25 @@ function HourlyHeatmap({ aqiData }) {
                                 children: h
                             }, h, false, {
                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                lineNumber: 688,
+                                lineNumber: 725,
                                 columnNumber: 13
                             }, this))
                     }, void 0, false, {
                         fileName: "[project]/components/aqi-side-panel.tsx",
-                        lineNumber: 686,
+                        lineNumber: 723,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "w-[72px]"
                     }, void 0, false, {
                         fileName: "[project]/components/aqi-side-panel.tsx",
-                        lineNumber: 697,
+                        lineNumber: 734,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/aqi-side-panel.tsx",
-                lineNumber: 685,
+                lineNumber: 722,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2179,18 +2453,18 @@ function HourlyHeatmap({ aqiData }) {
                                         className: "flex-1 rounded-[3px]",
                                         style: {
                                             height: 13,
-                                            backgroundColor: barColor(v)
+                                            backgroundColor: (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["pm25Color"])(v)
                                         },
                                         title: `${label} ${String(hour).padStart(2, "0")}:00 — ${v.toFixed(1)} µg/m³`
                                     }, hour, false, {
                                         fileName: "[project]/components/aqi-side-panel.tsx",
-                                        lineNumber: 707,
+                                        lineNumber: 744,
                                         columnNumber: 19
                                     }, this);
                                 })
                             }, void 0, false, {
                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                lineNumber: 703,
+                                lineNumber: 740,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2198,24 +2472,24 @@ function HourlyHeatmap({ aqiData }) {
                                 children: label
                             }, void 0, false, {
                                 fileName: "[project]/components/aqi-side-panel.tsx",
-                                lineNumber: 716,
+                                lineNumber: 753,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, date, true, {
                         fileName: "[project]/components/aqi-side-panel.tsx",
-                        lineNumber: 702,
+                        lineNumber: 739,
                         columnNumber: 11
                     }, this))
             }, void 0, false, {
                 fileName: "[project]/components/aqi-side-panel.tsx",
-                lineNumber: 700,
+                lineNumber: 737,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/aqi-side-panel.tsx",
-        lineNumber: 679,
+        lineNumber: 716,
         columnNumber: 5
     }, this);
 }
@@ -2245,6 +2519,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$sun$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Sun$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/sun.js [app-client] (ecmascript) <export default as Sun>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$map$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Map$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/map.js [app-client] (ecmascript) <export default as Map>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$calendar$2d$days$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CalendarDays$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/calendar-days.js [app-client] (ecmascript) <export default as CalendarDays>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chart$2d$no$2d$axes$2d$column$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__BarChart2$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/chart-no-axes-column.js [app-client] (ecmascript) <export default as BarChart2>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$themes$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next-themes/dist/index.mjs [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/button.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$header$2d$menu$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/header-menu.tsx [app-client] (ecmascript)");
@@ -2261,20 +2536,20 @@ var _s = __turbopack_context__.k.signature();
 ;
 // ── Calendar day hover helpers ────────────────────────────────────────────────
 function pm25ToHex(pm25) {
-    if (pm25 <= 15) return "#3b82f6";
-    if (pm25 <= 35) return "#22c55e";
-    if (pm25 <= 55) return "#eab308";
-    if (pm25 <= 150) return "#ef4444";
-    if (pm25 <= 250) return "#a855f7";
+    if (pm25 <= 5) return "#3b82f6";
+    if (pm25 <= 15) return "#22c55e";
+    if (pm25 <= 35) return "#eab308";
+    if (pm25 <= 55) return "#ef4444";
+    if (pm25 <= 150) return "#a855f7";
     return "#7f1d1d";
 }
 function pm25ToLabel(pm25) {
+    if (pm25 <= 5) return "Отлично";
     if (pm25 <= 15) return "Хорошо";
     if (pm25 <= 35) return "Умеренно";
     if (pm25 <= 55) return "Чувствительным группам";
     if (pm25 <= 150) return "Вредно";
-    if (pm25 <= 250) return "Очень вредно";
-    return "Опасно";
+    return "Очень вредно";
 }
 ;
 ;
@@ -2322,59 +2597,59 @@ const computeStatisticsFromData = (data)=>{
 };
 const AQI_LEGEND = [
     {
-        label: "Хорошо",
-        range: "0–15",
+        label: "Отлично",
+        range: "0–5",
         className: "bg-aqi-good"
+    },
+    {
+        label: "Хорошо",
+        range: "6–15",
+        className: "bg-aqi-moderate"
     },
     {
         label: "Умеренно",
         range: "16–35",
-        className: "bg-aqi-moderate"
+        className: "bg-aqi-sensitive"
     },
     {
         label: "Чувствительные",
         range: "36–55",
-        className: "bg-aqi-sensitive"
+        className: "bg-aqi-unhealthy"
     },
     {
         label: "Вредно",
         range: "56–150",
-        className: "bg-aqi-unhealthy"
-    },
-    {
-        label: "Очень вредно",
-        range: "151–250",
         className: "bg-aqi-very-unhealthy"
     },
     {
-        label: "Опасно",
-        range: "250+",
+        label: "Очень вредно",
+        range: "150+",
         className: "bg-aqi-hazardous"
     }
 ];
 function getAQICategory(aqi) {
+    if (aqi <= 5) return {
+        label: "Отлично",
+        color: "bg-aqi-good"
+    };
     if (aqi <= 15) return {
         label: "Хорошо",
-        color: "bg-aqi-good"
+        color: "bg-aqi-moderate"
     };
     if (aqi <= 35) return {
         label: "Умеренно",
-        color: "bg-aqi-moderate"
+        color: "bg-aqi-sensitive"
     };
     if (aqi <= 55) return {
         label: "Чувствительные группы",
-        color: "bg-aqi-sensitive"
+        color: "bg-aqi-unhealthy"
     };
     if (aqi <= 150) return {
         label: "Вредно",
-        color: "bg-aqi-unhealthy"
-    };
-    if (aqi <= 250) return {
-        label: "Очень вредно",
         color: "bg-aqi-very-unhealthy"
     };
     return {
-        label: "Опасно",
+        label: "Очень вредно",
         color: "bg-aqi-hazardous"
     };
 }
@@ -2382,7 +2657,8 @@ function AirQualityDashboard() {
     _s();
     const { resolvedTheme, setTheme } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$themes$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useTheme"])();
     const [activeTab, setActiveTab] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("map");
-    const [currentYear, setCurrentYear] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(2025);
+    const [currentYear, setCurrentYear] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(new Date().getFullYear());
+    const [sidebarAqiData, setSidebarAqiData] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])({});
     const [aqiData, setAqiData] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])({});
     const [statistics, setStatistics] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [loading, setLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(true);
@@ -2395,6 +2671,7 @@ function AirQualityDashboard() {
     const [mounted, setMounted] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [hoveredDay, setHoveredDay] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [selectedSensor, setSelectedSensor] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
+    const [metricMode, setMetricMode] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("epa-aqi");
     const MIN_YEAR = 2019;
     const MAX_YEAR = new Date().getFullYear();
     const themeIsDark = resolvedTheme === "dark";
@@ -2457,6 +2734,46 @@ function AirQualityDashboard() {
     }["AirQualityDashboard.useEffect"], [
         currentYear
     ]);
+    // Sidebar always shows rolling data across current + previous year (independent of calendar tab)
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "AirQualityDashboard.useEffect": ()=>{
+            const thisYear = new Date().getFullYear();
+            const prevYear = thisYear - 1;
+            Promise.all([
+                fetch(`https://admin.smartalmaty.kz/api/v1/ecology/api/air-quality-calendar/?year=${prevYear}`, {
+                    headers: {
+                        Accept: "application/json"
+                    }
+                }).then({
+                    "AirQualityDashboard.useEffect": (r)=>r.json()
+                }["AirQualityDashboard.useEffect"]),
+                fetch(`https://admin.smartalmaty.kz/api/v1/ecology/api/air-quality-calendar/?year=${thisYear}`, {
+                    headers: {
+                        Accept: "application/json"
+                    }
+                }).then({
+                    "AirQualityDashboard.useEffect": (r)=>r.json()
+                }["AirQualityDashboard.useEffect"])
+            ]).then({
+                "AirQualityDashboard.useEffect": ([prev, curr])=>{
+                    const merged = {};
+                    for (const result of [
+                        prev,
+                        curr
+                    ]){
+                        result.data?.forEach({
+                            "AirQualityDashboard.useEffect": (item)=>{
+                                if (item.avg_pm25 != null) merged[item.date] = item.avg_pm25;
+                            }
+                        }["AirQualityDashboard.useEffect"]);
+                    }
+                    setSidebarAqiData(merged);
+                }
+            }["AirQualityDashboard.useEffect"]).catch({
+                "AirQualityDashboard.useEffect": ()=>{}
+            }["AirQualityDashboard.useEffect"]);
+        }
+    }["AirQualityDashboard.useEffect"], []);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "AirQualityDashboard.useEffect": ()=>{
             fetchSensors();
@@ -2566,7 +2883,7 @@ function AirQualityDashboard() {
                     children: monthName
                 }, void 0, false, {
                     fileName: "[project]/app/page.tsx",
-                    lineNumber: 243,
+                    lineNumber: 267,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2584,12 +2901,12 @@ function AirQualityDashboard() {
                             children: d
                         }, d, false, {
                             fileName: "[project]/app/page.tsx",
-                            lineNumber: 248,
+                            lineNumber: 272,
                             columnNumber: 13
                         }, this))
                 }, void 0, false, {
                     fileName: "[project]/app/page.tsx",
-                    lineNumber: 246,
+                    lineNumber: 270,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2602,7 +2919,7 @@ function AirQualityDashboard() {
                             length: firstDay
                         }, (_, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {}, `e-${i}`, false, {
                                 fileName: "[project]/app/page.tsx",
-                                lineNumber: 258,
+                                lineNumber: 282,
                                 columnNumber: 13
                             }, this)),
                         Array.from({
@@ -2639,7 +2956,7 @@ function AirQualityDashboard() {
                                         children: day
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 285,
+                                        lineNumber: 309,
                                         columnNumber: 17
                                     }, this),
                                     aqi != null && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2647,26 +2964,26 @@ function AirQualityDashboard() {
                                         children: aqi.toFixed(0)
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 287,
+                                        lineNumber: 311,
                                         columnNumber: 19
                                     }, this)
                                 ]
                             }, day, true, {
                                 fileName: "[project]/app/page.tsx",
-                                lineNumber: 266,
+                                lineNumber: 290,
                                 columnNumber: 15
                             }, this);
                         })
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/page.tsx",
-                    lineNumber: 253,
+                    lineNumber: 277,
                     columnNumber: 9
                 }, this)
             ]
         }, month, true, {
             fileName: "[project]/app/page.tsx",
-            lineNumber: 242,
+            lineNumber: 266,
             columnNumber: 7
         }, this);
     };
@@ -2675,7 +2992,7 @@ function AirQualityDashboard() {
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$header$2d$menu$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["HeaderMenu"], {}, void 0, false, {
                 fileName: "[project]/app/page.tsx",
-                lineNumber: 299,
+                lineNumber: 323,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2683,15 +3000,16 @@ function AirQualityDashboard() {
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$aqi$2d$side$2d$panel$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AqiSidePanel"], {
                         currentPm25: currentPm25,
-                        aqiData: aqiData,
+                        aqiData: sidebarAqiData,
                         cityName: "Алматы",
                         selectedSensor: selectedSensor,
                         onClearSensor: ()=>setSelectedSensor(null),
                         sensors: sensors,
-                        onSensorSelect: (s)=>setSelectedSensor(s)
+                        onSensorSelect: (s)=>setSelectedSensor(s),
+                        metricMode: metricMode
                     }, void 0, false, {
                         fileName: "[project]/app/page.tsx",
-                        lineNumber: 304,
+                        lineNumber: 328,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2709,14 +3027,14 @@ function AirQualityDashboard() {
                                                 className: "h-4 w-4"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 327,
+                                                lineNumber: 352,
                                                 columnNumber: 15
                                             }, this),
                                             "Карта сенсоров"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 318,
+                                        lineNumber: 343,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2728,14 +3046,33 @@ function AirQualityDashboard() {
                                                 className: "h-4 w-4"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 339,
+                                                lineNumber: 364,
                                                 columnNumber: 15
                                             }, this),
                                             "Календарь"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 330,
+                                        lineNumber: 355,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                        type: "button",
+                                        onClick: ()=>setActiveTab("analytics"),
+                                        className: `flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === "analytics" ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`,
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chart$2d$no$2d$axes$2d$column$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__BarChart2$3e$__["BarChart2"], {
+                                                className: "h-4 w-4"
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/page.tsx",
+                                                lineNumber: 376,
+                                                columnNumber: 15
+                                            }, this),
+                                            "Аналитика"
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/app/page.tsx",
+                                        lineNumber: 367,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2743,6 +3080,33 @@ function AirQualityDashboard() {
                                         children: [
                                             activeTab === "map" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
                                                 children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "flex items-center rounded-lg border border-border bg-muted/50 p-0.5",
+                                                        children: [
+                                                            "epa-aqi",
+                                                            "pm25"
+                                                        ].map((mode)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                                type: "button",
+                                                                onClick: ()=>setMetricMode(mode),
+                                                                className: `rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${metricMode === mode ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`,
+                                                                children: mode === "epa-aqi" ? "US EPA AQI" : "PM2.5 µg/m³"
+                                                            }, mode, false, {
+                                                                fileName: "[project]/app/page.tsx",
+                                                                lineNumber: 387,
+                                                                columnNumber: 23
+                                                            }, this))
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/page.tsx",
+                                                        lineNumber: 385,
+                                                        columnNumber: 19
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "h-4 w-px bg-border"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/page.tsx",
+                                                        lineNumber: 401,
+                                                        columnNumber: 19
+                                                    }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
                                                         type: "text",
                                                         value: sensorSearch,
@@ -2751,7 +3115,7 @@ function AirQualityDashboard() {
                                                         className: "h-8 w-44 rounded-md border border-border bg-background px-3 text-sm"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 347,
+                                                        lineNumber: 402,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$filter$2d$dropdown$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FilterDropdown"], {
@@ -2765,7 +3129,7 @@ function AirQualityDashboard() {
                                                         searchPlaceholder: "Поиск поставщика…"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 354,
+                                                        lineNumber: 409,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$filter$2d$dropdown$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FilterDropdown"], {
@@ -2779,7 +3143,7 @@ function AirQualityDashboard() {
                                                         searchPlaceholder: "Поиск района…"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 361,
+                                                        lineNumber: 416,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2794,7 +3158,7 @@ function AirQualityDashboard() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 368,
+                                                        lineNumber: 423,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2809,7 +3173,7 @@ function AirQualityDashboard() {
                                                         children: "Сброс"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 371,
+                                                        lineNumber: 426,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
@@ -2827,14 +3191,14 @@ function AirQualityDashboard() {
                                                                 className: "mr-1 h-4 w-4"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/page.tsx",
-                                                                lineNumber: 390,
+                                                                lineNumber: 445,
                                                                 columnNumber: 21
                                                             }, this),
                                                             currentYear - 1
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 383,
+                                                        lineNumber: 438,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2842,7 +3206,7 @@ function AirQualityDashboard() {
                                                         children: currentYear
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 393,
+                                                        lineNumber: 448,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2857,13 +3221,13 @@ function AirQualityDashboard() {
                                                                 className: "ml-1 h-4 w-4"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/page.tsx",
-                                                                lineNumber: 402,
+                                                                lineNumber: 457,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 394,
+                                                        lineNumber: 449,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
@@ -2878,36 +3242,36 @@ function AirQualityDashboard() {
                                                     className: "h-4 w-4"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/page.tsx",
-                                                    lineNumber: 415,
+                                                    lineNumber: 470,
                                                     columnNumber: 23
                                                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$moon$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Moon$3e$__["Moon"], {
                                                     className: "h-4 w-4"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/page.tsx",
-                                                    lineNumber: 416,
+                                                    lineNumber: 471,
                                                     columnNumber: 23
                                                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                     className: "h-4 w-4"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/page.tsx",
-                                                    lineNumber: 417,
+                                                    lineNumber: 472,
                                                     columnNumber: 21
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 406,
+                                                lineNumber: 461,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 344,
+                                        lineNumber: 381,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/page.tsx",
-                                lineNumber: 317,
+                                lineNumber: 342,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2918,7 +3282,7 @@ function AirQualityDashboard() {
                                         children: "Загрузка сенсоров…"
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 425,
+                                        lineNumber: 480,
                                         columnNumber: 15
                                     }, this) : sensorsError ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "flex h-full w-full flex-col items-center justify-center gap-3 text-center",
@@ -2928,7 +3292,7 @@ function AirQualityDashboard() {
                                                 children: sensorsError
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 430,
+                                                lineNumber: 485,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2938,21 +3302,22 @@ function AirQualityDashboard() {
                                                 children: "Попробовать снова"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 431,
+                                                lineNumber: 486,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 429,
+                                        lineNumber: 484,
                                         columnNumber: 15
                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(SensorMap, {
                                         sensors: filteredSensors,
                                         onSensorSelect: (s)=>setSelectedSensor(s),
-                                        focusedSensor: selectedSensor
+                                        focusedSensor: selectedSensor,
+                                        metricMode: metricMode
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 436,
+                                        lineNumber: 491,
                                         columnNumber: 15
                                     }, this),
                                     !sensorsLoading && !sensorsError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2963,7 +3328,7 @@ function AirQualityDashboard() {
                                                 children: activeSensors.length
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 446,
+                                                lineNumber: 502,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2971,7 +3336,7 @@ function AirQualityDashboard() {
                                                 children: "активных"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 447,
+                                                lineNumber: 503,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2979,7 +3344,7 @@ function AirQualityDashboard() {
                                                 children: "·"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 448,
+                                                lineNumber: 504,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2987,7 +3352,7 @@ function AirQualityDashboard() {
                                                 children: sensorsWithData.length
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 449,
+                                                lineNumber: 505,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2995,19 +3360,19 @@ function AirQualityDashboard() {
                                                 children: "с PM2.5"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 450,
+                                                lineNumber: 506,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 445,
+                                        lineNumber: 501,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/page.tsx",
-                                lineNumber: 423,
+                                lineNumber: 478,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3054,7 +3419,7 @@ function AirQualityDashboard() {
                                                         children: label
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 470,
+                                                        lineNumber: 526,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3062,18 +3427,18 @@ function AirQualityDashboard() {
                                                         children: value
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 471,
+                                                        lineNumber: 527,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, label, true, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 469,
+                                                lineNumber: 525,
                                                 columnNumber: 19
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 460,
+                                        lineNumber: 516,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3084,7 +3449,7 @@ function AirQualityDashboard() {
                                                 children: currentYear
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 479,
+                                                lineNumber: 535,
                                                 columnNumber: 15
                                             }, this),
                                             lastCalendarDate && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3095,13 +3460,13 @@ function AirQualityDashboard() {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 481,
+                                                lineNumber: 537,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 478,
+                                        lineNumber: 534,
                                         columnNumber: 13
                                     }, this),
                                     loading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3109,7 +3474,7 @@ function AirQualityDashboard() {
                                         children: "Загрузка данных…"
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 489,
+                                        lineNumber: 545,
                                         columnNumber: 15
                                     }, this) : !Object.keys(aqiData).length ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "flex flex-1 flex-col items-center justify-center gap-1",
@@ -3119,7 +3484,7 @@ function AirQualityDashboard() {
                                                 children: "Ошибка загрузки данных"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 494,
+                                                lineNumber: 550,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3127,13 +3492,13 @@ function AirQualityDashboard() {
                                                 children: "Убедитесь, что API доступен и возвращает JSON."
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 495,
+                                                lineNumber: 551,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 493,
+                                        lineNumber: 549,
                                         columnNumber: 15
                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "min-h-0 flex-1 grid grid-cols-4 grid-rows-3 gap-2",
@@ -3142,7 +3507,7 @@ function AirQualityDashboard() {
                                         }, (_, i)=>renderMonthCalendar(i))
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 498,
+                                        lineNumber: 554,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3154,7 +3519,7 @@ function AirQualityDashboard() {
                                                         className: `h-3 w-3 flex-shrink-0 rounded-sm ${item.className}`
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 507,
+                                                        lineNumber: 563,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3166,36 +3531,36 @@ function AirQualityDashboard() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 508,
+                                                        lineNumber: 564,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, item.label, true, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 506,
+                                                lineNumber: 562,
                                                 columnNumber: 17
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 504,
+                                        lineNumber: 560,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/page.tsx",
-                                lineNumber: 456,
+                                lineNumber: 512,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/page.tsx",
-                        lineNumber: 315,
+                        lineNumber: 340,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/page.tsx",
-                lineNumber: 302,
+                lineNumber: 326,
                 columnNumber: 7
             }, this),
             hoveredDay && (()=>{
@@ -3231,7 +3596,7 @@ function AirQualityDashboard() {
                                         children: fullDate
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 535,
+                                        lineNumber: 591,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3242,7 +3607,7 @@ function AirQualityDashboard() {
                                                 children: pm25.toFixed(1)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 537,
+                                                lineNumber: 593,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3250,19 +3615,19 @@ function AirQualityDashboard() {
                                                 children: "µg/m³"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 538,
+                                                lineNumber: 594,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 536,
+                                        lineNumber: 592,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/page.tsx",
-                                lineNumber: 534,
+                                lineNumber: 590,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3278,7 +3643,7 @@ function AirQualityDashboard() {
                                                 }
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 545,
+                                                lineNumber: 601,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3286,13 +3651,13 @@ function AirQualityDashboard() {
                                                 children: label
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 546,
+                                                lineNumber: 602,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 544,
+                                        lineNumber: 600,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3305,7 +3670,7 @@ function AirQualityDashboard() {
                                                         children: "Норма ВОЗ 5.0 µg/m³"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 552,
+                                                        lineNumber: 608,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3319,13 +3684,13 @@ function AirQualityDashboard() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 553,
+                                                        lineNumber: 609,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 551,
+                                                lineNumber: 607,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3338,18 +3703,18 @@ function AirQualityDashboard() {
                                                     }
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/page.tsx",
-                                                    lineNumber: 556,
+                                                    lineNumber: 612,
                                                     columnNumber: 21
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 555,
+                                                lineNumber: 611,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 550,
+                                        lineNumber: 606,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3360,7 +3725,7 @@ function AirQualityDashboard() {
                                                 children: "🚬"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 565,
+                                                lineNumber: 621,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3370,7 +3735,7 @@ function AirQualityDashboard() {
                                                         children: cigs
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 567,
+                                                        lineNumber: 623,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3378,47 +3743,47 @@ function AirQualityDashboard() {
                                                         children: "сигарет за день"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 568,
+                                                        lineNumber: 624,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 566,
+                                                lineNumber: 622,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 564,
+                                        lineNumber: 620,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/page.tsx",
-                                lineNumber: 542,
+                                lineNumber: 598,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/page.tsx",
-                        lineNumber: 532,
+                        lineNumber: 588,
                         columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/page.tsx",
-                    lineNumber: 528,
+                    lineNumber: 584,
                     columnNumber: 11
                 }, this);
             })()
         ]
     }, void 0, true, {
         fileName: "[project]/app/page.tsx",
-        lineNumber: 298,
+        lineNumber: 322,
         columnNumber: 5
     }, this);
 }
-_s(AirQualityDashboard, "5WtTu1kQZlALfcfS2zwkjJu2U0k=", false, function() {
+_s(AirQualityDashboard, "8QnYZ80VnPzZsdZcS73jAvPNZws=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$themes$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useTheme"]
     ];
@@ -3433,4 +3798,4 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
 }),
 ]);
 
-//# sourceMappingURL=_136f69b4._.js.map
+//# sourceMappingURL=_dfc99a80._.js.map

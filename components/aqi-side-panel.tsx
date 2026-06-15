@@ -14,30 +14,14 @@ import {
 } from "recharts"
 import { Info, ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react"
 import type { AirSensor } from "@/components/sensor-map-yandex"
+import { pm25Color, getPm25Config, pm25ToEpaAqi } from "@/lib/pm25"
+import type { AirQualityLevel, AirMetricMode } from "@/lib/pm25"
 
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false })
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-type AqiLevel =
-  | "very-good"
-  | "good"
-  | "moderate"
-  | "unhealthy"
-  | "very-unhealthy"
-  | "hazardous"
-
 type TimeRange = "24h" | "30d" | "180d"
-
-type AqiConfig = {
-  level: AqiLevel
-  label: string
-  heroLabel: string
-  heroBg: string
-  barBg: string
-  accent: string
-  accentLight: string
-}
 
 type SensorDailyDay = {
   day: string
@@ -46,34 +30,9 @@ type SensorDailyDay = {
   max_value?: number
 }
 
-// ── AQI config ─────────────────────────────────────────────────────────────────
-
-function getAqiConfig(pm25: number): AqiConfig {
-  if (pm25 <= 15)
-    return { level: "very-good",      label: "Хорошо",                          heroLabel: "Хорошо",             heroBg: "#dcfce7", barBg: "#22c55e", accent: "#22c55e", accentLight: "#dcfce7" }
-  if (pm25 <= 35)
-    return { level: "good",            label: "Умеренно",                        heroLabel: "Умеренно",           heroBg: "#fef9c3", barBg: "#ca8a04", accent: "#ca8a04", accentLight: "#fef9c3" }
-  if (pm25 <= 55)
-    return { level: "moderate",        label: "Вредно для чувствительных групп", heroLabel: "Чувствительным",    heroBg: "#ffedd5", barBg: "#f97316", accent: "#f97316", accentLight: "#ffedd5" }
-  if (pm25 <= 150)
-    return { level: "unhealthy",       label: "Вредно",                          heroLabel: "Вредно",             heroBg: "#fee2e2", barBg: "#ef4444", accent: "#ef4444", accentLight: "#fee2e2" }
-  if (pm25 <= 250)
-    return { level: "very-unhealthy",  label: "Очень вредно",                    heroLabel: "Очень вредно",       heroBg: "#f3e8ff", barBg: "#a855f7", accent: "#a855f7", accentLight: "#f3e8ff" }
-  return   { level: "hazardous",       label: "Опасно",                          heroLabel: "Опасно",             heroBg: "#fce7e7", barBg: "#7f1d1d", accent: "#dc2626", accentLight: "#fce7e7" }
-}
-
-function barColor(pm25: number): string {
-  if (pm25 <= 15) return "#22c55e"
-  if (pm25 <= 35) return "#a3e635"
-  if (pm25 <= 55) return "#f59e0b"
-  if (pm25 <= 150) return "#f97316"
-  if (pm25 <= 250) return "#a855f7"
-  return "#ef4444"
-}
-
 // ── Insights ───────────────────────────────────────────────────────────────────
 
-const INSIGHTS: Record<AqiLevel, { title: string; body: string }[]> = {
+const INSIGHTS: Record<AirQualityLevel, { title: string; body: string }[]> = {
   "very-good": [
     { title: "Выходите на улицу!",       body: "Отличное время для спорта и активного отдыха на свежем воздухе." },
     { title: "Проветривайте помещение",  body: "Откройте окна — воздух чистый и безопасен для всех." },
@@ -100,7 +59,7 @@ const INSIGHTS: Record<AqiLevel, { title: string; body: string }[]> = {
   ],
 }
 
-const INSIGHT_MASCOT: Record<AqiLevel, string> = {
+const INSIGHT_MASCOT: Record<AirQualityLevel, string> = {
   "very-good":     "/assets/insights-mascots/mascot-enjoy-weather.png",
   good:            "/assets/insights-mascots/mascot-enjoy-weather.png",
   moderate:        "/assets/insights-mascots/mascot-coffee.png",
@@ -139,6 +98,7 @@ type Props = {
   onClearSensor?: () => void
   sensors?: AirSensor[]
   onSensorSelect?: (sensor: AirSensor) => void
+  metricMode?: AirMetricMode
 }
 
 export function AqiSidePanel({
@@ -149,6 +109,7 @@ export function AqiSidePanel({
   onClearSensor,
   sensors,
   onSensorSelect,
+  metricMode = "epa-aqi",
 }: Props) {
   const [timeRange, setTimeRange] = useState<TimeRange>("30d")
   const [bgAnim, setBgAnim] = useState<object | null>(null)
@@ -205,7 +166,7 @@ export function AqiSidePanel({
     ? (selectedSensor.value ?? 0)
     : currentPm25
 
-  const config = getAqiConfig(activePm25)
+  const config = getPm25Config(activePm25)
 
   // Load Lottie animations whenever AQI level changes
   useEffect(() => {
@@ -229,7 +190,7 @@ export function AqiSidePanel({
       return sensorDaily.slice(-limit).map((d) => ({
         label: new Date(d.day).toLocaleDateString("ru-RU", { month: "short", day: "numeric" }),
         pm25:  d.avg_value,
-        fill:  barColor(d.avg_value),
+        fill:  pm25Color(d.avg_value),
       }))
     }
     return Object.entries(aqiData)
@@ -238,24 +199,29 @@ export function AqiSidePanel({
       .map(([date, pm25]) => ({
         label: new Date(date).toLocaleDateString("ru-RU", { month: "short", day: "numeric" }),
         pm25,
-        fill: barColor(pm25),
+        fill: pm25Color(pm25),
       }))
   }, [selectedSensor, sensorDaily, aqiData, timeRange])
 
-  // 30d / 7d averages
+  // Sorted city-wide values (date-ascending) — used for slicing 30d/7d windows
+  const sortedAqiValues = useMemo(
+    () => Object.entries(aqiData).sort(([a], [b]) => a.localeCompare(b)).map(([, v]) => v),
+    [aqiData],
+  )
+
   const avg30d = useMemo(() => {
     const vals = selectedSensor
       ? sensorDaily.slice(-30).map((d) => d.avg_value)
-      : Object.values(aqiData).slice(-30)
+      : sortedAqiValues.slice(-30)
     return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null
-  }, [selectedSensor, sensorDaily, aqiData])
+  }, [selectedSensor, sensorDaily, sortedAqiValues])
 
   const avg7d = useMemo(() => {
     const vals = selectedSensor
       ? sensorDaily.slice(-7).map((d) => d.avg_value)
-      : Object.values(aqiData).slice(-7)
+      : sortedAqiValues.slice(-7)
     return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null
-  }, [selectedSensor, sensorDaily, aqiData])
+  }, [selectedSensor, sensorDaily, sortedAqiValues])
 
   // Hourly heatmap source — sensor daily as { date: avg_value }
   const heatmapData = useMemo<Record<string, number>>(() => {
@@ -264,6 +230,18 @@ export function AqiSidePanel({
     }
     return aqiData
   }, [selectedSensor, sensorDaily, aqiData])
+
+  // EPA AQI from last available 24h daily average (accurate per EPA spec)
+  const epaAqi = useMemo(() => {
+    if (selectedSensor) {
+      const lastDay = sensorDaily.at(-1)
+      return lastDay ? pm25ToEpaAqi(lastDay.avg_value) : null
+    }
+    const lastDate = Object.keys(aqiData).sort().at(-1)
+    return lastDate != null ? pm25ToEpaAqi(aqiData[lastDate]) : null
+  }, [selectedSensor, sensorDaily, aqiData])
+
+  const showEpa = metricMode === "epa-aqi"
 
   const cigarettes   = ((avg30d ?? activePm25) * 30 / 22.2).toFixed(1)
   const whoMultiplier = activePm25 > 0 ? (activePm25 / WHO_LIMIT).toFixed(1) : "0.0"
@@ -303,9 +281,11 @@ export function AqiSidePanel({
             {mascotAnim && <Lottie animationData={mascotAnim} loop className="h-full w-full" />}
           </div>
           <p className="text-[12px] font-extrabold leading-none" style={{ color: config.accent }}>
-            {activePm25.toFixed(1)}
+            {showEpa && epaAqi ? epaAqi.aqi : activePm25.toFixed(1)}
           </p>
-          <p className="text-[9px] text-muted-foreground">µg/m³</p>
+          <p className="text-[9px] text-muted-foreground">
+            {showEpa && epaAqi ? "AQI" : "µg/m³"}
+          </p>
         </button>
 
         <button
@@ -412,7 +392,7 @@ export function AqiSidePanel({
             <div className="flex flex-col gap-2">
               {top10.map((s, i) => {
                 const pm25 = s.value ?? 0
-                const color = barColor(pm25)
+                const color = pm25Color(pm25)
                 return (
                   <button
                     key={s.id}
@@ -453,7 +433,7 @@ export function AqiSidePanel({
                 <div className="flex flex-col gap-1">
                   {restSensors.map((s, i) => {
                     const pm25 = s.value ?? 0
-                    const color = barColor(pm25)
+                    const color = pm25Color(pm25)
                     return (
                       <button
                         key={s.id}
@@ -548,13 +528,29 @@ export function AqiSidePanel({
             className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-5 py-2.5 text-white"
             style={{ backgroundColor: config.barBg }}
           >
-            <p className="text-sm font-bold">
-              PM<sub>2.5</sub>: {activePm25.toFixed(1)} µg/m³
-            </p>
-            <div className="text-right text-[10px] leading-tight opacity-90">
-              <p>Качество воздуха</p>
-              <p>PM<sub>2.5</sub> (µg/m³)</p>
-            </div>
+            {showEpa && epaAqi ? (
+              <>
+                <div className="leading-none">
+                  <p className="text-[10px] font-semibold opacity-80">US EPA AQI</p>
+                  <p className="text-2xl font-black">{epaAqi.aqi}</p>
+                </div>
+                <div className="text-right text-[10px] leading-tight opacity-90">
+                  <p>PM<sub>2.5</sub> {activePm25.toFixed(1)} µg/m³</p>
+                  <p>на основе 24h среднего</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-bold">
+                  PM<sub>2.5</sub>: {activePm25.toFixed(1)} µg/m³
+                  {showEpa && <span className="ml-1.5 text-[10px] opacity-70">(AQI недоступен)</span>}
+                </p>
+                <div className="text-right text-[10px] leading-tight opacity-90">
+                  <p>Качество воздуха</p>
+                  <p>PM<sub>2.5</sub> (µg/m³)</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -748,7 +744,7 @@ function HourlyHeatmap({ aqiData }: { aqiData: Record<string, number> }) {
                   <div
                     key={hour}
                     className="flex-1 rounded-[3px]"
-                    style={{ height: 13, backgroundColor: barColor(v) }}
+                    style={{ height: 13, backgroundColor: pm25Color(v) }}
                     title={`${label} ${String(hour).padStart(2, "0")}:00 — ${v.toFixed(1)} µg/m³`}
                   />
                 )

@@ -54,37 +54,45 @@ export function FilterDropdown({
 
   const isAll = value === "all"
 
+  const borderCls = open
+    ? "border-primary/60 shadow-sm shadow-primary/10"
+    : isAll
+      ? "border-border"
+      : "border-primary/50 shadow-sm"
+
+  const bgCls = open
+    ? "bg-primary/5"
+    : isAll
+      ? "bg-background hover:bg-muted/40"
+      : "bg-primary/8"
+
+  const textCls = open || !isAll ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+
   return (
     <div ref={containerRef} className="relative">
-      {/* Trigger button */}
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className={`
-          group flex h-8 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium
-          transition-all duration-150 outline-none
-          ${open
-            ? "border-primary/60 bg-primary/5 text-foreground shadow-sm shadow-primary/10"
-            : isAll
-              ? "border-border bg-background text-muted-foreground hover:border-border/80 hover:bg-muted/40 hover:text-foreground"
-              : "border-primary/50 bg-primary/8 text-primary shadow-sm"
-          }
-        `}
-      >
-        <span className="max-w-[120px] truncate">{selectedLabel}</span>
+      {/* Trigger — split into two sibling elements to avoid nested <button> */}
+      <div className={`flex h-8 items-center rounded-lg border transition-all duration-150 ${borderCls} ${bgCls}`}>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className={`flex h-full items-center gap-1.5 pl-3 ${isAll ? "pr-3" : "pr-1"} text-sm font-medium outline-none ${textCls}`}
+        >
+          <span className="max-w-[120px] truncate">{selectedLabel}</span>
+          <ChevronDown
+            className={`h-3.5 w-3.5 flex-shrink-0 transition-transform duration-200 ${open ? "-rotate-180" : ""} ${isAll ? "opacity-50" : "opacity-70"}`}
+          />
+        </button>
         {!isAll && (
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); onChange("all"); setOpen(false) }}
-            className="ml-0.5 -mr-0.5 rounded-sm p-0.5 opacity-60 hover:opacity-100 transition-opacity"
+            onClick={() => { onChange("all"); setOpen(false) }}
+            className="flex h-full items-center pr-2 opacity-60 transition-opacity hover:opacity-100"
+            aria-label="Сбросить фильтр"
           >
             <X className="h-3 w-3" />
           </button>
         )}
-        <ChevronDown
-          className={`h-3.5 w-3.5 flex-shrink-0 transition-transform duration-200 ${open ? "-rotate-180" : ""} ${isAll ? "opacity-50" : "opacity-70"}`}
-        />
-      </button>
+      </div>
 
       {/* Dropdown panel */}
       {open && (

@@ -186,3 +186,395 @@ Import traces:
 [01:02:43.713] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
 [01:02:43.713] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
 [01:02:43.713] Browser LOG     %c[Vercel Web Analytics]%c [view] http://127.0.0.1:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://127.0.0.1:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1781275867985} /_vercel/insights/view
+[59:18:01.997] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[59:18:01.997] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[59:18:01.997] Browser LOG     %c[Vercel Web Analytics]%c [view] http://127.0.0.1:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://127.0.0.1:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1781485586269} /_vercel/insights/view
+[59:18:53.879] Server  LOG      ✓ Compiled in 250ms
+[59:18:58.607] Server  LOG      ✓ Compiled in 35ms
+[59:18:58.722] Browser ERROR   uncaughtError: ReferenceError: clusterGroupRef is not defined
+[59:19:19.802] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[59:19:19.916] Server  LOG      ✓ Compiled in 26ms
+[59:19:20.043] Browser LOG     %c[Vercel Web Analytics]%c [view] http://127.0.0.1:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://127.0.0.1:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1781485664235} /_vercel/insights/view
+[59:19:20.414] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[59:19:20.414] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[59:19:20.414] Browser LOG     %c[Vercel Web Analytics]%c [view] http://127.0.0.1:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://127.0.0.1:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1781485664663} /_vercel/insights/view
+[59:19:42.594] Server  LOG      ✓ Compiled in 31ms
+[59:20:03.315] Browser ERROR   In HTML, %s cannot be a descendant of <%s>.
+This will cause a hydration error.%s <button> button 
+
+  ...
+    <RedirectErrorBoundary router={{...}}>
+      <InnerLayoutRouter url="/" tree={[...]} params={{}} cacheNode={{lazyData:null, ...}} segmentPath={[...]} ...>
+        <SegmentViewNode type="page" pagePath="page.tsx">
+          <SegmentTrieNode>
+          <ClientPageRoot Component={function AirQualityDashboard} serverProvidedParams={{...}}>
+            <AirQualityDashboard params={Promise} searchParams={Promise}>
+              <div className="flex h-scr...">
+                <HeaderMenu>
+                <div className="flex min-h...">
+                  <AqiSidePanel>
+                  <div className="flex min-w...">
+                    <div className="flex shrin...">
+                      <button>
+                      <button>
+                      <div className="ml-auto fl...">
+                        <input>
+                        <FilterDropdown>
+                        <FilterDropdown value="Алатауский..." onChange={function bound dispatchSetState} options={[...]} ...>
+                          <div ref={{...}} className="relative">
+>                           <button
+>                             type="button"
+>                             onClick={function onClick}
+>                             className={"\n          group flex h-8 items-center gap-1.5 rounded-lg border px-3 text..."}
+>                           >
+                              <span>
+>                             <button
+>                               type="button"
+>                               onClick={function onClick}
+>                               className="ml-0.5 -mr-0.5 rounded-sm p-0.5 opacity-60 hover:opacity-100 transition-opa..."
+>                             >
+                              ...
+                        ...
+                        ...
+                    ...
+        ...
+      ...
+
+[59:25:25.602] Server  LOG      ✓ Compiled in 33ms
+[59:25:41.944] Server  LOG      ✓ Compiled in 32ms
+[59:25:48.652] Server  LOG      ✓ Compiled in 36ms
+[59:25:48.820] Browser ERROR   uncaughtError: TypeError: Cannot read properties of undefined (reading '_leaflet_pos')
+[59:26:05.164] Server  LOG      ✓ Compiled in 147ms
+[59:26:14.478] Server  LOG      ✓ Compiled in 111ms
+[59:30:43.158] Server  LOG      ✓ Compiled in 25ms
+[59:30:55.718] Server  LOG      ✓ Compiled in 22ms
+[59:30:56.525] Browser ERROR   uncaughtError: ReferenceError: aqiColor is not defined
+[59:31:10.970] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[59:31:11.051] Server  LOG      ✓ Compiled in 62ms
+[59:31:11.657] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[59:31:11.657] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[59:31:11.657] Browser LOG     %c[Vercel Web Analytics]%c [view] http://127.0.0.1:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://127.0.0.1:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1781486375876} /_vercel/insights/view
+[59:31:22.208] Server  LOG      ✓ Compiled in 33ms
+[59:31:31.491] Server  LOG      ✓ Compiled in 28ms
+[59:32:05.557] Server  LOG      ✓ Compiled in 39ms
+[59:32:06.523] Browser ERROR   uncaughtError: ReferenceError: getAqiConfig is not defined
+[59:32:52.632] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[59:32:52.638] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[59:32:52.716] Server  LOG      ✓ Compiled in 152ms
+[59:32:53.204] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[59:32:53.204] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[59:32:53.204] Browser LOG     %c[Vercel Web Analytics]%c [view] http://127.0.0.1:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://127.0.0.1:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1781486477426} /_vercel/insights/view
+[59:32:53.204] Browser ERROR   uncaughtError: ReferenceError: barColor is not defined
+[59:35:05.304] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[59:35:05.380] Server  LOG      ✓ Compiled in 50ms
+[59:35:05.775] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[59:35:05.775] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[59:35:05.775] Browser LOG     %c[Vercel Web Analytics]%c [view] http://127.0.0.1:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://127.0.0.1:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1781486610040} /_vercel/insights/view
+[59:36:07.625] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[59:36:07.625] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[59:36:07.625] Browser LOG     %c[Vercel Web Analytics]%c [view] http://127.0.0.1:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://127.0.0.1:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1781486671888} /_vercel/insights/view
+[59:41:07.267] Server  LOG      ✓ Compiled in 23ms
+[59:41:11.736] Server  LOG      ✓ Compiled in 21ms
+[59:41:18.697] Server  LOG      ✓ Compiled in 31ms
+[59:41:24.160] Server  LOG      ✓ Compiled in 21ms
+[59:41:40.936] Server  LOG      ✓ Compiled in 22ms
+[59:41:47.294] Server  LOG      ✓ Compiled in 22ms
+[59:41:47.369] Browser ERROR   The final argument passed to %s changed size between renders. The order and size of this array must remain constant.
+
+Previous: %s
+Incoming: %s useEffect [[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]] [[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object], pm25]
+[59:42:00.302] Server  LOG      ✓ Compiled in 25ms
+[59:42:12.585] Server  LOG      ✓ Compiled in 44ms
+[59:42:21.062] Server  LOG      ✓ Compiled in 29ms
+[59:42:32.495] Server  LOG      ✓ Compiled in 57ms
+[59:53:35.266] Server  LOG      ✓ Compiled in 26ms
+[59:53:39.616] Server  LOG      ✓ Compiled in 27ms
+[59:53:45.855] Server  LOG      ✓ Compiled in 25ms
+[59:53:50.485] Server  LOG      ✓ Compiled in 22ms
+[59:53:58.055] Server  LOG      ✓ Compiled in 48ms
+[59:54:52.377] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[59:54:52.377] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[59:54:52.377] Browser LOG     %c[Vercel Web Analytics]%c [view] http://127.0.0.1:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://127.0.0.1:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1781487796650} /_vercel/insights/view
+[59:59:06.409] Server  LOG      ✓ Compiled in 39ms
+[59:59:14.449] Server  LOG      ✓ Compiled in 30ms
+[59:59:20.588] Server  LOG      ✓ Compiled in 22ms
+[59:59:30.366] Server  LOG      ✓ Compiled in 32ms
+[60:26:08.912] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[60:26:08.912] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[60:26:08.912] Browser LOG     %c[Vercel Web Analytics]%c [view] http://127.0.0.1:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://127.0.0.1:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1781489673214} /_vercel/insights/view
+[60:32:08.236] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[60:32:08.236] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[60:32:08.236] Browser LOG     %c[Vercel Web Analytics]%c [view] http://127.0.0.1:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://127.0.0.1:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1781490032514} /_vercel/insights/view
+[60:41:56.820] Browser ERROR   In HTML, %s cannot be a descendant of <%s>.
+This will cause a hydration error.%s <button> button 
+
+  ...
+    <RedirectErrorBoundary router={{...}}>
+      <InnerLayoutRouter url="/" tree={[...]} params={{}} cacheNode={{lazyData:null, ...}} segmentPath={[...]} ...>
+        <SegmentViewNode type="page" pagePath="page.tsx">
+          <SegmentTrieNode>
+          <ClientPageRoot Component={function AirQualityDashboard} serverProvidedParams={{...}}>
+            <AirQualityDashboard params={Promise} searchParams={Promise}>
+              <div className="flex h-scr...">
+                <HeaderMenu>
+                <div className="flex min-h...">
+                  <AqiSidePanel>
+                  <div className="flex min-w...">
+                    <div className="flex shrin...">
+                      <button>
+                      <button>
+                      <div className="ml-auto fl...">
+                        <div>
+                        <div>
+                        <input>
+                        <FilterDropdown>
+                        <FilterDropdown value="Алатауский..." onChange={function bound dispatchSetState} options={[...]} ...>
+                          <div ref={{...}} className="relative">
+>                           <button
+>                             type="button"
+>                             onClick={function onClick}
+>                             className={"\n          group flex h-8 items-center gap-1.5 rounded-lg border px-3 text..."}
+>                           >
+                              <span>
+>                             <button
+>                               type="button"
+>                               onClick={function onClick}
+>                               className="ml-0.5 -mr-0.5 rounded-sm p-0.5 opacity-60 hover:opacity-100 transition-opa..."
+>                             >
+                              ...
+                        ...
+                        ...
+                    ...
+        ...
+      ...
+
+[60:48:46.613] Server  LOG      ✓ Compiled in 57ms
+[60:57:28.903] Server  LOG      ✓ Compiled in 26ms
+[60:57:41.713] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[60:57:41.713] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[60:57:41.713] Browser LOG     %c[Vercel Web Analytics]%c [view] http://127.0.0.1:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://127.0.0.1:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1781491566015} /_vercel/insights/view
+[60:57:43.558] Server  LOG      ✓ Compiled in 21ms
+[60:57:55.707] Server  LOG      ✓ Compiled in 25ms
+[60:58:21.990] Server  LOG      ✓ Compiled in 25ms
+[60:58:28.028] Server  LOG      ✓ Compiled in 23ms
+[60:58:28.245] Browser ERROR   uncaughtError: TypeError: Cannot read properties of undefined (reading '_leaflet_pos')
+[60:58:58.974] Server  LOG      ✓ Compiled in 27ms
+[60:59:10.641] Server  LOG      ✓ Compiled in 23ms
+[60:59:41.565] Server  LOG      ✓ Compiled in 125ms
+[61:15:29.348] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[61:15:29.348] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[61:15:29.348] Browser LOG     %c[Vercel Web Analytics]%c [view] http://127.0.0.1:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://127.0.0.1:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1781492633631} /_vercel/insights/view
+[61:18:28.599] Server  LOG      ✓ Compiled in 48ms
+[61:19:14.422] Server  LOG      ✓ Compiled in 25ms
+[61:19:14.670] Browser ERROR   uncaughtError: TypeError: Cannot read properties of undefined (reading '_leaflet_pos')
+[61:19:27.297] Server  LOG      ✓ Compiled in 101ms
+[61:19:27.629] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[61:19:27.629] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[61:19:27.629] Browser LOG     %c[Vercel Web Analytics]%c [view] http://127.0.0.1:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://127.0.0.1:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1781492871928} /_vercel/insights/view
+[61:19:34.254] Server  LOG      ✓ Compiled in 162ms
+[61:19:34.683] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:19:34.683] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:19:34.683] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[61:19:34.683] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[61:19:34.683] Browser LOG     %c[Vercel Web Analytics]%c [view] http://127.0.0.1:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://127.0.0.1:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1781492878943} /_vercel/insights/view
+[61:19:34.683] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:19:34.683] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:19:35.669] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:19:35.669] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:19:35.669] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:19:35.669] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:19:35.669] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. Дек
+[61:19:35.833] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:19:35.833] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:19:35.833] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. Дек
+[61:19:50.263] Server  LOG      ✓ Compiled in 27ms
+[61:19:50.363] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:19:50.363] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:19:50.363] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. Дек
+[61:27:16.280] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:27:16.281] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:27:16.281] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. Дек
+[61:27:16.281] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:27:16.281] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:27:30.678] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:27:30.678] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:27:30.678] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. Дек
+[61:27:30.678] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:27:30.678] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:27:31.012] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:27:31.012] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:27:31.012] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. Дек
+[61:27:31.288] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:27:31.288] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:27:31.288] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. Дек
+[61:27:31.579] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:27:31.579] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:27:31.579] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. Дек
+[61:27:31.579] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:27:31.579] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:27:57.613] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:27:57.613] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:27:57.613] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. Дек
+[61:27:59.748] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:27:59.748] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:27:59.748] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. Дек
+[61:29:44.763] Server  LOG      ✓ Compiled in 34ms
+[61:29:45.579] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:29:45.579] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:29:45.579] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:29:45.579] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:29:45.579] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. Дек
+[61:30:18.902] Server  LOG      ✓ Compiled in 28ms
+[61:30:19.057] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:30:19.057] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:30:19.057] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. Дек
+[61:32:45.867] Server  LOG      ✓ Compiled in 26ms
+[61:32:45.985] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:32:45.985] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:32:45.985] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. Дек
+[61:32:55.850] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:32:55.850] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:32:55.850] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. Дек
+[61:34:05.635] Server  LOG      ✓ Compiled in 26ms
+[61:34:05.723] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:34:05.723] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:34:13.045] Server  LOG      ✓ Compiled in 24ms
+[61:34:13.135] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:34:13.135] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:34:59.130] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:34:59.130] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:34:59.130] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:34:59.130] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:35:03.381] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:35:03.381] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:35:08.200] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:35:08.200] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:35:08.724] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:35:08.724] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:35:08.724] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:35:08.724] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:36:04.441] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:36:04.441] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:36:05.356] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:36:05.356] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:36:05.896] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:36:05.896] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:36:07.095] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:36:07.095] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:36:07.095] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:36:07.095] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:37:36.122] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:37:36.122] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:37:36.122] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:37:36.122] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:38:30.916] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:38:30.916] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:38:30.916] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:38:30.916] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:38:30.916] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:38:30.916] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:38:30.916] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[61:38:30.916] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[61:38:30.916] Browser LOG     %c[Vercel Web Analytics]%c [view] http://127.0.0.1:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://127.0.0.1:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1781494015222} /_vercel/insights/view
+[61:38:32.325] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:38:32.325] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:38:32.325] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:38:32.325] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:38:32.325] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:38:32.325] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:38:32.550] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:38:32.550] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:38:33.683] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:38:33.683] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:38:33.683] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.
+[61:38:33.683] Browser WARN    The width(160) and height(160) are both fixed numbers,
+       maybe you don't need to use a ResponsiveContainer.

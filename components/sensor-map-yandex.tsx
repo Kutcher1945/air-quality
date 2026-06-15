@@ -3,9 +3,8 @@
 import { useEffect, useRef } from "react"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
-import "leaflet.markercluster/dist/leaflet.markercluster"
-import "leaflet.markercluster/dist/MarkerCluster.css"
-import "leaflet.markercluster/dist/MarkerCluster.Default.css"
+import { pm25Color, pm25Label, pm25ToEpaAqi } from "@/lib/pm25"
+import type { AirMetricMode } from "@/lib/pm25"
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -31,6 +30,7 @@ interface SensorMapProps {
   sensors: AirSensor[]
   onSensorSelect?: (sensor: AirSensor) => void
   focusedSensor?: AirSensor | null
+  metricMode?: AirMetricMode
 }
 
 // ── AQI helpers ────────────────────────────────────────────────────────────────
@@ -39,32 +39,19 @@ const DEFAULT_CENTER: [number, number] = [43.238949, 76.889709]
 const YANDEX_TILE_URL =
   "https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&lang=ru_RU"
 
-function aqiColor(pm25: number | null | undefined): string {
-  if (pm25 == null) return "#9ca3af"
-  if (pm25 <= 15)  return "#22c55e"
-  if (pm25 <= 35)  return "#eab308"
-  if (pm25 <= 55)  return "#f97316"
-  if (pm25 <= 150) return "#ef4444"
-  if (pm25 <= 250) return "#a855f7"
-  return "#7f1d1d"
-}
-
-function aqiLabel(pm25: number | null | undefined): string {
-  if (pm25 == null) return "Нет данных"
-  if (pm25 <= 15)  return "Хорошо"
-  if (pm25 <= 35)  return "Умеренно"
-  if (pm25 <= 55)  return "Чувствительным"
-  if (pm25 <= 150) return "Вредно"
-  if (pm25 <= 250) return "Очень вредно"
-  return "Опасно"
-}
 
 // ── Individual sensor marker ───────────────────────────────────────────────────
 
-function createSensorIcon(pm25: number | null): L.DivIcon {
-  const color = aqiColor(pm25)
-  const display = pm25 != null ? Math.round(pm25).toString() : "?"
-  const w = display.length <= 2 ? 34 : 40
+function createSensorIcon(pm25: number | null, metricMode: AirMetricMode = "pm25"): L.DivIcon {
+  const color = pm25Color(pm25)
+  let display: string
+  if (metricMode === "epa-aqi" && pm25 != null) {
+    const aqi = pm25ToEpaAqi(pm25)
+    display = aqi ? aqi.aqi.toString() : "?"
+  } else {
+    display = pm25 != null ? Math.round(pm25).toString() : "?"
+  }
+  const w = display.length <= 2 ? 34 : display.length === 3 ? 40 : 46
 
   return L.divIcon({
     className: "",
@@ -87,38 +74,6 @@ function createSensorIcon(pm25: number | null): L.DivIcon {
     iconSize:    [w, 24],
     iconAnchor:  [w / 2, 12],
     popupAnchor: [0, -16],
-  })
-}
-
-// ── Cluster marker ─────────────────────────────────────────────────────────────
-
-function createClusterIcon(avgPm25: number | null, count: number): L.DivIcon {
-  const color = aqiColor(avgPm25)
-  const size = count >= 50 ? 52 : count >= 20 ? 44 : 36
-  const label = avgPm25 != null ? Math.round(avgPm25).toString() : count.toString()
-  const sub   = avgPm25 != null ? `<div style="font-size:9px;opacity:.85;">${count}</div>` : ""
-
-  return L.divIcon({
-    className: "",
-    html: `<div style="
-      background:${color};
-      color:#fff;
-      font-family:system-ui,-apple-system,sans-serif;
-      font-weight:800;
-      font-size:${size >= 52 ? 16 : 13}px;
-      width:${size}px;
-      height:${size}px;
-      border-radius:${size / 2}px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      box-shadow:0 3px 10px rgba(0,0,0,0.35);
-      border:2px solid rgba(255,255,255,0.4);
-      line-height:1.1;
-    ">${label}${sub}</div>`,
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
   })
 }
 
@@ -153,10 +108,10 @@ function loadDistrictLayer(map: L.Map): void {
 
 // ── Component ──────────────────────────────────────────────────────────────────
 
-export default function SensorMapYandex({ sensors, onSensorSelect, focusedSensor }: SensorMapProps) {
+export default function SensorMapYandex({ sensors, onSensorSelect, focusedSensor, metricMode = "pm25" }: SensorMapProps) {
   const mapRef          = useRef<HTMLDivElement>(null)
   const mapInstanceRef  = useRef<L.Map | null>(null)
-  const clusterGroupRef = useRef<any>(null)
+  const markerLayerRef  = useRef<L.LayerGroup | null>(null)
   const hasAutoFitted   = useRef(false)
 
   const valid = sensors.filter(
@@ -200,47 +155,28 @@ export default function SensorMapYandex({ sensors, onSensorSelect, focusedSensor
     )
   }, [focusedSensor])
 
-  // Update markers when sensors change
+  // Update markers when sensors or metric mode changes
   useEffect(() => {
     if (!mapInstanceRef.current || typeof window === "undefined") return
     const map = mapInstanceRef.current
 
-    if (clusterGroupRef.current) {
-      map.removeLayer(clusterGroupRef.current)
-      clusterGroupRef.current = null
+    if (markerLayerRef.current) {
+      map.removeLayer(markerLayerRef.current)
+      markerLayerRef.current = null
     }
 
     if (!valid.length) return
 
-    // @ts-ignore
-    const clusterGroup = L.markerClusterGroup({
-      disableClusteringAtZoom: 15,
-      chunkedLoading: true,
-      spiderfyOnMaxZoom: true,
-      showCoverageOnHover: false,
-      maxClusterRadius: 50,
-      removeOutsideVisibleBounds: true,
-      animate: true,
-      animateAddingMarkers: false,
-      iconCreateFunction(cluster: any) {
-        const markers = cluster.getAllChildMarkers()
-        let total = 0, n = 0
-        for (const m of markers) {
-          const v = m.options.pm25
-          if (v != null) { total += v; n++ }
-        }
-        const avg = n > 0 ? total / n : null
-        return createClusterIcon(avg, markers.length)
-      },
-    })
+    const layer = L.layerGroup()
 
     for (const sensor of valid) {
       const pm25 = sensor.value
-      const icon = createSensorIcon(pm25)
-      const color = aqiColor(pm25)
+      const icon = createSensorIcon(pm25, metricMode)
+      const color = pm25Color(pm25)
       const time = sensor.measured_at
         ? new Date(sensor.measured_at).toLocaleString("ru-RU")
         : "—"
+      const aqiResult = pm25 != null ? pm25ToEpaAqi(pm25) : null
 
       const popup = `
         <div style="min-width:200px;font-family:system-ui">
@@ -248,46 +184,32 @@ export default function SensorMapYandex({ sensors, onSensorSelect, focusedSensor
           ${sensor.source ? `<p style="font-size:11px;color:#6b7280;margin:0 0 8px">${sensor.source}</p>` : ""}
           ${pm25 != null ? `
             <div style="margin:0 0 8px;padding:8px 10px;background:${color}18;border-left:3px solid ${color};border-radius:4px">
-              <p style="margin:0;font-size:10px;color:#6b7280">PM<sub>2.5</sub> · ${aqiLabel(pm25)}</p>
+              <p style="margin:0;font-size:10px;color:#6b7280">PM<sub>2.5</sub> · ${pm25Label(pm25)}</p>
               <p style="margin:4px 0 0;font-size:20px;font-weight:800;color:${color}">${pm25.toFixed(1)} <span style="font-size:11px;font-weight:500">µg/m³</span></p>
+              ${aqiResult ? `<p style="margin:4px 0 0;font-size:11px;color:#6b7280">US EPA AQI ≈ <strong style="color:${color}">${aqiResult.aqi}</strong> <span style="opacity:0.7">(текущее PM2.5)</span></p>` : ""}
             </div>
           ` : `<p style="color:#9ca3af;font-size:12px;margin:0 0 8px">Нет данных PM₂.₅</p>`}
           <p style="margin:0;font-size:10px;color:#9ca3af">Обновлено: ${time}</p>
         </div>`
 
-      const marker = L.marker([sensor.latitude!, sensor.longitude!], {
-        icon,
-        pm25,
-      } as any).bindPopup(popup)
+      const marker = L.marker([sensor.latitude!, sensor.longitude!], { icon } as any)
+        .bindPopup(popup)
 
       if (onSensorSelect) {
         marker.on("click", () => onSensorSelect(sensor))
       }
 
-      clusterGroup.addLayer(marker)
+      layer.addLayer(marker)
     }
 
-    // Cluster tooltip on hover
-    clusterGroup.on("clustermouseover", (e: any) => {
-      const markers = e.layer.getAllChildMarkers()
-      let total = 0, n = 0
-      for (const m of markers) { const v = m.options.pm25; if (v != null) { total += v; n++ } }
-      const avg = n > 0 ? (total / n).toFixed(1) : "—"
-      e.layer.bindTooltip(
-        `<div style="font-size:12px;font-weight:600">${markers.length} сенсоров · PM₂.₅ ${avg}</div>`,
-        { permanent: false, direction: "top", className: "cluster-tooltip", offset: [0, -8] },
-      ).openTooltip()
-    })
-    clusterGroup.on("clustermouseout", (e: any) => e.layer.closeTooltip())
-
-    clusterGroup.addTo(map)
-    clusterGroupRef.current = clusterGroup
+    layer.addTo(map)
+    markerLayerRef.current = layer
 
     if (!hasAutoFitted.current && valid.length > 0) {
       map.fitBounds(L.latLngBounds(valid.map((s) => [s.latitude!, s.longitude!])), { padding: [50, 50] })
       hasAutoFitted.current = true
     }
-  }, [valid])
+  }, [valid, metricMode])
 
   if (!valid.length) {
     return (

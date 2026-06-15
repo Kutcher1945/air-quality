@@ -1,4 +1,165 @@
 (globalThis.TURBOPACK || (globalThis.TURBOPACK = [])).push([typeof document === "object" ? document.currentScript : undefined,
+"[project]/lib/pm25.ts [app-client] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+/**
+ * PM2.5 concentration categories and US EPA AQI (2024) calculation.
+ *
+ * Note: "levels" here are PM2.5 concentration categories (WHO/health-based),
+ * NOT the US EPA AQI index (0–500). See pm25ToEpaAqi() for the actual index.
+ *
+ * Thresholds align with WHO 2021 24h guideline (15 µg/m³) as upper bound
+ * for the "good" category, then follow EPA 2024 breakpoints from ≥35.5 onward.
+ */ // ── Types ──────────────────────────────────────────────────────────────────────
+__turbopack_context__.s([
+    "getPm25Config",
+    ()=>getPm25Config,
+    "pm25Color",
+    ()=>pm25Color,
+    "pm25Label",
+    ()=>pm25Label,
+    "pm25ToEpaAqi",
+    ()=>pm25ToEpaAqi
+]);
+function pm25Color(pm25) {
+    if (pm25 == null) return "#9ca3af";
+    if (pm25 <= 15) return "#3b82f6";
+    if (pm25 <= 35) return "#22c55e";
+    if (pm25 <= 55) return "#eab308";
+    if (pm25 <= 150) return "#ef4444";
+    if (pm25 <= 250) return "#a855f7";
+    return "#7f1d1d";
+}
+function pm25Label(pm25) {
+    if (pm25 == null) return "Нет данных";
+    if (pm25 <= 15) return "Хорошо";
+    if (pm25 <= 35) return "Умеренно";
+    if (pm25 <= 55) return "Чувствительным";
+    if (pm25 <= 150) return "Вредно";
+    if (pm25 <= 250) return "Очень вредно";
+    return "Опасно";
+}
+function getPm25Config(pm25) {
+    if (pm25 <= 15) return {
+        level: "very-good",
+        label: "Хорошо",
+        heroLabel: "Хорошо",
+        heroBg: "#dbeafe",
+        barBg: "#3b82f6",
+        accent: "#3b82f6",
+        accentLight: "#dbeafe"
+    };
+    if (pm25 <= 35) return {
+        level: "good",
+        label: "Умеренно",
+        heroLabel: "Умеренно",
+        heroBg: "#dcfce7",
+        barBg: "#22c55e",
+        accent: "#22c55e",
+        accentLight: "#dcfce7"
+    };
+    if (pm25 <= 55) return {
+        level: "moderate",
+        label: "Вредно для чувствительных групп",
+        heroLabel: "Чувствительным",
+        heroBg: "#fef9c3",
+        barBg: "#eab308",
+        accent: "#ca8a04",
+        accentLight: "#fef9c3"
+    };
+    if (pm25 <= 150) return {
+        level: "unhealthy",
+        label: "Вредно",
+        heroLabel: "Вредно",
+        heroBg: "#fee2e2",
+        barBg: "#ef4444",
+        accent: "#ef4444",
+        accentLight: "#fee2e2"
+    };
+    if (pm25 <= 250) return {
+        level: "very-unhealthy",
+        label: "Очень вредно",
+        heroLabel: "Очень вредно",
+        heroBg: "#f3e8ff",
+        barBg: "#a855f7",
+        accent: "#a855f7",
+        accentLight: "#f3e8ff"
+    };
+    return {
+        level: "hazardous",
+        label: "Опасно",
+        heroLabel: "Опасно",
+        heroBg: "#fee2e2",
+        barBg: "#7f1d1d",
+        accent: "#7f1d1d",
+        accentLight: "#fee2e2"
+    };
+}
+// ── US EPA AQI (2024) ──────────────────────────────────────────────────────────
+/**
+ * EPA 2024 PM2.5 breakpoints (eCFR Appendix G, Table 2).
+ * Input must be 24-hour AVERAGE PM2.5, truncated to 1 decimal.
+ * Source: https://www.ecfr.gov/current/title-40/appendix-Appendix_G_to_Part_58
+ */ const EPA_2024_BREAKPOINTS = [
+    {
+        cLo: 0.0,
+        cHi: 9.0,
+        iLo: 0,
+        iHi: 50,
+        level: "very-good"
+    },
+    {
+        cLo: 9.1,
+        cHi: 35.4,
+        iLo: 51,
+        iHi: 100,
+        level: "good"
+    },
+    {
+        cLo: 35.5,
+        cHi: 55.4,
+        iLo: 101,
+        iHi: 150,
+        level: "moderate"
+    },
+    {
+        cLo: 55.5,
+        cHi: 125.4,
+        iLo: 151,
+        iHi: 200,
+        level: "unhealthy"
+    },
+    {
+        cLo: 125.5,
+        cHi: 225.4,
+        iLo: 201,
+        iHi: 300,
+        level: "very-unhealthy"
+    },
+    {
+        cLo: 225.5,
+        cHi: 325.4,
+        iLo: 301,
+        iHi: 500,
+        level: "hazardous"
+    }
+];
+function pm25ToEpaAqi(pm25_24h_avg) {
+    if (!isFinite(pm25_24h_avg) || pm25_24h_avg < 0) return null;
+    // EPA truncates to 1 decimal place (not rounds)
+    const c = Math.floor(pm25_24h_avg * 10) / 10;
+    const bp = EPA_2024_BREAKPOINTS.find((x)=>c >= x.cLo && c <= x.cHi) ?? EPA_2024_BREAKPOINTS[EPA_2024_BREAKPOINTS.length - 1];
+    const aqi = Math.round((bp.iHi - bp.iLo) / (bp.cHi - bp.cLo) * (c - bp.cLo) + bp.iLo);
+    return {
+        aqi,
+        level: bp.level,
+        label: pm25Label(c)
+    };
+}
+if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
+    __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
+}
+}),
 "[project]/components/sensor-map-yandex.tsx [app-client] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
 
@@ -24,16 +185,10 @@ const DEFAULT_CENTER = [
 ];
 const YANDEX_TILE_URL = "https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&lang=ru_RU";
 // ── Individual sensor marker ───────────────────────────────────────────────────
-function createSensorIcon(pm25, metricMode = "pm25") {
+function createSensorIcon(pm25) {
     const color = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["pm25Color"])(pm25);
-    let display;
-    if (metricMode === "epa-aqi" && pm25 != null) {
-        const aqi = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["pm25ToEpaAqi"])(pm25);
-        display = aqi ? aqi.aqi.toString() : "?";
-    } else {
-        display = pm25 != null ? Math.round(pm25).toString() : "?";
-    }
-    const w = display.length <= 2 ? 34 : display.length === 3 ? 40 : 46;
+    const display = pm25 != null ? Math.round(pm25).toString() : "?";
+    const w = display.length <= 2 ? 34 : 40;
     return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].divIcon({
         className: "",
         html: `<div style="
@@ -104,7 +259,7 @@ function loadDistrictLayer(map) {
         }).addTo(map);
     }).catch(()=>{});
 }
-function SensorMapYandex({ sensors, onSensorSelect, focusedSensor, metricMode = "pm25" }) {
+function SensorMapYandex({ sensors, onSensorSelect, focusedSensor }) {
     _s();
     const mapRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const mapInstanceRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
@@ -152,7 +307,7 @@ function SensorMapYandex({ sensors, onSensorSelect, focusedSensor, metricMode = 
     }["SensorMapYandex.useEffect"], [
         focusedSensor
     ]);
-    // Update markers when sensors or metric mode changes
+    // Update markers when sensors change
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "SensorMapYandex.useEffect": ()=>{
             if (!mapInstanceRef.current || ("TURBOPACK compile-time value", "object") === "undefined") return;
@@ -165,10 +320,9 @@ function SensorMapYandex({ sensors, onSensorSelect, focusedSensor, metricMode = 
             const layer = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].layerGroup();
             for (const sensor of valid){
                 const pm25 = sensor.value;
-                const icon = createSensorIcon(pm25, metricMode);
+                const icon = createSensorIcon(pm25);
                 const color = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["pm25Color"])(pm25);
                 const time = sensor.measured_at ? new Date(sensor.measured_at).toLocaleString("ru-RU") : "—";
-                const aqiResult = pm25 != null ? (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["pm25ToEpaAqi"])(pm25) : null;
                 const popup = `
         <div style="min-width:200px;font-family:system-ui">
           <p style="font-size:13px;font-weight:700;margin:0 0 8px;color:#111">${sensor.sensor_name ?? "Сенсор"}</p>
@@ -177,7 +331,6 @@ function SensorMapYandex({ sensors, onSensorSelect, focusedSensor, metricMode = 
             <div style="margin:0 0 8px;padding:8px 10px;background:${color}18;border-left:3px solid ${color};border-radius:4px">
               <p style="margin:0;font-size:10px;color:#6b7280">PM<sub>2.5</sub> · ${(0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["pm25Label"])(pm25)}</p>
               <p style="margin:4px 0 0;font-size:20px;font-weight:800;color:${color}">${pm25.toFixed(1)} <span style="font-size:11px;font-weight:500">µg/m³</span></p>
-              ${aqiResult ? `<p style="margin:4px 0 0;font-size:11px;color:#6b7280">US EPA AQI ≈ <strong style="color:${color}">${aqiResult.aqi}</strong> <span style="opacity:0.7">(текущее PM2.5)</span></p>` : ""}
             </div>
           ` : `<p style="color:#9ca3af;font-size:12px;margin:0 0 8px">Нет данных PM₂.₅</p>`}
           <p style="margin:0;font-size:10px;color:#9ca3af">Обновлено: ${time}</p>
@@ -213,8 +366,7 @@ function SensorMapYandex({ sensors, onSensorSelect, focusedSensor, metricMode = 
             }
         }
     }["SensorMapYandex.useEffect"], [
-        valid,
-        metricMode
+        valid
     ]);
     if (!valid.length) {
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -222,7 +374,7 @@ function SensorMapYandex({ sensors, onSensorSelect, focusedSensor, metricMode = 
             children: "Нет данных сенсоров"
         }, void 0, false, {
             fileName: "[project]/components/sensor-map-yandex.tsx",
-            lineNumber: 216,
+            lineNumber: 206,
             columnNumber: 7
         }, this);
     }
@@ -231,7 +383,7 @@ function SensorMapYandex({ sensors, onSensorSelect, focusedSensor, metricMode = 
         className: "h-full w-full rounded-xl"
     }, void 0, false, {
         fileName: "[project]/components/sensor-map-yandex.tsx",
-        lineNumber: 222,
+        lineNumber: 212,
         columnNumber: 10
     }, this);
 }
@@ -249,4 +401,4 @@ __turbopack_context__.n(__turbopack_context__.i("[project]/components/sensor-map
 }),
 ]);
 
-//# sourceMappingURL=components_sensor-map-yandex_tsx_b53077f4._.js.map
+//# sourceMappingURL=_39293d74._.js.map

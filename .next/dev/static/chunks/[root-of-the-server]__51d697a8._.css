@@ -975,10 +975,6 @@
     margin-top: calc(var(--spacing) * 6);
   }
 
-  .-mr-0\.5 {
-    margin-right: calc(var(--spacing) * -.5);
-  }
-
   .mr-1 {
     margin-right: calc(var(--spacing) * 1);
   }
@@ -1027,12 +1023,12 @@
     margin-bottom: calc(var(--spacing) * 8);
   }
 
-  .ml-0\.5 {
-    margin-left: calc(var(--spacing) * .5);
-  }
-
   .ml-1 {
     margin-left: calc(var(--spacing) * 1);
+  }
+
+  .ml-1\.5 {
+    margin-left: calc(var(--spacing) * 1.5);
   }
 
   .ml-2 {
@@ -1073,6 +1069,10 @@
 
   .inline-flex {
     display: inline-flex;
+  }
+
+  .table {
+    display: table;
   }
 
   .size-8 {
@@ -1188,6 +1188,10 @@
 
   .h-screen {
     height: 100vh;
+  }
+
+  .max-h-80 {
+    max-height: calc(var(--spacing) * 80);
   }
 
   .max-h-\[240px\] {
@@ -1314,8 +1318,16 @@
     width: 100vw;
   }
 
+  .max-w-\[100px\] {
+    max-width: 100px;
+  }
+
   .max-w-\[120px\] {
     max-width: 120px;
+  }
+
+  .max-w-\[140px\] {
+    max-width: 140px;
   }
 
   .max-w-full {
@@ -1537,6 +1549,12 @@
     margin-block-end: calc(calc(var(--spacing) * 4) * calc(1 - var(--tw-space-y-reverse)));
   }
 
+  :where(.space-y-5 > :not(:last-child)) {
+    --tw-space-y-reverse: 0;
+    margin-block-start: calc(calc(var(--spacing) * 5) * var(--tw-space-y-reverse));
+    margin-block-end: calc(calc(var(--spacing) * 5) * calc(1 - var(--tw-space-y-reverse)));
+  }
+
   :where(.space-y-6 > :not(:last-child)) {
     --tw-space-y-reverse: 0;
     margin-block-start: calc(calc(var(--spacing) * 6) * var(--tw-space-y-reverse));
@@ -1708,6 +1726,16 @@
 
   .border-border {
     border-color: var(--border);
+  }
+
+  .border-border\/40 {
+    border-color: var(--border);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .border-border\/40 {
+      border-color: color-mix(in oklab, var(--border) 40%, transparent);
+    }
   }
 
   .border-cyan-500 {
@@ -2098,6 +2126,10 @@
     .bg-blue-500\/20 {
       background-color: color-mix(in oklab, var(--color-blue-500) 20%, transparent);
     }
+  }
+
+  .bg-border {
+    background-color: var(--border);
   }
 
   .bg-card {
@@ -2823,8 +2855,16 @@
     padding-top: calc(var(--spacing) * 6);
   }
 
+  .pr-1 {
+    padding-right: calc(var(--spacing) * 1);
+  }
+
   .pr-2 {
     padding-right: calc(var(--spacing) * 2);
+  }
+
+  .pr-3 {
+    padding-right: calc(var(--spacing) * 3);
   }
 
   .pr-4 {
@@ -2851,8 +2891,16 @@
     padding-bottom: calc(var(--spacing) * 6);
   }
 
+  .pb-16 {
+    padding-bottom: calc(var(--spacing) * 16);
+  }
+
   .pl-1 {
     padding-left: calc(var(--spacing) * 1);
+  }
+
+  .pl-3 {
+    padding-left: calc(var(--spacing) * 3);
   }
 
   .pl-4 {
@@ -3411,6 +3459,10 @@
     opacity: .7;
   }
 
+  .opacity-80 {
+    opacity: .8;
+  }
+
   .opacity-90 {
     opacity: .9;
   }
@@ -3824,18 +3876,6 @@
   }
 
   @media (hover: hover) {
-    .hover\:border-border\/80:hover {
-      border-color: var(--border);
-    }
-
-    @supports (color: color-mix(in lab, red, red)) {
-      .hover\:border-border\/80:hover {
-        border-color: color-mix(in oklab, var(--border) 80%, transparent);
-      }
-    }
-  }
-
-  @media (hover: hover) {
     .hover\:border-slate-200:hover {
       border-color: var(--color-slate-200);
     }
@@ -3928,6 +3968,18 @@
   @media (hover: hover) {
     .hover\:bg-muted:hover {
       background-color: var(--muted);
+    }
+  }
+
+  @media (hover: hover) {
+    .hover\:bg-muted\/30:hover {
+      background-color: var(--muted);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+      .hover\:bg-muted\/30:hover {
+        background-color: color-mix(in oklab, var(--muted) 30%, transparent);
+      }
     }
   }
 
@@ -4311,6 +4363,12 @@
     }
   }
 
+  @media (min-width: 40rem) {
+    .sm\:grid-cols-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
   @media (min-width: 48rem) {
     .md\:block {
       display: block;
@@ -4398,6 +4456,12 @@
   @media (min-width: 64rem) {
     .lg\:grid-cols-4 {
       grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 80rem) {
+    .xl\:grid-cols-6 {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
     }
   }
 
@@ -4632,12 +4696,12 @@
   --sidebar-accent-foreground: #171717;
   --sidebar-border: #e5e5e5;
   --sidebar-ring: #a1a1a1;
-  --aqi-good: #00ae20;
-  --aqi-moderate: #fab800;
-  --aqi-sensitive: #ff9661;
+  --aqi-good: #3e77ff;
+  --aqi-moderate: #00ae20;
+  --aqi-sensitive: #fab800;
   --aqi-unhealthy: #ff4d4d;
   --aqi-very-unhealthy: #b431cf;
-  --aqi-hazardous: #5a1069;
+  --aqi-hazardous: #400c0c;
 }
 
 @supports (color: lab(0% 0 0)) {
@@ -4674,12 +4738,12 @@
     --sidebar-accent-foreground: lab(7.78201% -.0000149012 0);
     --sidebar-border: lab(90.952% 0 -.0000119209);
     --sidebar-ring: lab(66.128% -.0000298023 .0000119209);
-    --aqi-good: lab(61.9188% -60.9766 57.3005);
-    --aqi-moderate: lab(79.2104% 17.3112 101.535);
-    --aqi-sensitive: lab(73.053% 54.28 67.7419);
+    --aqi-good: lab(52.2593% 20.0448 -77.5377);
+    --aqi-moderate: lab(61.9188% -60.9766 57.3005);
+    --aqi-sensitive: lab(79.2104% 17.3112 101.535);
     --aqi-unhealthy: lab(60.3318% 79.249 50.4558);
     --aqi-very-unhealthy: lab(47.2763% 66.59 -55.1092);
-    --aqi-hazardous: lab(22.0739% 41.725 -34.4234);
+    --aqi-hazardous: lab(12.195% 25.2733 13.8856);
   }
 }
 
@@ -4716,12 +4780,12 @@
   --sidebar-accent-foreground: #fafafa;
   --sidebar-border: #262626;
   --sidebar-ring: #525252;
-  --aqi-good: #02b827;
-  --aqi-moderate: #fab800;
-  --aqi-sensitive: #ff9661;
+  --aqi-good: #5e92ff;
+  --aqi-moderate: #02b827;
+  --aqi-sensitive: #fab800;
   --aqi-unhealthy: #ff4d4d;
   --aqi-very-unhealthy: #b431cf;
-  --aqi-hazardous: #821698;
+  --aqi-hazardous: #5d2725;
 }
 
 @supports (color: lab(0% 0 0)) {
@@ -4758,12 +4822,12 @@
     --sidebar-accent-foreground: lab(98.26% 0 0);
     --sidebar-border: lab(15.204% 0 -.00000596046);
     --sidebar-ring: lab(34.924% 0 0);
-    --aqi-good: lab(65.4144% -60.9276 56.4711);
-    --aqi-moderate: lab(79.2104% 17.3112 101.535);
-    --aqi-sensitive: lab(73.053% 54.28 67.7419);
+    --aqi-good: lab(60.5788% 17.0343 -77.6778);
+    --aqi-moderate: lab(65.4144% -60.9276 56.4711);
+    --aqi-sensitive: lab(79.2104% 17.3112 101.535);
     --aqi-unhealthy: lab(60.3318% 79.249 50.4558);
     --aqi-very-unhealthy: lab(47.2763% 66.59 -55.1092);
-    --aqi-hazardous: lab(32.7973% 55.788 -45.8726);
+    --aqi-hazardous: lab(23.8155% 25.0824 14.4029);
   }
 }
 
@@ -4871,6 +4935,23 @@
 
 .leaflet-tooltip-top:before {
   border-top-color: #fff !important;
+}
+
+.district-label {
+  color: #1e293b !important;
+  pointer-events: none !important;
+  background: #ffffffd9 !important;
+  border: none !important;
+  border-radius: 4px !important;
+  padding: 3px 7px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 4px #0000002e !important;
+}
+
+.dark .district-label {
+  color: #e2e8f0 !important;
+  background: #1e293be6 !important;
 }
 
 @property --tw-translate-x {

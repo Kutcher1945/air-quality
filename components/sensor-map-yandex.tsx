@@ -1,10 +1,11 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import L from "leaflet"
-import "leaflet/dist/leaflet.css"
+import { useEffect, useRef, useState, useMemo } from "react"
+import mapboxgl from "mapbox-gl"
+import "mapbox-gl/dist/mapbox-gl.css"
 import { pm25Color, pm25Label, pm25ToEpaAqi } from "@/lib/pm25"
 import type { AirMetricMode } from "@/lib/pm25"
+import WindLayer, { type WindPoint } from "./wind-layer"
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -25,7 +26,6 @@ export interface AirSensor {
   ecoIqStationId?: string | null
 }
 
-// Keep old Sensor as alias so page.tsx doesn't need a full rename yet
 export type Sensor = AirSensor
 
 export interface EcoIqSensor {
@@ -38,6 +38,8 @@ export interface EcoIqSensor {
   pm25_concentration: number | null
   pm25_aqi: number | null
   measured_at: string | null
+  wind_speed: number | null
+  wind_direction: number | null
 }
 
 interface SensorMapProps {
@@ -50,21 +52,31 @@ interface SensorMapProps {
   sourceFilter?: string
 }
 
-// ── AQI helpers ────────────────────────────────────────────────────────────────
+// ── Constants ──────────────────────────────────────────────────────────────────
 
-const DEFAULT_CENTER: [number, number] = [43.238949, 76.889709]
-const YANDEX_TILE_URL =
-  "https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&lang=ru_RU"
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? ""
+const DEFAULT_CENTER: [number, number] = [76.889709, 43.238949]
+const DISTRICT_COLORS = [
+  "#6366f1", "#8b5cf6", "#ec4899", "#f59e0b",
+  "#10b981", "#06b6d4", "#3b82f6", "#f97316", "#84cc16",
+]
 
-// Traffic tiles proxied through our backend so Yandex domains don't need to
-// resolve directly in the browser (blocked in some regions).
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "https://admin.smartalmaty.kz/api/v1"
-const YANDEX_TRAFFIC_URL = `${API_BASE}/air/tiles/traffic/{z}/{x}/{y}/`
+// ── Color helpers ──────────────────────────────────────────────────────────────
 
+function aqiColor(aqi: number | null): string {
+  if (aqi == null) return "#6b7280"
+  if (aqi <= 50)   return "#1BA97C"
+  if (aqi <= 100)  return "#f59e0b"
+  if (aqi <= 150)  return "#f97316"
+  if (aqi <= 200)  return "#ef4444"
+  if (aqi <= 300)  return "#a855f7"
+  return "#581c87"
+}
 
-// ── Individual sensor marker ───────────────────────────────────────────────────
+// ── Marker element factories ───────────────────────────────────────────────────
 
-function createSensorIcon(pm25: number | null, metricMode: AirMetricMode = "pm25"): L.DivIcon {
+function makeSensorEl(sensor: AirSensor, metricMode: AirMetricMode, onClick: () => void): HTMLElement {
+  const pm25  = sensor.value
   const color = pm25Color(pm25)
   let display: string
   if (metricMode === "epa-aqi" && pm25 != null) {
@@ -75,171 +87,271 @@ function createSensorIcon(pm25: number | null, metricMode: AirMetricMode = "pm25
   }
   const w = display.length <= 2 ? 34 : display.length === 3 ? 40 : 46
 
-  return L.divIcon({
-    className: "",
-    html: `<div style="
-      background:${color};
-      color:#fff;
-      font-family:system-ui,-apple-system,sans-serif;
-      font-weight:800;
-      font-size:12px;
-      line-height:1;
-      width:${w}px;
-      height:24px;
-      border-radius:7px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      box-shadow:0 2px 6px rgba(0,0,0,0.35);
-      border:2px solid rgba(255,255,255,0.45);
-    ">${display}</div>`,
-    iconSize:    [w, 24],
-    iconAnchor:  [w / 2, 12],
-    popupAnchor: [0, -16],
-  })
+  const el = document.createElement("div")
+  el.style.cssText = "cursor:pointer"
+  el.innerHTML = `<div style="background:${color};color:#fff;font-family:system-ui,sans-serif;font-weight:800;font-size:12px;line-height:1;width:${w}px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.35);border:2px solid rgba(255,255,255,.45)">${display}</div>`
+  el.addEventListener("click", onClick)
+  return el
 }
 
-// ── EcoIQ triangle marker ──────────────────────────────────────────────────────
+function makeEcoIqEl(s: EcoIqSensor, onClick: () => void): HTMLElement {
+  // pm25_aqi comes from actual recent measurements; s.aqi is the station-level
+  // field that may be stale — prefer the measurement-derived value
+  const displayAqi = s.pm25_aqi ?? s.aqi
+  const color      = aqiColor(displayAqi)
+  const label      = displayAqi != null ? displayAqi.toString() : "?"
+  const fontSize   = label.length >= 3 ? 8 : 9
 
-function aqiColor(aqi: number | null): string {
-  if (aqi == null) return "#6b7280"
-  if (aqi <= 50)  return "#1BA97C"
-  if (aqi <= 100) return "#f59e0b"
-  if (aqi <= 150) return "#f97316"
-  if (aqi <= 200) return "#ef4444"
-  if (aqi <= 300) return "#a855f7"
-  return "#581c87"
+  // Arrow and triangle live in one SVG — no CSS absolute positioning so
+  // Mapbox's anchor calculation stays correct regardless of zoom level.
+  // Arrow points TO where wind goes (meteorological FROM direction + 180°).
+  let svg: string
+  if (s.wind_direction != null) {
+    const rotate = (s.wind_direction + 180) % 360
+    svg = `<svg width="38" height="46" viewBox="0 0 38 46" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))">` +
+      `<g transform="translate(19,7) rotate(${rotate})">` +
+        `<polygon points="0,-5 3,1 0,-1 -3,1" fill="white" stroke="rgba(0,0,0,.35)" stroke-width="0.5"/>` +
+      `</g>` +
+      `<polygon points="19,14 36,46 2,46" fill="${color}" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/>` +
+      `<text x="19" y="36" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="800" font-size="${fontSize}" fill="white">${label}</text>` +
+      `</svg>`
+  } else {
+    svg = `<svg width="38" height="38" viewBox="0 0 38 38" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))">` +
+      `<polygon points="19,2 36,34 2,34" fill="${color}" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/>` +
+      `<text x="19" y="26" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="800" font-size="${fontSize}" fill="white">${label}</text>` +
+      `</svg>`
+  }
+
+  const el = document.createElement("div")
+  el.style.cssText = "cursor:pointer;line-height:0"
+  el.innerHTML = svg
+  el.addEventListener("click", onClick)
+  return el
 }
 
-function createEcoIqIcon(aqi: number | null): L.DivIcon {
-  const color = aqiColor(aqi)
-  const label = aqi != null ? aqi.toString() : "?"
-  const fontSize = label.length >= 3 ? 8 : 9
+// ── District loader ────────────────────────────────────────────────────────────
 
-  return L.divIcon({
-    className: "",
-    html: `<svg width="38" height="38" viewBox="0 0 38 38" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4))">
-      <polygon points="19,2 36,34 2,34" fill="${color}" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
-      <text
-        x="19" y="26"
-        text-anchor="middle"
-        font-family="system-ui,-apple-system,sans-serif"
-        font-weight="800"
-        font-size="${fontSize}"
-        fill="white"
-      >${label}</text>
-    </svg>`,
-    iconSize:    [38, 38],
-    iconAnchor:  [19, 38],
-    popupAnchor: [0, -38],
-  })
-}
-
-// ── District boundary helpers ──────────────────────────────────────────────────
-
-const DISTRICT_PALETTE = [
-  "#6366f1", "#8b5cf6", "#ec4899", "#f59e0b",
-  "#10b981", "#06b6d4", "#3b82f6", "#f97316", "#84cc16",
-]
-
-function loadDistrictLayer(map: L.Map): void {
-  fetch("https://admin.smartalmaty.kz/api/v1/address/districts/")
-    .then((r) => r.json())
-    .then((geojson) => {
-      let colorIdx = 0
-      L.geoJSON(geojson, {
-        filter: (f) => f.geometry != null && String(f?.properties?.name_ru ?? "").includes("район"),
-        style() {
-          const color = DISTRICT_PALETTE[colorIdx++ % DISTRICT_PALETTE.length]
-          return { color, weight: 1.5, fillColor: color, fillOpacity: 0.07 }
+async function loadDistricts(map: mapboxgl.Map): Promise<void> {
+  try {
+    const res = await fetch("https://admin.smartalmaty.kz/api/v1/address/districts/")
+    const geojson = await res.json()
+    let colorIdx = 0
+    const features = (geojson.features ?? [])
+      .filter((f: any) => f.geometry && String(f?.properties?.name_ru ?? "").includes("район"))
+      .map((f: any) => ({
+        ...f,
+        properties: {
+          ...f.properties,
+          _color: DISTRICT_COLORS[colorIdx++ % DISTRICT_COLORS.length],
         },
-        onEachFeature(feature, layer) {
-          const name: string = feature?.properties?.name_ru ?? ""
-          if (name) {
-            layer.bindTooltip(name, { sticky: true, className: "district-label" })
-          }
-        },
-      }).addTo(map)
+      }))
+
+    map.addSource("districts", {
+      type: "geojson",
+      data: { type: "FeatureCollection", features },
     })
-    .catch(() => {})
+    map.addLayer({
+      id: "districts-fill",
+      type: "fill",
+      source: "districts",
+      paint: { "fill-color": ["get", "_color"], "fill-opacity": 0.07 },
+    })
+    map.addLayer({
+      id: "districts-line",
+      type: "line",
+      source: "districts",
+      paint: { "line-color": ["get", "_color"], "line-width": 1.5, "line-opacity": 0.8 },
+    })
+
+    // District name tooltip
+    const popup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false })
+    map.on("mousemove", "districts-fill", (e) => {
+      const name = e.features?.[0]?.properties?.name_ru as string | undefined
+      if (!name) return
+      popup.setLngLat(e.lngLat).setHTML(
+        `<span style="font-family:system-ui;font-size:12px;font-weight:600;color:#111">${name}</span>`
+      ).addTo(map)
+    })
+    map.on("mouseleave", "districts-fill", () => popup.remove())
+  } catch {}
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
 
-export default function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSelect, focusedSensor, metricMode = "pm25", sourceFilter = "all" }: SensorMapProps) {
-  const mapRef            = useRef<HTMLDivElement>(null)
-  const mapInstanceRef    = useRef<L.Map | null>(null)
-  const markerLayerRef    = useRef<L.LayerGroup | null>(null)
-  const ecoIqLayerRef     = useRef<L.LayerGroup | null>(null)
-  const trafficLayerRef   = useRef<L.TileLayer | null>(null)
-  const hasAutoFitted     = useRef(false)
-  const [trafficVisible, setTrafficVisible] = useState(false)
+export default function SensorMapYandex({
+  sensors,
+  ecoIqSensors = [],
+  onSensorSelect,
+  onEcoIqSelect,
+  focusedSensor,
+  metricMode = "pm25",
+  sourceFilter = "all",
+}: SensorMapProps) {
+  const containerRef     = useRef<HTMLDivElement>(null)
+  const mapRef           = useRef<mapboxgl.Map | null>(null)
+  const markersRef       = useRef<mapboxgl.Marker[]>([])
+  const ecoIqMarkersRef  = useRef<mapboxgl.Marker[]>([])
+  const fittedRef        = useRef(false)
+  const onSelectRef      = useRef(onSensorSelect)
+  const onEcoSelectRef   = useRef(onEcoIqSelect)
 
-  const valid = sensors.filter(
-    (s) => s.latitude != null && s.longitude != null,
+  const [mapReady, setMapReady]             = useState(false)
+  const [trafficVisible, setTrafficVisible] = useState(false)
+  const [windVisible, setWindVisible]       = useState(false)
+  const [heatmapVisible, setHeatmapVisible] = useState(false)
+  const [mapBounds, setMapBounds]           = useState<{
+    north: number; south: number; east: number; west: number
+  } | null>(null)
+
+  useEffect(() => { onSelectRef.current   = onSensorSelect },  [onSensorSelect])
+  useEffect(() => { onEcoSelectRef.current = onEcoIqSelect }, [onEcoIqSelect])
+
+  // Wind points come directly from IQAir stations — 235 real ground sensors
+  // give far better spatial coverage than any forecast grid
+  const windPoints = useMemo<WindPoint[]>(() =>
+    ecoIqSensors
+      .filter(s => s.wind_speed != null && s.wind_direction != null && s.wind_speed > 0)
+      .map(s => ({
+        lat:       s.latitude,
+        lng:       s.longitude,
+        speed:     s.wind_speed!,
+        direction: s.wind_direction!,
+      })),
+    [ecoIqSensors],
   )
 
-  // Init map once
-  useEffect(() => {
-    if (typeof window === "undefined" || !mapRef.current || mapInstanceRef.current) return
+  const valid = useMemo(
+    () => sensors.filter(s => s.latitude != null && s.longitude != null),
+    [sensors],
+  )
 
-    const map = L.map(mapRef.current, {
-      crs: L.CRS.EPSG3395,
+  // ── Init map ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current) return
+
+    mapboxgl.accessToken = MAPBOX_TOKEN
+    const map = new mapboxgl.Map({
+      container: containerRef.current,
+      style: "mapbox://styles/mapbox/streets-v12",
       center: DEFAULT_CENTER,
       zoom: 11,
-      preferCanvas: true,
-      zoomAnimation: true,
     })
 
-    L.tileLayer(YANDEX_TILE_URL, {
-      attribution: '&copy; <a href="https://yandex.com/maps/">Yandex</a>',
-      maxZoom: 18,
-      minZoom: 0,
-    }).addTo(map)
+    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "bottom-right")
 
-    mapInstanceRef.current = map
-    loadDistrictLayer(map)
+    const updateBounds = () => {
+      const b = map.getBounds()
+      if (!b) return
+      setMapBounds({ north: b.getNorth(), south: b.getSouth(), east: b.getEast(), west: b.getWest() })
+    }
+    map.on("moveend", updateBounds)
+    map.on("zoomend", updateBounds)
+
+    map.on("load", () => {
+      updateBounds()
+      // Traffic source + layer (hidden by default)
+      map.addSource("mapbox-traffic", {
+        type: "vector",
+        url: "mapbox://mapbox.mapbox-traffic-v1",
+      })
+      map.addLayer({
+        id: "traffic-layer",
+        type: "line",
+        source: "mapbox-traffic",
+        "source-layer": "traffic",
+        layout: { visibility: "none" },
+        paint: {
+          "line-width": ["interpolate", ["linear"], ["zoom"], 8, 1, 16, 5],
+          "line-color": [
+            "match", ["get", "congestion"],
+            "low",      "#4ade80",
+            "moderate", "#facc15",
+            "heavy",    "#fb923c",
+            "severe",   "#f87171",
+            "#4ade80",
+          ],
+        },
+      })
+
+      // Hexagon PM2.5 source — filled by fetch after map loads
+      map.addSource("hex-pm25", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      })
+      // Fill layer — colour by avg_pm25
+      map.addLayer({
+        id: "hex-pm25-fill",
+        type: "fill",
+        source: "hex-pm25",
+        layout: { visibility: "none" },
+        paint: {
+          "fill-opacity": 0.75,
+          "fill-color": [
+            "case",
+            ["==", ["get", "avg_pm25"], null], "rgba(0,0,0,0)",
+            [
+              "interpolate", ["linear"], ["get", "avg_pm25"],
+              0,   "#22c55e",
+              15,  "#84cc16",
+              35,  "#eab308",
+              55,  "#f97316",
+              100, "#ef4444",
+              150, "#a855f7",
+            ],
+          ],
+        },
+      })
+      map.addLayer({
+        id: "hex-pm25-line",
+        type: "line",
+        source: "hex-pm25",
+        layout: { visibility: "none" },
+        paint: { "line-color": "rgba(0,0,0,0.15)", "line-width": 0.5 },
+      })
+
+      loadDistricts(map)
+      setMapReady(true)
+    })
+
+    mapRef.current = map
 
     return () => {
-      mapInstanceRef.current?.remove()
-      mapInstanceRef.current = null
+      map.remove()
+      mapRef.current = null
+      fittedRef.current = false
+      markersRef.current = []
+      ecoIqMarkersRef.current = []
     }
   }, [])
 
-  // Fly to focused sensor
+  // ── Fly to focused sensor ─────────────────────────────────────────────
   useEffect(() => {
-    if (!mapInstanceRef.current || !focusedSensor?.latitude || !focusedSensor?.longitude) return
-    mapInstanceRef.current.flyTo(
-      [focusedSensor.latitude, focusedSensor.longitude],
-      18,
-      { animate: true, duration: 1.2 },
-    )
-  }, [focusedSensor])
+    if (!mapReady || !mapRef.current || !focusedSensor?.latitude || !focusedSensor?.longitude) return
+    mapRef.current.flyTo({
+      center: [focusedSensor.longitude, focusedSensor.latitude],
+      zoom: 16,
+      duration: 1200,
+    })
+  }, [focusedSensor, mapReady])
 
-  // Update markers when sensors or metric mode changes
+  // ── Sensor markers ────────────────────────────────────────────────────
   useEffect(() => {
-    if (!mapInstanceRef.current || typeof window === "undefined") return
-    const map = mapInstanceRef.current
+    if (!mapReady || !mapRef.current) return
 
-    if (markerLayerRef.current) {
-      map.removeLayer(markerLayerRef.current)
-      markerLayerRef.current = null
-    }
+    for (const m of markersRef.current) m.remove()
+    markersRef.current = []
 
-    if (!valid.length) return
-
-    const layer = L.layerGroup()
+    const bounds = new mapboxgl.LngLatBounds()
+    let hasPoints = false
 
     for (const sensor of valid) {
-      const pm25 = sensor.value
-      const icon = createSensorIcon(pm25, metricMode)
+      const el = makeSensorEl(sensor, metricMode, () => onSelectRef.current?.(sensor))
+      const pm25  = sensor.value
       const color = pm25Color(pm25)
-      const time = sensor.measured_at
-        ? new Date(sensor.measured_at).toLocaleString("ru-RU")
-        : "—"
+      const time  = sensor.measured_at ? new Date(sensor.measured_at).toLocaleString("ru-RU") : "—"
       const aqiResult = pm25 != null ? pm25ToEpaAqi(pm25) : null
 
-      const popup = `
+      const popup = new mapboxgl.Popup({ offset: 16 }).setHTML(`
         <div style="min-width:200px;font-family:system-ui">
           <p style="font-size:13px;font-weight:700;margin:0 0 8px;color:#111">${sensor.sensor_name ?? "Сенсор"}</p>
           ${sensor.source ? `<p style="font-size:11px;color:#6b7280;margin:0 0 8px">${sensor.source}</p>` : ""}
@@ -247,131 +359,192 @@ export default function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSe
             <div style="margin:0 0 8px;padding:8px 10px;background:${color}18;border-left:3px solid ${color};border-radius:4px">
               <p style="margin:0;font-size:10px;color:#6b7280">PM<sub>2.5</sub> · ${pm25Label(pm25)}</p>
               <p style="margin:4px 0 0;font-size:20px;font-weight:800;color:${color}">${pm25.toFixed(1)} <span style="font-size:11px;font-weight:500">µg/m³</span></p>
-              ${aqiResult ? `<p style="margin:4px 0 0;font-size:11px;color:#6b7280">US EPA AQI ≈ <strong style="color:${color}">${aqiResult.aqi}</strong> <span style="opacity:0.7">(текущее PM2.5)</span></p>` : ""}
+              ${aqiResult ? `<p style="margin:4px 0 0;font-size:11px;color:#6b7280">US EPA AQI ≈ <strong style="color:${color}">${aqiResult.aqi}</strong></p>` : ""}
             </div>
           ` : `<p style="color:#9ca3af;font-size:12px;margin:0 0 8px">Нет данных PM₂.₅</p>`}
           <p style="margin:0;font-size:10px;color:#9ca3af">Обновлено: ${time}</p>
-        </div>`
+        </div>`)
 
-      const marker = L.marker([sensor.latitude!, sensor.longitude!], { icon } as any)
-        .bindPopup(popup)
+      const marker = new mapboxgl.Marker({ element: el, anchor: "center" })
+        .setLngLat([sensor.longitude!, sensor.latitude!])
+        .setPopup(popup)
+        .addTo(mapRef.current!)
 
-      if (onSensorSelect) {
-        marker.on("click", () => onSensorSelect(sensor))
-      }
-
-      layer.addLayer(marker)
+      markersRef.current.push(marker)
+      bounds.extend([sensor.longitude!, sensor.latitude!])
+      hasPoints = true
     }
 
-    layer.addTo(map)
-    markerLayerRef.current = layer
-
-    if (!hasAutoFitted.current && valid.length > 0) {
-      map.fitBounds(L.latLngBounds(valid.map((s) => [s.latitude!, s.longitude!])), { padding: [50, 50] })
-      hasAutoFitted.current = true
+    if (hasPoints && !fittedRef.current) {
+      mapRef.current.fitBounds(bounds, { padding: 60, maxZoom: 13 })
+      fittedRef.current = true
     }
-  }, [valid, metricMode])
+  }, [valid, metricMode, mapReady])
 
-  // EcoIQ triangle markers layer
+  // ── EcoIQ markers ─────────────────────────────────────────────────────
   useEffect(() => {
-    if (!mapInstanceRef.current || typeof window === "undefined") return
-    const map = mapInstanceRef.current
+    if (!mapReady || !mapRef.current) return
 
-    if (ecoIqLayerRef.current) {
-      map.removeLayer(ecoIqLayerRef.current)
-      ecoIqLayerRef.current = null
-    }
+    for (const m of ecoIqMarkersRef.current) m.remove()
+    ecoIqMarkersRef.current = []
 
     if (sourceFilter !== "all" && sourceFilter !== "EcoIQ") return
 
-    const validEco = ecoIqSensors.filter((s) => s.latitude != null && s.longitude != null)
-    if (!validEco.length) return
+    for (const s of ecoIqSensors) {
+      if (!s.latitude || !s.longitude) continue
+      const el = makeEcoIqEl(s, () => onEcoSelectRef.current?.(s))
+      const displayAqi = s.pm25_aqi ?? s.aqi
+      const color      = aqiColor(displayAqi)
+      const time       = s.measured_at ? new Date(s.measured_at).toLocaleString("ru-RU") : "—"
 
-    const layer = L.layerGroup()
-
-    for (const s of validEco) {
-      const icon  = createEcoIqIcon(s.aqi)
-      const color = aqiColor(s.aqi)
-      const time  = s.measured_at ? new Date(s.measured_at).toLocaleString("ru-RU") : "—"
-
-      const popup = `
+      const popup = new mapboxgl.Popup({ offset: [0, -38] }).setHTML(`
         <div style="min-width:200px;font-family:system-ui">
           <div style="display:flex;align-items:center;gap:6px;margin:0 0 6px">
             <svg width="12" height="12" viewBox="0 0 32 32"><polygon points="16,2 30,28 2,28" fill="${color}"/></svg>
             <p style="font-size:13px;font-weight:700;margin:0;color:#111">${s.name ?? "EcoIQ станция"}</p>
           </div>
           <p style="font-size:10px;color:#6b7280;margin:0 0 8px">EcoIQ · ${s.is_high_precision ? "высокоточная" : "стандартная"} станция</p>
-          ${s.aqi != null ? `
+          ${displayAqi != null ? `
             <div style="margin:0 0 8px;padding:8px 10px;background:${color}18;border-left:3px solid ${color};border-radius:4px">
-              <p style="margin:0;font-size:10px;color:#6b7280">AQI</p>
-              <p style="margin:4px 0 0;font-size:22px;font-weight:800;color:${color}">${s.aqi}</p>
+              <p style="margin:0;font-size:10px;color:#6b7280">PM<sub>2.5</sub> AQI</p>
+              <p style="margin:4px 0 0;font-size:22px;font-weight:800;color:${color}">${displayAqi}</p>
               ${s.pm25_concentration != null ? `<p style="margin:4px 0 0;font-size:11px;color:#6b7280">PM<sub>2.5</sub>: <strong style="color:${color}">${s.pm25_concentration} µg/m³</strong></p>` : ""}
             </div>
           ` : ""}
           <p style="margin:0;font-size:10px;color:#9ca3af">Обновлено: ${time}</p>
-        </div>`
+        </div>`)
 
-      const marker = L.marker([s.latitude, s.longitude], { icon } as any).bindPopup(popup)
-      if (onEcoIqSelect) {
-        marker.on("click", () => onEcoIqSelect(s))
-      }
-      marker.addTo(layer)
+      const marker = new mapboxgl.Marker({ element: el, anchor: "bottom" })
+        .setLngLat([s.longitude, s.latitude])
+        .setPopup(popup)
+        .addTo(mapRef.current!)
+
+      ecoIqMarkersRef.current.push(marker)
     }
+  }, [ecoIqSensors, sourceFilter, mapReady])
 
-    layer.addTo(map)
-    ecoIqLayerRef.current = layer
-  }, [ecoIqSensors, onEcoIqSelect, sourceFilter])
-
-  // Traffic layer toggle
+  // ── Traffic layer toggle ───────────────────────────────────────────────
   useEffect(() => {
-    if (!mapInstanceRef.current || typeof window === "undefined") return
-    const map = mapInstanceRef.current
-    if (trafficVisible) {
-      if (!trafficLayerRef.current) {
-        trafficLayerRef.current = L.tileLayer(YANDEX_TRAFFIC_URL, {
-          opacity:     0.7,
-          maxZoom:     18,
-          attribution: "",
-        })
-      }
-      trafficLayerRef.current.addTo(map)
-    } else {
-      if (trafficLayerRef.current) {
-        map.removeLayer(trafficLayerRef.current)
-      }
-    }
-  }, [trafficVisible])
+    if (!mapReady || !mapRef.current) return
+    try {
+      mapRef.current.setLayoutProperty(
+        "traffic-layer",
+        "visibility",
+        trafficVisible ? "visible" : "none",
+      )
+    } catch {}
+  }, [trafficVisible, mapReady])
 
-  if (!valid.length) {
-    return (
-      <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-border bg-muted/40 text-muted-foreground">
-        Нет данных сенсоров
-      </div>
-    )
-  }
+  // ── Hide/show all markers when heatmap is toggled ─────────────────────
+  useEffect(() => {
+    const display = heatmapVisible ? "none" : ""
+    markersRef.current.forEach(m => { m.getElement().style.display = display })
+    ecoIqMarkersRef.current.forEach(m => { m.getElement().style.display = display })
+  }, [heatmapVisible])
+
+  // ── Hexagon PM2.5 — fetch from backend + toggle visibility ───────────
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return
+    const map = mapRef.current
+    const vis = heatmapVisible ? "visible" : "none"
+    try {
+      map.setLayoutProperty("hex-pm25-fill", "visibility", vis)
+      map.setLayoutProperty("hex-pm25-line", "visibility", vis)
+    } catch {}
+
+    if (!heatmapVisible) return
+
+    const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "https://admin.smartalmaty.kz/api/v1"
+    fetch(`${BASE}/air/hex-pm25/`, { headers: { Accept: "application/json" } })
+      .then(r => r.json())
+      .then(geojson => {
+        try {
+          const src = map.getSource("hex-pm25") as mapboxgl.GeoJSONSource | undefined
+          src?.setData(geojson)
+        } catch {}
+      })
+      .catch(() => {})
+  }, [heatmapVisible, mapReady])
+
+  // Summary label for wind button — average over grid
+  const windSummary = useMemo(() => {
+    if (!windPoints.length) return null
+    const avgSpeed = windPoints.reduce((s, p) => s + p.speed, 0) / windPoints.length
+    const avgDir   = windPoints.reduce((s, p) => s + p.direction, 0) / windPoints.length
+    const label    = ["С","СВ","В","ЮВ","Ю","ЮЗ","З","СЗ"][Math.round(avgDir / 45) % 8]
+    return { speed: avgSpeed, label }
+  }, [windPoints])
 
   return (
     <div className="relative h-full w-full">
-      <div ref={mapRef} className="h-full w-full rounded-xl" />
+      <div ref={containerRef} className="h-full w-full rounded-xl" />
 
-      {/* Traffic toggle button */}
-      <button
-        onClick={() => setTrafficVisible((v) => !v)}
-        title={trafficVisible ? "Скрыть пробки" : "Показать пробки"}
-        className={`absolute right-3 top-3 z-[1000] flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold shadow-md backdrop-blur transition-colors ${
-          trafficVisible
-            ? "border-orange-400 bg-orange-500 text-white"
-            : "border-border bg-background/90 text-foreground hover:bg-muted"
-        }`}
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <path d="M8 6h8l2 6H6L8 6z"/>
-          <circle cx="9" cy="17" r="2"/>
-          <circle cx="15" cy="17" r="2"/>
-          <path d="M3 12h18"/>
-        </svg>
-        Пробки
-      </button>
+      <WindLayer points={windPoints} bounds={mapBounds} visible={windVisible} />
+
+      {!valid.length && (
+        <div className="absolute inset-0 flex items-center justify-center rounded-xl border border-dashed border-border bg-muted/40 text-muted-foreground">
+          Нет данных сенсоров
+        </div>
+      )}
+
+      {/* Map controls — top right */}
+      <div className="absolute right-3 top-3 z-[1000] flex flex-col gap-2">
+        <button
+          onClick={() => setTrafficVisible(v => !v)}
+          title={trafficVisible ? "Скрыть пробки" : "Показать пробки"}
+          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold shadow-md backdrop-blur transition-colors ${
+            trafficVisible
+              ? "border-orange-400 bg-orange-500 text-white"
+              : "border-border bg-background/90 text-foreground hover:bg-muted"
+          }`}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M8 6h8l2 6H6L8 6z"/>
+            <circle cx="9" cy="17" r="2"/>
+            <circle cx="15" cy="17" r="2"/>
+            <path d="M3 12h18"/>
+          </svg>
+          Пробки
+        </button>
+
+        <button
+          onClick={() => setWindVisible(v => !v)}
+          title={windVisible ? "Скрыть ветер" : "Показать ветер"}
+          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold shadow-md backdrop-blur transition-colors ${
+            windVisible
+              ? "border-sky-400 bg-sky-500 text-white"
+              : "border-border bg-background/90 text-foreground hover:bg-muted"
+          }`}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/>
+            <path d="M9.6 4.6A2 2 0 1 1 11 8H2"/>
+            <path d="M12.6 19.4A2 2 0 1 0 14 16H2"/>
+          </svg>
+          Ветер
+          {windSummary && (
+            <span className="opacity-75">
+              {windSummary.speed.toFixed(1)}м/с {windSummary.label}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => setHeatmapVisible(v => !v)}
+          title={heatmapVisible ? "Скрыть загрязнение" : "Показать загрязнение PM₂.₅"}
+          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold shadow-md backdrop-blur transition-colors ${
+            heatmapVisible
+              ? "border-rose-400 bg-rose-500 text-white"
+              : "border-border bg-background/90 text-foreground hover:bg-muted"
+          }`}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+          PM₂.₅
+        </button>
+      </div>
     </div>
   )
 }

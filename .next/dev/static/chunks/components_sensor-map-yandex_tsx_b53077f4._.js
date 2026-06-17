@@ -6,6 +6,7 @@ __turbopack_context__.s([
     "default",
     ()=>SensorMapYandex
 ]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$polyfills$2f$process$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = /*#__PURE__*/ __turbopack_context__.i("[project]/node_modules/next/dist/build/polyfills/process.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/leaflet/dist/leaflet-src.js [app-client] (ecmascript)");
@@ -23,6 +24,10 @@ const DEFAULT_CENTER = [
     76.889709
 ];
 const YANDEX_TILE_URL = "https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&lang=ru_RU";
+// Traffic tiles proxied through our backend so Yandex domains don't need to
+// resolve directly in the browser (blocked in some regions).
+const API_BASE = ("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
+const YANDEX_TRAFFIC_URL = `${API_BASE}/air/tiles/traffic/{z}/{x}/{y}/`;
 // ── Individual sensor marker ───────────────────────────────────────────────────
 function createSensorIcon(pm25, metricMode = "pm25") {
     const color = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["pm25Color"])(pm25);
@@ -66,6 +71,47 @@ function createSensorIcon(pm25, metricMode = "pm25") {
         ]
     });
 }
+// ── EcoIQ triangle marker ──────────────────────────────────────────────────────
+function aqiColor(aqi) {
+    if (aqi == null) return "#6b7280";
+    if (aqi <= 50) return "#1BA97C";
+    if (aqi <= 100) return "#f59e0b";
+    if (aqi <= 150) return "#f97316";
+    if (aqi <= 200) return "#ef4444";
+    if (aqi <= 300) return "#a855f7";
+    return "#581c87";
+}
+function createEcoIqIcon(aqi) {
+    const color = aqiColor(aqi);
+    const label = aqi != null ? aqi.toString() : "?";
+    const fontSize = label.length >= 3 ? 8 : 9;
+    return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].divIcon({
+        className: "",
+        html: `<svg width="38" height="38" viewBox="0 0 38 38" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4))">
+      <polygon points="19,2 36,34 2,34" fill="${color}" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+      <text
+        x="19" y="26"
+        text-anchor="middle"
+        font-family="system-ui,-apple-system,sans-serif"
+        font-weight="800"
+        font-size="${fontSize}"
+        fill="white"
+      >${label}</text>
+    </svg>`,
+        iconSize: [
+            38,
+            38
+        ],
+        iconAnchor: [
+            19,
+            38
+        ],
+        popupAnchor: [
+            0,
+            -38
+        ]
+    });
+}
 // ── District boundary helpers ──────────────────────────────────────────────────
 const DISTRICT_PALETTE = [
     "#6366f1",
@@ -104,12 +150,15 @@ function loadDistrictLayer(map) {
         }).addTo(map);
     }).catch(()=>{});
 }
-function SensorMapYandex({ sensors, onSensorSelect, focusedSensor, metricMode = "pm25" }) {
+function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSelect, focusedSensor, metricMode = "pm25", sourceFilter = "all" }) {
     _s();
     const mapRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const mapInstanceRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const markerLayerRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const ecoIqLayerRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const trafficLayerRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const hasAutoFitted = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(false);
+    const [trafficVisible, setTrafficVisible] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const valid = sensors.filter((s)=>s.latitude != null && s.longitude != null);
     // Init map once
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
@@ -216,26 +265,172 @@ function SensorMapYandex({ sensors, onSensorSelect, focusedSensor, metricMode = 
         valid,
         metricMode
     ]);
+    // EcoIQ triangle markers layer
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "SensorMapYandex.useEffect": ()=>{
+            if (!mapInstanceRef.current || ("TURBOPACK compile-time value", "object") === "undefined") return;
+            const map = mapInstanceRef.current;
+            if (ecoIqLayerRef.current) {
+                map.removeLayer(ecoIqLayerRef.current);
+                ecoIqLayerRef.current = null;
+            }
+            if (sourceFilter !== "all" && sourceFilter !== "EcoIQ") return;
+            const validEco = ecoIqSensors.filter({
+                "SensorMapYandex.useEffect.validEco": (s)=>s.latitude != null && s.longitude != null
+            }["SensorMapYandex.useEffect.validEco"]);
+            if (!validEco.length) return;
+            const layer = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].layerGroup();
+            for (const s of validEco){
+                const icon = createEcoIqIcon(s.aqi);
+                const color = aqiColor(s.aqi);
+                const time = s.measured_at ? new Date(s.measured_at).toLocaleString("ru-RU") : "—";
+                const popup = `
+        <div style="min-width:200px;font-family:system-ui">
+          <div style="display:flex;align-items:center;gap:6px;margin:0 0 6px">
+            <svg width="12" height="12" viewBox="0 0 32 32"><polygon points="16,2 30,28 2,28" fill="${color}"/></svg>
+            <p style="font-size:13px;font-weight:700;margin:0;color:#111">${s.name ?? "EcoIQ станция"}</p>
+          </div>
+          <p style="font-size:10px;color:#6b7280;margin:0 0 8px">EcoIQ · ${s.is_high_precision ? "высокоточная" : "стандартная"} станция</p>
+          ${s.aqi != null ? `
+            <div style="margin:0 0 8px;padding:8px 10px;background:${color}18;border-left:3px solid ${color};border-radius:4px">
+              <p style="margin:0;font-size:10px;color:#6b7280">AQI</p>
+              <p style="margin:4px 0 0;font-size:22px;font-weight:800;color:${color}">${s.aqi}</p>
+              ${s.pm25_concentration != null ? `<p style="margin:4px 0 0;font-size:11px;color:#6b7280">PM<sub>2.5</sub>: <strong style="color:${color}">${s.pm25_concentration} µg/m³</strong></p>` : ""}
+            </div>
+          ` : ""}
+          <p style="margin:0;font-size:10px;color:#9ca3af">Обновлено: ${time}</p>
+        </div>`;
+                const marker = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].marker([
+                    s.latitude,
+                    s.longitude
+                ], {
+                    icon
+                }).bindPopup(popup);
+                if (onEcoIqSelect) {
+                    marker.on("click", {
+                        "SensorMapYandex.useEffect": ()=>onEcoIqSelect(s)
+                    }["SensorMapYandex.useEffect"]);
+                }
+                marker.addTo(layer);
+            }
+            layer.addTo(map);
+            ecoIqLayerRef.current = layer;
+        }
+    }["SensorMapYandex.useEffect"], [
+        ecoIqSensors,
+        onEcoIqSelect,
+        sourceFilter
+    ]);
+    // Traffic layer toggle
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "SensorMapYandex.useEffect": ()=>{
+            if (!mapInstanceRef.current || ("TURBOPACK compile-time value", "object") === "undefined") return;
+            const map = mapInstanceRef.current;
+            if (trafficVisible) {
+                if (!trafficLayerRef.current) {
+                    trafficLayerRef.current = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$leaflet$2f$dist$2f$leaflet$2d$src$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].tileLayer(YANDEX_TRAFFIC_URL, {
+                        opacity: 0.7,
+                        maxZoom: 18,
+                        attribution: ""
+                    });
+                }
+                trafficLayerRef.current.addTo(map);
+            } else {
+                if (trafficLayerRef.current) {
+                    map.removeLayer(trafficLayerRef.current);
+                }
+            }
+        }
+    }["SensorMapYandex.useEffect"], [
+        trafficVisible
+    ]);
     if (!valid.length) {
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
             className: "flex h-full items-center justify-center rounded-xl border border-dashed border-border bg-muted/40 text-muted-foreground",
             children: "Нет данных сенсоров"
         }, void 0, false, {
             fileName: "[project]/components/sensor-map-yandex.tsx",
-            lineNumber: 216,
+            lineNumber: 347,
             columnNumber: 7
         }, this);
     }
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        ref: mapRef,
-        className: "h-full w-full rounded-xl"
-    }, void 0, false, {
+        className: "relative h-full w-full",
+        children: [
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                ref: mapRef,
+                className: "h-full w-full rounded-xl"
+            }, void 0, false, {
+                fileName: "[project]/components/sensor-map-yandex.tsx",
+                lineNumber: 355,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                onClick: ()=>setTrafficVisible((v)=>!v),
+                title: trafficVisible ? "Скрыть пробки" : "Показать пробки",
+                className: `absolute right-3 top-3 z-[1000] flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold shadow-md backdrop-blur transition-colors ${trafficVisible ? "border-orange-400 bg-orange-500 text-white" : "border-border bg-background/90 text-foreground hover:bg-muted"}`,
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                        width: "14",
+                        height: "14",
+                        viewBox: "0 0 24 24",
+                        fill: "none",
+                        stroke: "currentColor",
+                        strokeWidth: "2.5",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                d: "M8 6h8l2 6H6L8 6z"
+                            }, void 0, false, {
+                                fileName: "[project]/components/sensor-map-yandex.tsx",
+                                lineNumber: 368,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
+                                cx: "9",
+                                cy: "17",
+                                r: "2"
+                            }, void 0, false, {
+                                fileName: "[project]/components/sensor-map-yandex.tsx",
+                                lineNumber: 369,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
+                                cx: "15",
+                                cy: "17",
+                                r: "2"
+                            }, void 0, false, {
+                                fileName: "[project]/components/sensor-map-yandex.tsx",
+                                lineNumber: 370,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                d: "M3 12h18"
+                            }, void 0, false, {
+                                fileName: "[project]/components/sensor-map-yandex.tsx",
+                                lineNumber: 371,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/components/sensor-map-yandex.tsx",
+                        lineNumber: 367,
+                        columnNumber: 9
+                    }, this),
+                    "Пробки"
+                ]
+            }, void 0, true, {
+                fileName: "[project]/components/sensor-map-yandex.tsx",
+                lineNumber: 358,
+                columnNumber: 7
+            }, this)
+        ]
+    }, void 0, true, {
         fileName: "[project]/components/sensor-map-yandex.tsx",
-        lineNumber: 222,
-        columnNumber: 10
+        lineNumber: 354,
+        columnNumber: 5
     }, this);
 }
-_s(SensorMapYandex, "+H6SEmIovPZh6LMUL96q/uHCTOc=");
+_s(SensorMapYandex, "QFmbtUH17NUaVK2ENsG5YzBWYz8=");
 _c = SensorMapYandex;
 var _c;
 __turbopack_context__.k.register(_c, "SensorMapYandex");

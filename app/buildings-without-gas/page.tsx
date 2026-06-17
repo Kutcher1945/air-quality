@@ -1147,96 +1147,81 @@ export default function BuildingsWithoutGasPage() {
 
   return (
     <>
-      <main className="relative h-screen w-screen overflow-hidden flex flex-col">
-        {/* Top Header Bar */}
-        <header className="relative z-30 h-14 shrink-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-b border-slate-700/50 px-4 flex items-center justify-between">
-          {/* Background accent */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-600/10 via-transparent to-orange-500/5 pointer-events-none"></div>
+      <HeaderMenu />
+      <main className="relative overflow-hidden flex flex-col" style={{ height: 'calc(100vh - 64px)' }}>
+        {/* Tab Toolbar */}
+        <div className="relative z-30 shrink-0 bg-background/95 backdrop-blur border-b border-border px-4 flex items-center gap-1.5 h-12">
+          {/* Toggle tabs */}
+          <button
+            onClick={() => startTransition(() => setShowHeatmap(!showHeatmap))}
+            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200 ${
+              showHeatmap
+                ? "bg-orange-500 text-white shadow-sm"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            }`}
+          >
+            <Flame className="h-4 w-4 shrink-0" />
+            <span>Тепловая карта</span>
+          </button>
 
-          {/* Left: Logo + Title */}
-          <div className="relative flex items-center gap-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 overflow-hidden">
-              <img src="/logo.png" alt="Логотип" className="h-full w-full object-contain p-1" />
-            </div>
-            <div>
-              <p className="text-[9px] font-semibold tracking-[0.15em] text-blue-300/70 uppercase leading-none">Ситуационный центр</p>
-              <h1 className="text-base font-bold text-white tracking-tight">Здания без газа</h1>
-            </div>
-          </div>
+          <button
+            onClick={() => startTransition(() => setShowRenovationAreas(!showRenovationAreas))}
+            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200 ${
+              showRenovationAreas
+                ? "bg-purple-500 text-white shadow-sm"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            }`}
+          >
+            <Layers className="h-4 w-4 shrink-0" />
+            <span>Реновация</span>
+          </button>
 
+          <Link
+            href="/buildings-without-gas/analytics"
+            className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200"
+          >
+            <BarChart3 className="h-4 w-4 shrink-0" />
+            <span>Аналитика</span>
+          </Link>
 
-          {/* Center: Marker Legend */}
-          <div className="relative flex items-center bg-black/[0.3] border border-white/[0.1] rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.25)] backdrop-blur-sm overflow-hidden">
+          <div className="w-px h-5 bg-border mx-1" />
+
+          <button
+            onClick={exportToCSV}
+            className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200"
+            title="Экспорт CSV"
+          >
+            <Download className="h-4 w-4 shrink-0" />
+            <span>CSV</span>
+          </button>
+
+          <button
+            onClick={() => fetchBuildings(true)}
+            disabled={loading}
+            className="flex items-center justify-center rounded-xl p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200 disabled:opacity-40"
+            title="Обновить данные"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+
+          {/* Marker legend — right side */}
+          <div className="ml-auto flex items-center gap-3">
             {[
-              { color: "#10b981", glow: "rgba(16,185,129,0.5)", label: "Точные", emoji: "🏠" },
-              { color: "#eab308", glow: "rgba(234,179,8,0.5)", label: "Приближённые", emoji: "🏠" },
-              { color: "#8b5cf6", glow: "rgba(139,92,246,0.5)", label: "Не ИЖС", emoji: "🏬" },
-              { color: "#ec4899", glow: "rgba(236,72,153,0.5)", label: "Сезонные", emoji: "❄️" },
-            ].map((item, i) => (
-              <div key={item.label} className="flex items-center">
-                {i > 0 && <div className="w-px h-4 bg-white/[0.12]"></div>}
-                <div className="flex items-center gap-2 px-3 py-1.5">
-                  <svg width="11" height="15" viewBox="0 0 11 15" style={{ filter: `drop-shadow(0 2px 3px ${item.glow})` }}>
-                    <path d="M5.5 0C2.46 0 0 2.46 0 5.5 0 9.63 5.5 15 5.5 15S11 9.63 11 5.5C11 2.46 8.54 0 5.5 0z" fill={item.color}/>
-                    <circle cx="5.5" cy="5.5" r="2.2" fill="white" opacity="0.95"/>
-                  </svg>
-                  <span className="text-[10px] text-white/55 font-semibold tracking-[0.02em]">{item.emoji} {item.label}</span>
-                </div>
+              { color: "#10b981", label: "Точные" },
+              { color: "#eab308", label: "Приближённые" },
+              { color: "#8b5cf6", label: "Не ИЖС" },
+              { color: "#ec4899", label: "Сезонные" },
+            ].map((item) => (
+              <div key={item.label} className="flex items-center gap-1.5">
+                <svg width="9" height="12" viewBox="0 0 11 15">
+                  <path d="M5.5 0C2.46 0 0 2.46 0 5.5 0 9.63 5.5 15 5.5 15S11 9.63 11 5.5C11 2.46 8.54 0 5.5 0z" fill={item.color}/>
+                  <circle cx="5.5" cy="5.5" r="2.2" fill="white" opacity="0.95"/>
+                </svg>
+                <span className="text-[11px] text-muted-foreground font-medium">{item.label}</span>
               </div>
             ))}
           </div>
-
-          {/* Right: Action Buttons */}
-          <div className="relative flex items-center gap-2">
-            <button
-              onClick={() => startTransition(() => setShowHeatmap(!showHeatmap))}
-              className={`h-9 px-3 flex items-center gap-2 rounded-lg text-xs font-semibold transition-all ${
-                showHeatmap
-                  ? "bg-orange-500 text-white shadow-lg shadow-orange-500/25"
-                  : "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white border border-white/10"
-              }`}
-            >
-              <Flame className="h-4 w-4" />
-              <span className="hidden sm:inline">Тепловая карта</span>
-            </button>
-            <button
-              onClick={() => startTransition(() => setShowRenovationAreas(!showRenovationAreas))}
-              className={`h-9 px-3 flex items-center gap-2 rounded-lg text-xs font-semibold transition-all ${
-                showRenovationAreas
-                  ? "bg-purple-500 text-white shadow-lg shadow-purple-500/25"
-                  : "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white border border-white/10"
-              }`}
-            >
-              <Layers className="h-4 w-4" />
-              <span className="hidden sm:inline">Реновация</span>
-            </button>
-            <div className="w-px h-6 bg-white/10 mx-1"></div>
-            <Link
-              href="/buildings-without-gas/analytics"
-              className="h-9 px-3 flex items-center gap-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-300 hover:text-emerald-200 transition-all text-xs font-semibold"
-              title="Аналитика"
-            >
-              <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline">Аналитика</span>
-            </Link>
-            <button
-              onClick={exportToCSV}
-              className="h-9 px-3 flex items-center gap-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white/70 hover:text-white transition-all text-xs font-medium"
-              title="Экспорт CSV"
-            >
-              <Download className="h-4 w-4" />
-              <span className="hidden sm:inline">CSV</span>
-            </button>
-            <button
-              onClick={() => fetchBuildings(true)}
-              disabled={loading}
-              className="h-9 w-9 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white/70 hover:text-white transition-all disabled:opacity-50"
-              title="Обновить данные"
-            >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
-        </header>
+        </div>
 
         {/* Main Content Area */}
         <div className="relative flex-1 overflow-hidden">

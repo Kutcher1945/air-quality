@@ -141,17 +141,20 @@ export function AqiSidePanel({
   const top10 = sortedSensors.slice(0, 10)
   const restSensors = sortedSensors.slice(10)
 
-  // Fetch daily data for the selected sensor
+  // Fetch daily data for the selected sensor (EcoIQ uses its own endpoint)
   useEffect(() => {
     if (!selectedSensor) {
       setSensorDaily([])
       return
     }
     setSensorLoading(true)
-    fetch(
-      `https://admin.smartalmaty.kz/api/v1/air/sensors/${selectedSensor.sensor_id}/daily/?parameter=pm25&limit=180`,
-      { headers: { Accept: "application/json" } },
-    )
+
+    const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "https://admin.smartalmaty.kz/api/v1"
+    const url = selectedSensor.ecoIqStationId
+      ? `${BASE}/air/eco-iq/${selectedSensor.ecoIqStationId}/daily/?days=180`
+      : `${BASE}/air/sensors/${selectedSensor.sensor_id}/daily/?parameter=pm25&limit=180`
+
+    fetch(url, { headers: { Accept: "application/json" } })
       .then((r) => r.json())
       .then((data) => {
         const arr: SensorDailyDay[] = Array.isArray(data) ? data : (data?.results ?? [])
@@ -231,15 +234,17 @@ export function AqiSidePanel({
     return aqiData
   }, [selectedSensor, sensorDaily, aqiData])
 
-  // EPA AQI from last available 24h daily average (accurate per EPA spec)
+  // AQI for display — for EcoIQ sensors use their composite rawAqi directly
+  // so the sidebar matches the triangle marker value.
   const epaAqi = useMemo(() => {
-    if (selectedSensor) {
-      const lastDay = sensorDaily.at(-1)
-      return lastDay ? pm25ToEpaAqi(lastDay.avg_value) : null
+    if (selectedSensor?.rawAqi != null) {
+      const base = pm25ToEpaAqi(activePm25)
+      return { aqi: selectedSensor.rawAqi, level: base?.level ?? "good", label: base?.label ?? "" }
     }
+    if (activePm25 > 0) return pm25ToEpaAqi(activePm25)
     const lastDate = Object.keys(aqiData).sort().at(-1)
     return lastDate != null ? pm25ToEpaAqi(aqiData[lastDate]) : null
-  }, [selectedSensor, sensorDaily, aqiData])
+  }, [activePm25, aqiData, selectedSensor])
 
   const showEpa = metricMode === "epa-aqi"
 
@@ -536,7 +541,7 @@ export function AqiSidePanel({
                 </div>
                 <div className="text-right text-[10px] leading-tight opacity-90">
                   <p>PM<sub>2.5</sub> {activePm25.toFixed(1)} µg/m³</p>
-                  <p>на основе 24h среднего</p>
+                  <p>текущее значение</p>
                 </div>
               </>
             ) : (

@@ -64,7 +64,7 @@ const DOY_MONTH_STARTS = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335]
 const MONTH_LABELS = ["Янв","Фев","Мар","Апр","Май","Июн","Июл","Авг","Сен","Окт","Ноя","Дек"]
 const DISTRICT_COLORS = ["#3b82f6","#22c55e","#eab308","#ef4444","#a855f7","#f97316","#06b6d4","#ec4899"]
 
-const BASE = "https://admin.smartalmaty.kz/api/v1"
+const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "https://admin.smartalmaty.kz/api/v1"
 
 function doyToMonth(v: number): string {
   for (let i = DOY_MONTH_STARTS.length - 1; i >= 0; i--) {
@@ -152,6 +152,7 @@ export function AnalyticsTab({ sensors, sensorsLoading }: AnalyticsTabProps) {
   const [districtDaily, setDistrictDaily] = useState<DistrictDay[]>([])
   const [sensorHealth, setSensorHealth] = useState<SensorHealth[]>([])
   const [hourlyData, setHourlyData] = useState<HourlyPoint[]>([])
+
 
   useEffect(() => {
     const thisYear = new Date().getFullYear()

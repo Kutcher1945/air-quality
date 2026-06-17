@@ -1,58 +1,57 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
-import { Menu, X, Home, Map, BarChart3, Info, Building2, Phone } from "lucide-react"
+import { usePathname } from "next/navigation"
+import { useTheme } from "next-themes"
+import { Menu, X, Map, Building2, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
+
+const menuItems = [
+  { name: "Карта датчиков", href: "/", icon: Map },
+  { name: "Карта зданий без газа", href: "/buildings-without-gas", icon: Building2 },
+  { name: "Исходящие звонки", href: "/outgoing-calls", icon: Phone },
+]
 
 export function HeaderMenu() {
   const [isOpen, setIsOpen] = useState(false)
-
-  const toggleMenu = () => setIsOpen(!isOpen)
-
-  const menuItems = [
-    {
-      name: "Карта датчиков",
-      href: "/",
-      icon: Map,
-    },
-    {
-      name: "Карта зданий без газа",
-      href: "/buildings-without-gas",
-      icon: Building2,
-    },
-    {
-      name: "Исходящие звонки",
-      href: "/outgoing-calls",
-      icon: Phone,
-    },
-  ]
+  const { resolvedTheme } = useTheme()
+  const pathname = usePathname()
+  const logoSrc = resolvedTheme === "light" ? "/logo_aqa_dark_letters.png" : "/logo_aqa.png"
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="w-full px-4">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo/Brand */}
-          <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500">
-              <span className="text-xl font-bold text-white">AQ</span>
-            </div>
-            <div className="hidden md:block">
-              <h1 className="text-lg font-bold text-foreground">Air Quality Almaty</h1>
-              <p className="text-xs text-muted-foreground">Качество воздуха Алматы</p>
-            </div>
+          {/* Logo */}
+          <div className="flex items-center">
+            <Image src={logoSrc} alt="AQA Logo" width={180} height={180} className="object-contain" />
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex md:items-center md:gap-1">
             {menuItems.map((item) => {
               const Icon = item.icon
+              const active = pathname === item.href
               return (
-                <Link key={item.name} href={item.href}>
-                  <Button variant="ghost" size="sm" className="gap-2">
-                    <Icon className="h-4 w-4" />
-                    {item.name}
-                  </Button>
+                <Link key={item.href} href={item.href}>
+                  <div
+                    className={`
+                      group relative flex items-center gap-2.5 rounded-xl px-4 py-2 text-sm font-medium
+                      transition-all duration-200 cursor-pointer select-none
+                      ${active
+                        ? "bg-foreground text-background shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      }
+                    `}
+                  >
+                    <Icon className={`h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-110 ${active ? "" : ""}`} />
+                    <span>{item.name}</span>
+                    {active && (
+                      <span className="absolute bottom-0 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-background/40" />
+                    )}
+                  </div>
                 </Link>
               )
             })}
@@ -60,7 +59,7 @@ export function HeaderMenu() {
 
           {/* Mobile Menu Button */}
           <div className="md:hidden">
-            <Button variant="ghost" size="icon" onClick={toggleMenu} aria-label="Toggle menu">
+            <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)} aria-label="Toggle menu">
               {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
@@ -68,16 +67,25 @@ export function HeaderMenu() {
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="border-t border-border py-4 md:hidden">
-            <div className="flex flex-col gap-2">
+          <div className="border-t border-border py-3 md:hidden">
+            <div className="flex flex-col gap-1">
               {menuItems.map((item) => {
                 const Icon = item.icon
+                const active = pathname === item.href
                 return (
-                  <Link key={item.name} href={item.href} onClick={() => setIsOpen(false)}>
-                    <Button variant="ghost" size="sm" className="w-full justify-start gap-2">
-                      <Icon className="h-4 w-4" />
+                  <Link key={item.href} href={item.href} onClick={() => setIsOpen(false)}>
+                    <div
+                      className={`
+                        flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200
+                        ${active
+                          ? "bg-foreground text-background"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        }
+                      `}
+                    >
+                      <Icon className="h-4 w-4 shrink-0" />
                       {item.name}
-                    </Button>
+                    </div>
                   </Link>
                 )
               })}

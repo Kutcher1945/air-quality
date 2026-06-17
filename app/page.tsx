@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic"
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { ChevronLeft, ChevronRight, Moon, Sun, Map, CalendarDays, BarChart2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, Moon, Sun, Map, CalendarDays, BarChart2, Sparkles } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -29,12 +29,61 @@ import { HeaderMenu } from "@/components/header-menu"
 import { FilterDropdown } from "@/components/ui/filter-dropdown"
 import { AqiSidePanel } from "@/components/aqi-side-panel"
 import { AnalyticsTab } from "@/components/analytics-tab"
-import type { Sensor, AirSensor } from "@/components/sensor-map-yandex"
+import { AiTab } from "@/components/ai-tab"
+import type { Sensor, AirSensor, EcoIqSensor } from "@/components/sensor-map-yandex"
 import type { AirMetricMode } from "@/lib/pm25"
+import { TimeSlider } from "@/components/time-slider"
+
+// Inverse US EPA 2024 PM2.5 AQI → concentration (µg/m³).
+// Breakpoints mirror EPA_2024_BREAKPOINTS in lib/pm25.ts exactly so that
+// pm25ToEpaAqi(aqiToPm25Approx(x)) ≈ x for any integer AQI x.
+function aqiToPm25Approx(aqi: number): number {
+  if (aqi <= 50)  return aqi * 9.0 / 50
+  if (aqi <= 100) return 9.1  + (aqi - 51)  * (35.4  -   9.1) / 49
+  if (aqi <= 150) return 35.5 + (aqi - 101) * (55.4  -  35.5) / 49
+  if (aqi <= 200) return 55.5 + (aqi - 151) * (125.4 -  55.5) / 49
+  if (aqi <= 300) return 125.5 + (aqi - 201) * (225.4 - 125.5) / 99
+  return 225.5
+}
+
+function ecoIqToAirSensor(s: EcoIqSensor): AirSensor {
+  const pm25 = s.pm25_concentration ?? (s.aqi != null ? aqiToPm25Approx(s.aqi) : null)
+  return {
+    id: 0,
+    sensor_id: -1,
+    sensor_name: `${s.name ?? "EcoIQ"} ▲`,
+    source: "EcoIQ",
+    parameter: "pm25",
+    value: pm25,
+    unit: "µg/m³",
+    measured_at: s.measured_at,
+    latitude: s.latitude,
+    longitude: s.longitude,
+    district_id: null,
+    district_name: null,
+    rawAqi: s.aqi,
+    ecoIqStationId: s.id,
+  }
+}
 
 interface AQIData {
   date: string
   avg_pm25: number
+}
+
+interface TimeSensor {
+  id: number
+  sensor_id: number
+  name: string | null
+  latitude: number
+  longitude: number
+  source: string
+  values: (number | null)[]
+}
+
+interface TimeseriesData {
+  days: string[]
+  sensors: TimeSensor[]
 }
 
 interface Statistics {
@@ -50,7 +99,7 @@ interface Statistics {
   min_pm25?: number
 }
 
-type ActiveTab = "map" | "calendar" | "analytics"
+type ActiveTab = "map" | "calendar" | "analytics" | "ai"
 
 const SensorMap = dynamic(() => import("@/components/sensor-map-yandex"), { ssr: false })
 
@@ -117,6 +166,7 @@ export default function AirQualityDashboard() {
   const [sensors, setSensors] = useState<Sensor[]>([])
   const [sensorsLoading, setSensorsLoading] = useState(true)
   const [sensorsError, setSensorsError] = useState<string | null>(null)
+  const [ecoIqSensors, setEcoIqSensors] = useState<EcoIqSensor[]>([])
   const [sensorSearch, setSensorSearch] = useState("")
   const [sourceFilter, setSourceFilter] = useState<string | "all">("all")
   const [districtFilter, setDistrictFilter] = useState<string | "all">("all")
@@ -124,6 +174,22 @@ export default function AirQualityDashboard() {
   const [hoveredDay, setHoveredDay] = useState<HoveredDay | null>(null)
   const [selectedSensor, setSelectedSensor] = useState<AirSensor | null>(null)
   const [metricMode, setMetricMode] = useState<AirMetricMode>("epa-aqi")
+  const [timeseries, setTimeseries] = useState<TimeseriesData | null>(null)
+  const [timeseriesLoading, setTimeseriesLoading] = useState(true)
+  const [selectedDayIdx, setSelectedDayIdx] = useState<number | null>(null)
+
+  // Build the last-30-days list client-side so the slider shows immediately.
+  const timeseriesDays = useMemo<string[]>(() => {
+    if (timeseries) return timeseries.days
+    const days: string[] = []
+    const today = new Date()
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(today)
+      d.setDate(today.getDate() - i)
+      days.push(d.toISOString().slice(0, 10))
+    }
+    return days
+  }, [timeseries])
 
   const MIN_YEAR = 2019
   const MAX_YEAR = new Date().getFullYear()
@@ -134,7 +200,7 @@ export default function AirQualityDashboard() {
       setSensorsLoading(true)
       setSensorsError(null)
       const response = await fetch(
-        "https://admin.smartalmaty.kz/api/v1/air/current/?parameter=pm25&limit=500",
+        `${process.env.NEXT_PUBLIC_API_BASE ?? "https://admin.smartalmaty.kz/api/v1"}/air/current/?parameter=pm25&limit=500`,
         { headers: { Accept: "application/json" } },
       )
       if (!response.ok) throw new Error(`Sensors API returned ${response.status}`)
@@ -154,7 +220,7 @@ export default function AirQualityDashboard() {
       try {
         setLoading(true)
         const response = await fetch(
-          `https://admin.smartalmaty.kz/api/v1/ecology/api/air-quality-calendar/?year=${currentYear}`,
+          `${process.env.NEXT_PUBLIC_API_BASE ?? "https://admin.smartalmaty.kz/api/v1"}/ecology/api/air-quality-calendar/?year=${currentYear}`,
           { headers: { Accept: "application/json" } },
         )
         if (!response.ok) throw new Error(`API returned ${response.status}`)
@@ -182,8 +248,8 @@ export default function AirQualityDashboard() {
     const thisYear = new Date().getFullYear()
     const prevYear = thisYear - 1
     Promise.all([
-      fetch(`https://admin.smartalmaty.kz/api/v1/ecology/api/air-quality-calendar/?year=${prevYear}`, { headers: { Accept: "application/json" } }).then((r) => r.json()),
-      fetch(`https://admin.smartalmaty.kz/api/v1/ecology/api/air-quality-calendar/?year=${thisYear}`, { headers: { Accept: "application/json" } }).then((r) => r.json()),
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE ?? "https://admin.smartalmaty.kz/api/v1"}/ecology/api/air-quality-calendar/?year=${prevYear}`, { headers: { Accept: "application/json" } }).then((r) => r.json()),
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE ?? "https://admin.smartalmaty.kz/api/v1"}/ecology/api/air-quality-calendar/?year=${thisYear}`, { headers: { Accept: "application/json" } }).then((r) => r.json()),
     ])
       .then(([prev, curr]) => {
         const merged: Record<string, number> = {}
@@ -198,6 +264,26 @@ export default function AirQualityDashboard() {
   }, [])
 
   useEffect(() => { fetchSensors() }, [fetchSensors])
+
+  useEffect(() => {
+    fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE ?? "https://admin.smartalmaty.kz/api/v1"}/air/eco-iq/current/`,
+      { headers: { Accept: "application/json" } },
+    )
+      .then((r) => r.json())
+      .then((data: EcoIqSensor[]) => setEcoIqSensors(Array.isArray(data) ? data : []))
+      .catch(() => {})
+  }, [])
+  useEffect(() => {
+    setTimeseriesLoading(true)
+    const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "https://admin.smartalmaty.kz/api/v1"
+    fetch(`${BASE}/air/analytics/map-timeseries/?days=30`, { headers: { Accept: "application/json" } })
+      .then((r) => r.json())
+      .then((data: TimeseriesData) => setTimeseries(data))
+      .catch(() => {})
+      .finally(() => setTimeseriesLoading(false))
+  }, [])
+
   useEffect(() => { setMounted(true) }, [])
 
   const sources = useMemo(() => {
@@ -229,6 +315,20 @@ export default function AirQualityDashboard() {
       }),
     [sensors, sourceFilter, districtFilter, sensorSearch],
   )
+
+  // When a historical day is selected, override each sensor's value from the timeseries snapshot.
+  // valueMap is keyed by air_initiative_sensors.id which equals AirSensor.sensor_id (the FK).
+  const displaySensors = useMemo(() => {
+    if (selectedDayIdx === null || !timeseries) return filteredSensors
+    const valueMap: Record<number, number | null> = {}
+    for (const tsSensor of timeseries.sensors) {
+      valueMap[tsSensor.id] = tsSensor.values[selectedDayIdx] ?? null
+    }
+    return filteredSensors.map((s) => {
+      const historical = valueMap[s.sensor_id as number]
+      return historical !== undefined ? { ...s, value: historical } : s
+    })
+  }, [filteredSensors, selectedDayIdx, timeseries])
 
   const sensorsWithData = useMemo(
     () => sensors.filter((s) => s.value != null),
@@ -376,6 +476,18 @@ export default function AirQualityDashboard() {
               <BarChart2 className="h-4 w-4" />
               Аналитика
             </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("ai")}
+              className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === "ai"
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Sparkles className="h-4 w-4" />
+              ИИ-анализ
+            </button>
 
             {/* Right-aligned controls */}
             <div className="ml-auto flex items-center gap-3 py-2">
@@ -489,10 +601,23 @@ export default function AirQualityDashboard() {
               </div>
             ) : (
               <SensorMap
-                sensors={filteredSensors}
+                sensors={displaySensors}
+                ecoIqSensors={selectedDayIdx === null ? ecoIqSensors : []}
                 onSensorSelect={(s) => setSelectedSensor(s)}
+                onEcoIqSelect={(s) => setSelectedSensor(ecoIqToAirSensor(s))}
                 focusedSensor={selectedSensor}
                 metricMode={metricMode}
+                sourceFilter={sourceFilter}
+              />
+            )}
+
+            {/* Time slider — renders immediately with client-side days, data loads in background */}
+            {!sensorsLoading && !sensorsError && (
+              <TimeSlider
+                days={timeseriesDays}
+                selectedIdx={selectedDayIdx}
+                onSelect={setSelectedDayIdx}
+                loading={timeseriesLoading}
               />
             )}
 
@@ -511,6 +636,11 @@ export default function AirQualityDashboard() {
           {/* ── Analytics tab ────────────────────────────────────────── */}
           <div className={`min-h-0 flex-1 overflow-y-auto ${activeTab === "analytics" ? "block" : "hidden"}`}>
             <AnalyticsTab sensors={sensors} sensorsLoading={sensorsLoading} />
+          </div>
+
+          {/* ── AI tab ───────────────────────────────────────────────── */}
+          <div className={`min-h-0 flex-1 overflow-y-auto ${activeTab === "ai" ? "block" : "hidden"}`}>
+            <AiTab sensors={sensors} sensorsLoading={sensorsLoading} />
           </div>
 
           {/* ── Calendar tab ─────────────────────────────────────────── */}

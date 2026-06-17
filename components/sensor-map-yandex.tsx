@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 import { pm25Color, pm25Label, pm25ToEpaAqi } from "@/lib/pm25"
@@ -21,16 +21,33 @@ export interface AirSensor {
   longitude: number | null
   district_id: number | null
   district_name: string | null
+  rawAqi?: number | null
+  ecoIqStationId?: string | null
 }
 
 // Keep old Sensor as alias so page.tsx doesn't need a full rename yet
 export type Sensor = AirSensor
 
+export interface EcoIqSensor {
+  id: string
+  name: string | null
+  latitude: number
+  longitude: number
+  is_high_precision: boolean
+  aqi: number | null
+  pm25_concentration: number | null
+  pm25_aqi: number | null
+  measured_at: string | null
+}
+
 interface SensorMapProps {
   sensors: AirSensor[]
+  ecoIqSensors?: EcoIqSensor[]
   onSensorSelect?: (sensor: AirSensor) => void
+  onEcoIqSelect?: (sensor: EcoIqSensor) => void
   focusedSensor?: AirSensor | null
   metricMode?: AirMetricMode
+  sourceFilter?: string
 }
 
 // ── AQI helpers ────────────────────────────────────────────────────────────────
@@ -38,6 +55,11 @@ interface SensorMapProps {
 const DEFAULT_CENTER: [number, number] = [43.238949, 76.889709]
 const YANDEX_TILE_URL =
   "https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&lang=ru_RU"
+
+// Traffic tiles proxied through our backend so Yandex domains don't need to
+// resolve directly in the browser (blocked in some regions).
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "https://admin.smartalmaty.kz/api/v1"
+const YANDEX_TRAFFIC_URL = `${API_BASE}/air/tiles/traffic/{z}/{x}/{y}/`
 
 
 // ── Individual sensor marker ───────────────────────────────────────────────────
@@ -77,6 +99,42 @@ function createSensorIcon(pm25: number | null, metricMode: AirMetricMode = "pm25
   })
 }
 
+// ── EcoIQ triangle marker ──────────────────────────────────────────────────────
+
+function aqiColor(aqi: number | null): string {
+  if (aqi == null) return "#6b7280"
+  if (aqi <= 50)  return "#1BA97C"
+  if (aqi <= 100) return "#f59e0b"
+  if (aqi <= 150) return "#f97316"
+  if (aqi <= 200) return "#ef4444"
+  if (aqi <= 300) return "#a855f7"
+  return "#581c87"
+}
+
+function createEcoIqIcon(aqi: number | null): L.DivIcon {
+  const color = aqiColor(aqi)
+  const label = aqi != null ? aqi.toString() : "?"
+  const fontSize = label.length >= 3 ? 8 : 9
+
+  return L.divIcon({
+    className: "",
+    html: `<svg width="38" height="38" viewBox="0 0 38 38" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4))">
+      <polygon points="19,2 36,34 2,34" fill="${color}" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+      <text
+        x="19" y="26"
+        text-anchor="middle"
+        font-family="system-ui,-apple-system,sans-serif"
+        font-weight="800"
+        font-size="${fontSize}"
+        fill="white"
+      >${label}</text>
+    </svg>`,
+    iconSize:    [38, 38],
+    iconAnchor:  [19, 38],
+    popupAnchor: [0, -38],
+  })
+}
+
 // ── District boundary helpers ──────────────────────────────────────────────────
 
 const DISTRICT_PALETTE = [
@@ -108,11 +166,14 @@ function loadDistrictLayer(map: L.Map): void {
 
 // ── Component ──────────────────────────────────────────────────────────────────
 
-export default function SensorMapYandex({ sensors, onSensorSelect, focusedSensor, metricMode = "pm25" }: SensorMapProps) {
-  const mapRef          = useRef<HTMLDivElement>(null)
-  const mapInstanceRef  = useRef<L.Map | null>(null)
-  const markerLayerRef  = useRef<L.LayerGroup | null>(null)
-  const hasAutoFitted   = useRef(false)
+export default function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSelect, focusedSensor, metricMode = "pm25", sourceFilter = "all" }: SensorMapProps) {
+  const mapRef            = useRef<HTMLDivElement>(null)
+  const mapInstanceRef    = useRef<L.Map | null>(null)
+  const markerLayerRef    = useRef<L.LayerGroup | null>(null)
+  const ecoIqLayerRef     = useRef<L.LayerGroup | null>(null)
+  const trafficLayerRef   = useRef<L.TileLayer | null>(null)
+  const hasAutoFitted     = useRef(false)
+  const [trafficVisible, setTrafficVisible] = useState(false)
 
   const valid = sensors.filter(
     (s) => s.latitude != null && s.longitude != null,
@@ -211,6 +272,76 @@ export default function SensorMapYandex({ sensors, onSensorSelect, focusedSensor
     }
   }, [valid, metricMode])
 
+  // EcoIQ triangle markers layer
+  useEffect(() => {
+    if (!mapInstanceRef.current || typeof window === "undefined") return
+    const map = mapInstanceRef.current
+
+    if (ecoIqLayerRef.current) {
+      map.removeLayer(ecoIqLayerRef.current)
+      ecoIqLayerRef.current = null
+    }
+
+    if (sourceFilter !== "all" && sourceFilter !== "EcoIQ") return
+
+    const validEco = ecoIqSensors.filter((s) => s.latitude != null && s.longitude != null)
+    if (!validEco.length) return
+
+    const layer = L.layerGroup()
+
+    for (const s of validEco) {
+      const icon  = createEcoIqIcon(s.aqi)
+      const color = aqiColor(s.aqi)
+      const time  = s.measured_at ? new Date(s.measured_at).toLocaleString("ru-RU") : "—"
+
+      const popup = `
+        <div style="min-width:200px;font-family:system-ui">
+          <div style="display:flex;align-items:center;gap:6px;margin:0 0 6px">
+            <svg width="12" height="12" viewBox="0 0 32 32"><polygon points="16,2 30,28 2,28" fill="${color}"/></svg>
+            <p style="font-size:13px;font-weight:700;margin:0;color:#111">${s.name ?? "EcoIQ станция"}</p>
+          </div>
+          <p style="font-size:10px;color:#6b7280;margin:0 0 8px">EcoIQ · ${s.is_high_precision ? "высокоточная" : "стандартная"} станция</p>
+          ${s.aqi != null ? `
+            <div style="margin:0 0 8px;padding:8px 10px;background:${color}18;border-left:3px solid ${color};border-radius:4px">
+              <p style="margin:0;font-size:10px;color:#6b7280">AQI</p>
+              <p style="margin:4px 0 0;font-size:22px;font-weight:800;color:${color}">${s.aqi}</p>
+              ${s.pm25_concentration != null ? `<p style="margin:4px 0 0;font-size:11px;color:#6b7280">PM<sub>2.5</sub>: <strong style="color:${color}">${s.pm25_concentration} µg/m³</strong></p>` : ""}
+            </div>
+          ` : ""}
+          <p style="margin:0;font-size:10px;color:#9ca3af">Обновлено: ${time}</p>
+        </div>`
+
+      const marker = L.marker([s.latitude, s.longitude], { icon } as any).bindPopup(popup)
+      if (onEcoIqSelect) {
+        marker.on("click", () => onEcoIqSelect(s))
+      }
+      marker.addTo(layer)
+    }
+
+    layer.addTo(map)
+    ecoIqLayerRef.current = layer
+  }, [ecoIqSensors, onEcoIqSelect, sourceFilter])
+
+  // Traffic layer toggle
+  useEffect(() => {
+    if (!mapInstanceRef.current || typeof window === "undefined") return
+    const map = mapInstanceRef.current
+    if (trafficVisible) {
+      if (!trafficLayerRef.current) {
+        trafficLayerRef.current = L.tileLayer(YANDEX_TRAFFIC_URL, {
+          opacity:     0.7,
+          maxZoom:     18,
+          attribution: "",
+        })
+      }
+      trafficLayerRef.current.addTo(map)
+    } else {
+      if (trafficLayerRef.current) {
+        map.removeLayer(trafficLayerRef.current)
+      }
+    }
+  }, [trafficVisible])
+
   if (!valid.length) {
     return (
       <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-border bg-muted/40 text-muted-foreground">
@@ -219,5 +350,28 @@ export default function SensorMapYandex({ sensors, onSensorSelect, focusedSensor
     )
   }
 
-  return <div ref={mapRef} className="h-full w-full rounded-xl" />
+  return (
+    <div className="relative h-full w-full">
+      <div ref={mapRef} className="h-full w-full rounded-xl" />
+
+      {/* Traffic toggle button */}
+      <button
+        onClick={() => setTrafficVisible((v) => !v)}
+        title={trafficVisible ? "Скрыть пробки" : "Показать пробки"}
+        className={`absolute right-3 top-3 z-[1000] flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold shadow-md backdrop-blur transition-colors ${
+          trafficVisible
+            ? "border-orange-400 bg-orange-500 text-white"
+            : "border-border bg-background/90 text-foreground hover:bg-muted"
+        }`}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M8 6h8l2 6H6L8 6z"/>
+          <circle cx="9" cy="17" r="2"/>
+          <circle cx="15" cy="17" r="2"/>
+          <path d="M3 12h18"/>
+        </svg>
+        Пробки
+      </button>
+    </div>
+  )
 }

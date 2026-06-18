@@ -5,7 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useTheme } from "next-themes"
-import { Menu, X, Map, Building2, Phone } from "lucide-react"
+import { Menu, X, Map, Building2, Phone, Sun, Moon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const menuItems = [
@@ -16,9 +16,11 @@ const menuItems = [
 
 export function HeaderMenu() {
   const [isOpen, setIsOpen] = useState(false)
-  const { resolvedTheme } = useTheme()
+  const { resolvedTheme, setTheme } = useTheme()
   const pathname = usePathname()
-  const logoSrc = resolvedTheme === "light" ? "/logo_aqa_dark_letters.png" : "/logo_aqa.png"
+  // resolvedTheme is undefined during hydration — treat undefined as "light" so the
+  // correct logo renders on first paint instead of briefly flashing the dark logo
+  const logoSrc = resolvedTheme === "dark" ? "/logo_aqa.png" : "/logo_aqa_dark_letters.png"
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -57,11 +59,25 @@ export function HeaderMenu() {
             })}
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
-            <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)} aria-label="Toggle menu">
-              {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {/* Right side: theme toggle + mobile menu */}
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+              aria-label="Toggle theme"
+              className="h-9 w-9 rounded-xl"
+            >
+              {resolvedTheme === "dark"
+                ? <Sun className="h-4 w-4" />
+                : <Moon className="h-4 w-4" />
+              }
             </Button>
+            <div className="md:hidden">
+              <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)} aria-label="Toggle menu">
+                {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </Button>
+            </div>
           </div>
         </div>
 

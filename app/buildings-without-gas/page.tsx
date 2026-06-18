@@ -2,15 +2,16 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef, useDeferredValue, useTransition } from "react"
 import dynamic from "next/dynamic"
+import { useTheme } from "next-themes"
 import { HeaderMenu } from "@/components/header-menu"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Building2, MapPin, AlertCircle, CheckCircle, Flame, Download, X, Calendar, Layers, Home, HelpCircle, RefreshCw, Search, ChevronDown, Filter, Database, Settings, BarChart3 } from "lucide-react"
-import Link from "next/link"
+import { Building2, MapPin, AlertCircle, CheckCircle, Flame, Download, X, Calendar, Layers, Home, HelpCircle, RefreshCw, Search, ChevronDown, ChevronLeft, Filter, Database, Settings, BarChart3 } from "lucide-react"
+import { BuildingsAnalytics } from "./buildings-analytics"
 import { getBuildingsFromCache, saveBuildingsToCache, clearBuildingsCache } from "@/lib/buildingsCache"
 
 // Динамически загружаем карту для избежания SSR проблем
-const BuildingsMap = dynamic(() => import("../../components/buildings-map"), { ssr: false })
+const BuildingsMap = dynamic(() => import("../../components/buildings-map-mapbox"), { ssr: false })
 
 const DISTRICT_LABELS: Record<string, string> = {
   "0": "г.Алматы",
@@ -137,6 +138,7 @@ interface District {
 }
 
 export default function BuildingsWithoutGasPage() {
+  const { resolvedTheme } = useTheme()
   const [buildings, setBuildings] = useState<Building[]>([])
   const [renovationAreas, setRenovationAreas] = useState<RenovationArea[]>([])
   const [districts, setDistricts] = useState<District[]>([])
@@ -159,6 +161,8 @@ export default function BuildingsWithoutGasPage() {
   const [selectedDistrictId, setSelectedDistrictId] = useState<number | null>(null)
   const [showOnlySeasonalUnused, setShowOnlySeasonalUnused] = useState(false)
   const [showDistrictDropdown, setShowDistrictDropdown] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [activeTab, setActiveTab] = useState<"map" | "analytics">("map")
 
   // useTransition for non-blocking UI updates
   const [isPending, startTransition] = useTransition()
@@ -374,6 +378,7 @@ export default function BuildingsWithoutGasPage() {
   const handleBuildingClick = useCallback((building: Building) => {
     setSelectedBuilding(building)
     setShowSidePanel(true)
+    setSidebarCollapsed(false)
   }, [])
 
   const handleDistrictFilterChange = useCallback((districtName: string) => {
@@ -1148,205 +1153,317 @@ export default function BuildingsWithoutGasPage() {
   return (
     <>
       <HeaderMenu />
-      <main className="relative overflow-hidden flex flex-col" style={{ height: 'calc(100vh - 64px)' }}>
-        {/* Tab Toolbar */}
-        <div className="relative z-30 shrink-0 bg-background/95 backdrop-blur border-b border-border px-4 flex items-center gap-1.5 h-12">
-          {/* Toggle tabs */}
-          <button
-            onClick={() => startTransition(() => setShowHeatmap(!showHeatmap))}
-            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200 ${
-              showHeatmap
-                ? "bg-orange-500 text-white shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
-            }`}
+      <main className="flex overflow-hidden" style={{ height: 'calc(100vh - 64px)' }}>
+
+        {/* Sidebar - flex item, collapsible */}
+        <aside
+          className="relative flex flex-col flex-shrink-0 border-r border-border bg-background transition-[width] duration-300 ease-in-out overflow-hidden"
+          style={{ width: sidebarCollapsed ? 72 : 520 }}
+        >
+          {/* Collapsed strip - shown when collapsed */}
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-between py-5"
+            style={{ opacity: sidebarCollapsed ? 1 : 0, pointerEvents: sidebarCollapsed ? 'auto' : 'none', transition: 'opacity 0.15s' }}
           >
-            <Flame className="h-4 w-4 shrink-0" />
-            <span>Тепловая карта</span>
-          </button>
-
-          <button
-            onClick={() => startTransition(() => setShowRenovationAreas(!showRenovationAreas))}
-            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200 ${
-              showRenovationAreas
-                ? "bg-purple-500 text-white shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
-            }`}
-          >
-            <Layers className="h-4 w-4 shrink-0" />
-            <span>Реновация</span>
-          </button>
-
-          <Link
-            href="/buildings-without-gas/analytics"
-            className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200"
-          >
-            <BarChart3 className="h-4 w-4 shrink-0" />
-            <span>Аналитика</span>
-          </Link>
-
-          <div className="w-px h-5 bg-border mx-1" />
-
-          <button
-            onClick={exportToCSV}
-            className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200"
-            title="Экспорт CSV"
-          >
-            <Download className="h-4 w-4 shrink-0" />
-            <span>CSV</span>
-          </button>
-
-          <button
-            onClick={() => fetchBuildings(true)}
-            disabled={loading}
-            className="flex items-center justify-center rounded-xl p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200 disabled:opacity-40"
-            title="Обновить данные"
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
-
-          {/* Marker legend — right side */}
-          <div className="ml-auto flex items-center gap-3">
-            {[
-              { color: "#10b981", label: "Точные" },
-              { color: "#eab308", label: "Приближённые" },
-              { color: "#8b5cf6", label: "Не ИЖС" },
-              { color: "#ec4899", label: "Сезонные" },
-            ].map((item) => (
-              <div key={item.label} className="flex items-center gap-1.5">
-                <svg width="9" height="12" viewBox="0 0 11 15">
-                  <path d="M5.5 0C2.46 0 0 2.46 0 5.5 0 9.63 5.5 15 5.5 15S11 9.63 11 5.5C11 2.46 8.54 0 5.5 0z" fill={item.color}/>
-                  <circle cx="5.5" cy="5.5" r="2.2" fill="white" opacity="0.95"/>
-                </svg>
-                <span className="text-[11px] text-muted-foreground font-medium">{item.label}</span>
+            <div className="h-2 w-2 rounded-full bg-primary/40" />
+            <button
+              onClick={() => setSidebarCollapsed(false)}
+              className="group flex flex-col items-center gap-2"
+              title="Развернуть фильтры"
+            >
+              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center shadow-sm transition-transform duration-200 group-hover:scale-110">
+                <Filter className="h-5 w-5 text-primary" />
               </div>
-            ))}
+              <span className="text-[9px] text-muted-foreground font-medium">Фильтры</span>
+            </button>
+            <div className="flex flex-col items-center gap-0.5">
+              <span className="text-xs font-bold tabular-nums text-foreground">{filteredBuildings.length.toLocaleString()}</span>
+              <span className="text-[9px] text-muted-foreground">зданий</span>
+            </div>
           </div>
-        </div>
 
-        {/* Main Content Area */}
-        <div className="relative flex-1 overflow-hidden">
-        {/* Full-screen Map Background */}
-        <div className="absolute inset-0 z-0">
-          {loading ? (
-            <div className="flex h-full items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-              <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full mx-4">
-                <div className="flex items-center justify-center mb-6">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          {/* Expanded content */}
+          <div
+            className="flex min-h-0 flex-1 flex-col overflow-hidden"
+            style={{ opacity: sidebarCollapsed ? 0 : 1, pointerEvents: sidebarCollapsed ? 'none' : 'auto', transition: 'opacity 0.15s' }}
+          >
+          {/* Sidebar Header with Stats */}
+          <div className="px-4 py-3 border-b border-border bg-muted/30 shrink-0">
+            {showSidePanel && selectedBuilding ? (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => { setShowSidePanel(false); setSelectedBuilding(null) }}
+                  className="h-6 w-6 rounded-lg flex items-center justify-center hover:bg-muted transition-colors shrink-0"
+                  title="Назад к фильтрам"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider truncate">{selectedBuilding.district}</p>
+                  <p className="text-sm font-bold text-foreground leading-tight truncate">{selectedBuilding.address}</p>
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 text-center mb-2">
-                  {loadingProgress.status || "Загрузка..."}
-                </h3>
-                {loadingProgress.total > 0 && (
-                  <>
-                    <div className="w-full bg-gray-200 rounded-full h-3 mb-2 overflow-hidden">
-                      <div
-                        className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-300 ease-out"
-                        style={{ width: `${(loadingProgress.loaded / loadingProgress.total) * 100}%` }}
-                      ></div>
-                    </div>
-                    <p className="text-sm text-gray-600 text-center">
-                      {loadingProgress.loaded.toLocaleString()} / {loadingProgress.total.toLocaleString()} объектов
+                <button
+                  onClick={() => setSidebarCollapsed(true)}
+                  className="h-6 w-6 rounded-lg flex items-center justify-center hover:bg-muted transition-colors shrink-0"
+                  title="Свернуть"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Фильтры</p>
+                <div className="flex items-center gap-2">
+                  <div className={`h-6 w-6 rounded-lg flex items-center justify-center transition-colors ${isPending ? 'bg-amber-100' : 'bg-blue-100'}`}>
+                    {isPending ? (
+                      <div className="h-3 w-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Database className="h-3 w-3 text-blue-500" />
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-sm font-bold tabular-nums leading-tight transition-opacity ${isPending ? 'text-muted-foreground' : 'text-foreground'}`}>
+                      {filteredBuildings.length.toLocaleString()}
+                      <span className="text-xs font-normal text-muted-foreground ml-1">/ {selectedCategoriesTotal.toLocaleString()}</span>
                     </p>
-                  </>
-                )}
-                {/* Elapsed time */}
-                <div className="mt-4 flex items-center justify-center gap-2">
-                  <span className="text-xs text-gray-400">Время загрузки:</span>
-                  <span className="text-sm font-mono font-medium text-blue-600">
-                    {Math.floor(loadingElapsed / 60)}:{(loadingElapsed % 60).toString().padStart(2, '0')}
-                  </span>
-                </div>
-                {loadingElapsed > 15 && (
-                  <p className="text-xs text-amber-600 text-center mt-2">
-                    ⏳ Загрузка занимает больше времени чем обычно...
-                  </p>
-                )}
-                {loadingElapsed > 30 && (
-                  <p className="text-xs text-orange-600 text-center mt-1">
-                    Сервер обрабатывает ~50,000 записей. Пожалуйста, подождите.
-                  </p>
-                )}
-                {loadingElapsed > 60 && (
+                  </div>
                   <button
-                    onClick={() => {
-                      setLoading(false)
-                      setError("Превышено время ожидания. Попробуйте позже.")
-                    }}
-                    className="mt-3 w-full py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                    onClick={() => setSidebarCollapsed(true)}
+                    className="h-6 w-6 rounded-lg flex items-center justify-center hover:bg-muted transition-colors"
+                    title="Свернуть"
                   >
-                    Отменить загрузку
+                    <ChevronLeft className="h-3.5 w-3.5 text-muted-foreground" />
                   </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Building Detail — shown inside sidebar when a building is clicked */}
+          {showSidePanel && selectedBuilding && (
+            <div className="flex-1 overflow-y-auto scrollbar-hidden px-3 py-3 space-y-2">
+
+              {/* Gas status */}
+              {selectedBuilding.has_gas === true ? (
+                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-green-500/10 border border-green-500/20">
+                  <div className="h-6 w-6 rounded-full bg-green-500 flex items-center justify-center shrink-0">
+                    <CheckCircle className="h-3.5 w-3.5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold text-green-700 dark:text-green-400 uppercase tracking-tight">Газ подключен</p>
+                    <p className="text-[10px] text-green-600 dark:text-green-300/60">Централизованное газоснабжение</p>
+                  </div>
+                </div>
+              ) : selectedBuilding.has_gas === false ? (
+                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                  <div className="h-6 w-6 rounded-full bg-orange-500 flex items-center justify-center shrink-0">
+                    <AlertCircle className="h-3.5 w-3.5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold text-orange-700 dark:text-orange-400 uppercase tracking-tight">Газ отсутствует</p>
+                    <p className="text-[10px] text-orange-600 dark:text-orange-300/60">В списках на газификацию</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-muted/60 border border-border">
+                  <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center shrink-0">
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold text-foreground uppercase tracking-tight">Статус неизвестен</p>
+                    <p className="text-[10px] text-muted-foreground">Нет данных о газоснабжении</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Type info */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-3 rounded-xl bg-muted/40 border border-border">
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium mb-1">Категория</p>
+                  <p className="text-xs font-semibold text-foreground leading-tight">{selectedBuilding.building_type}</p>
+                </div>
+                {selectedBuilding.building_type_raw ? (
+                  <div className="p-3 rounded-xl bg-muted/40 border border-border">
+                    <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium mb-1">Тип здания</p>
+                    <p className="text-xs font-semibold text-foreground leading-tight">{selectedBuilding.building_type_raw}</p>
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-xl bg-muted/40 border border-border font-mono">
+                    <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-sans font-medium mb-1">ID</p>
+                    <p className="text-xs font-bold text-foreground">{selectedBuilding.id}</p>
+                  </div>
                 )}
               </div>
-            </div>
-          ) : error ? (
-            <div className="flex h-full flex-col items-center justify-center gap-3 bg-background">
-              <AlertCircle className="h-12 w-12 text-orange-500" />
-              <p className="text-red-500 font-semibold">{error}</p>
-              <p className="text-sm text-muted-foreground">Используются тестовые данные для демонстрации</p>
-              <Button variant="outline" size="sm" onClick={() => fetchBuildings(true)}>
-                Попробовать снова
-              </Button>
-            </div>
-          ) : (
-            <BuildingsMap
-              buildings={deferredFilteredBuildings.filter(b => b.latitude && b.longitude)}
-              renovationAreas={renovationAreas}
-              districts={districts}
-              selectedDistrictId={deferredSelectedDistrictId}
-              showHeatmap={deferredShowHeatmap}
-              showRenovationAreas={deferredShowRenovationAreas}
-              showOnlySeasonalUnused={deferredShowOnlySeasonalUnused}
-              onBuildingClick={handleBuildingClick}
-            />
-          )}
-        </div>
 
-        {/* Floating UI Elements */}
-        <div className="relative z-10 h-full w-full pointer-events-none">
-        {/* Left Sidebar - Controls & Filters */}
-        <div className="absolute top-0 left-0 bottom-0 w-[300px] pointer-events-auto z-20 flex flex-col bg-white/95 backdrop-blur-xl border-r border-slate-200/80 shadow-xl">
-          {/* Sidebar Header with Stats */}
-          <div className="px-4 py-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/30">
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Фильтры</p>
-              <div className="flex items-center gap-2">
-                <div className={`h-6 w-6 rounded-lg flex items-center justify-center transition-colors ${isPending ? 'bg-amber-100' : 'bg-blue-100'}`}>
-                  {isPending ? (
-                    <div className="h-3 w-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Database className="h-3 w-3 text-blue-500" />
+              {/* Flags */}
+              {(selectedBuilding.is_not_in_almaty || selectedBuilding.is_seasonal_or_unused) && (
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedBuilding.is_not_in_almaty && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20">
+                      <MapPin className="h-2.5 w-2.5" />Не в Алматы
+                    </span>
+                  )}
+                  {selectedBuilding.is_seasonal_or_unused && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+                      <Calendar className="h-2.5 w-2.5" />Сезонное
+                    </span>
                   )}
                 </div>
-                <div className="text-right">
-                  <p className={`text-sm font-bold tabular-nums leading-tight transition-opacity ${isPending ? 'text-slate-400' : 'text-slate-700'}`}>
-                    {filteredBuildings.length.toLocaleString()}
-                    <span className="text-xs font-normal text-slate-400 ml-1">/ {selectedCategoriesTotal.toLocaleString()}</span>
-                  </p>
+              )}
+
+              {/* Contact */}
+              {(selectedBuilding.fio || selectedBuilding.mobile_home_number) && (
+                <div className="p-3 rounded-xl bg-muted/40 border border-border space-y-1.5">
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium">Контакт</p>
+                  {selectedBuilding.fio && <p className="text-xs font-medium text-foreground">{selectedBuilding.fio}</p>}
+                  {selectedBuilding.mobile_home_number && <p className="text-xs text-muted-foreground">{selectedBuilding.mobile_home_number}</p>}
+                </div>
+              )}
+
+              {/* Gas details */}
+              {(selectedBuilding.type_of_gas || (selectedBuilding.gas_connection_available !== null && selectedBuilding.gas_connection_available !== undefined)) && (
+                <div className="p-3 rounded-xl bg-muted/40 border border-border space-y-1.5">
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium">Детали газоснабжения</p>
+                  {selectedBuilding.type_of_gas && (
+                    <div className="flex justify-between">
+                      <span className="text-[10px] text-muted-foreground">Тип газа</span>
+                      <span className="text-[10px] font-medium text-foreground">{selectedBuilding.type_of_gas}</span>
+                    </div>
+                  )}
+                  {selectedBuilding.gas_connection_available !== null && selectedBuilding.gas_connection_available !== undefined && (
+                    <div className="flex justify-between">
+                      <span className="text-[10px] text-muted-foreground">Тех. возможность</span>
+                      <span className={`text-[10px] font-medium ${selectedBuilding.gas_connection_available ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {selectedBuilding.gas_connection_available ? 'Да' : 'Нет'}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Reasons */}
+              {(selectedBuilding.property_not_legalized || selectedBuilding.property_not_eligible_for_gas_connection || selectedBuilding.no_funds_for_gas_connection || selectedBuilding.other_reason) && (
+                <div className="space-y-1.5">
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium px-1">Причины</p>
+                  {selectedBuilding.property_not_legalized && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20">
+                      <X className="h-3 w-3 text-red-500 shrink-0" />
+                      <p className="text-[10px] font-medium text-red-700 dark:text-red-400">Объект не узаконен</p>
+                    </div>
+                  )}
+                  {selectedBuilding.property_not_eligible_for_gas_connection && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20">
+                      <X className="h-3 w-3 text-red-500 shrink-0" />
+                      <p className="text-[10px] font-medium text-red-700 dark:text-red-400">Не подлежит газификации</p>
+                    </div>
+                  )}
+                  {selectedBuilding.no_funds_for_gas_connection && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                      <AlertCircle className="h-3 w-3 text-amber-500 shrink-0" />
+                      <p className="text-[10px] font-medium text-amber-700 dark:text-amber-400">Нет средств на подключение</p>
+                    </div>
+                  )}
+                  {selectedBuilding.other_reason && (
+                    <div className="px-3 py-2 rounded-lg bg-muted border border-border">
+                      <p className="text-[9px] text-muted-foreground uppercase mb-0.5">Другая причина</p>
+                      <p className="text-[10px] text-foreground">{selectedBuilding.other_reason}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Bathhouse */}
+              {((selectedBuilding.has_private_bathhouse !== null && selectedBuilding.has_private_bathhouse !== undefined) || selectedBuilding.bathhouse_fuel_type) && (
+                <div className="p-3 rounded-xl bg-muted/40 border border-border space-y-1.5">
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium">Баня</p>
+                  {selectedBuilding.has_private_bathhouse !== null && selectedBuilding.has_private_bathhouse !== undefined && (
+                    <div className="flex justify-between">
+                      <span className="text-[10px] text-muted-foreground">Частная баня</span>
+                      <span className={`text-[10px] font-medium ${selectedBuilding.has_private_bathhouse ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`}>
+                        {selectedBuilding.has_private_bathhouse ? 'Есть' : 'Нет'}
+                      </span>
+                    </div>
+                  )}
+                  {selectedBuilding.bathhouse_fuel_type && (
+                    <div className="flex justify-between">
+                      <span className="text-[10px] text-muted-foreground">Тип топлива</span>
+                      <span className="text-[10px] font-medium text-foreground">{selectedBuilding.bathhouse_fuel_type}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Specialist comment */}
+              {selectedBuilding.specialist_comment && (
+                <div className="p-3 rounded-xl bg-muted/40 border border-border">
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">Комментарий</p>
+                  <p className="text-[10px] text-foreground leading-relaxed">{selectedBuilding.specialist_comment}</p>
+                </div>
+              )}
+
+              {/* Territorial affiliation */}
+              {(selectedBuilding.inside_izhs || selectedBuilding.inside_susn || selectedBuilding.inside_alseco) && (
+                <div className="p-3 rounded-xl bg-muted/40 border border-border space-y-1.5">
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium">Территориальность</p>
+                  {selectedBuilding.inside_izhs && (
+                    <div className="flex justify-between">
+                      <span className="text-[10px] text-muted-foreground">Внутри ИЖС</span>
+                      <span className="text-[10px] font-medium text-foreground">{selectedBuilding.inside_izhs}</span>
+                    </div>
+                  )}
+                  {selectedBuilding.inside_susn && (
+                    <div className="flex justify-between">
+                      <span className="text-[10px] text-muted-foreground">Внутри СУСН</span>
+                      <span className="text-[10px] font-medium text-foreground">{selectedBuilding.inside_susn}</span>
+                    </div>
+                  )}
+                  {selectedBuilding.inside_alseco && (
+                    <div className="flex justify-between">
+                      <span className="text-[10px] text-muted-foreground">Внутри Alseco</span>
+                      <span className="text-[10px] font-medium text-foreground">{selectedBuilding.inside_alseco}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Geo + Tech grid */}
+              <div className="grid grid-cols-2 gap-2 pb-2">
+                <div className="p-3 rounded-xl bg-muted/40 border border-border">
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">Геолокация</p>
+                  <p className="font-mono text-[9px] text-muted-foreground">{selectedBuilding.latitude?.toFixed(6) ?? "—"}</p>
+                  <p className="font-mono text-[9px] text-muted-foreground">{selectedBuilding.longitude?.toFixed(6) ?? "—"}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-muted/40 border border-border">
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">Техническое</p>
+                  <p className="font-mono text-[9px] font-bold text-foreground">ID: {selectedBuilding.id}</p>
+                  <p className="font-mono text-[9px] text-muted-foreground uppercase">{selectedBuilding.building_category}</p>
+                  {selectedBuilding.gas_id && <p className="font-mono text-[9px] text-muted-foreground">Gas: {selectedBuilding.gas_id}</p>}
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4 space-y-4">
+            </div>
+          )}
+
+          {/* Scrollable Content — aside's filter area */}
+          {!showSidePanel && (
+          <div className="flex-1 overflow-y-auto scrollbar-hidden px-3 py-3 space-y-3">
 
             {/* Search + District Row */}
             <div className="space-y-3">
               {/* Search Input */}
               <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Search className="h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-muted-foreground group-focus-within:text-blue-500 transition-colors" />
                 </div>
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Поиск по адресу..."
-                  className="h-11 w-full rounded-xl border-2 border-slate-100 bg-white pl-11 pr-10 text-sm font-medium placeholder:text-slate-300 transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none"
+                  className="h-9 w-full rounded-md border border-border bg-background pl-9 pr-8 text-sm placeholder:text-muted-foreground transition-all focus:ring-1 focus:ring-ring focus:border-ring outline-none"
                 />
                 {searchQuery && (
-                  <button onClick={() => setSearchQuery("")} className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-all">
+                  <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full bg-muted text-muted-foreground hover:bg-muted hover:text-foreground transition-all">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 )}
@@ -1356,11 +1473,11 @@ export default function BuildingsWithoutGasPage() {
               <div className="relative">
                 <button
                   onClick={() => setShowDistrictDropdown(!showDistrictDropdown)}
-                  className={`h-11 w-full rounded-xl border-2 bg-white pl-4 pr-4 text-sm font-medium text-slate-700 cursor-pointer outline-none transition-all flex items-center gap-3 ${
-                    showDistrictDropdown ? "border-blue-500 ring-4 ring-blue-500/10" : "border-slate-100 hover:border-slate-200"
+                  className={`h-9 w-full rounded-md border bg-background pl-4 pr-4 text-sm font-medium text-foreground cursor-pointer outline-none transition-all flex items-center gap-3 ${
+                    showDistrictDropdown ? "border-blue-500 ring-1 ring-blue-500/10" : "border-border hover:border-border"
                   }`}
                 >
-                  <MapPin className={`h-4 w-4 shrink-0 ${districtFilter !== "all" ? "text-blue-500" : "text-slate-400"}`} />
+                  <MapPin className={`h-4 w-4 shrink-0 ${districtFilter !== "all" ? "text-blue-500" : "text-muted-foreground"}`} />
                   <span className="flex-1 text-left truncate">
                     {districtFilter === "all" ? "Все районы" : districtFilter === "no_district" ? "Без района" : districtFilter}
                   </span>
@@ -1369,7 +1486,7 @@ export default function BuildingsWithoutGasPage() {
                       {districtCounts[districtFilter]?.toLocaleString() || 0}
                     </span>
                   )}
-                  <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${showDistrictDropdown ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${showDistrictDropdown ? "rotate-180" : ""}`} />
                 </button>
 
                 {/* Dropdown Menu */}
@@ -1381,7 +1498,7 @@ export default function BuildingsWithoutGasPage() {
                       onClick={() => setShowDistrictDropdown(false)}
                     />
                     {/* Dropdown */}
-                    <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-background rounded-lg border border-border shadow-md overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                       {/* All Districts Option */}
                       <button
                         onClick={() => {
@@ -1391,17 +1508,17 @@ export default function BuildingsWithoutGasPage() {
                         className={`w-full px-4 py-2.5 flex items-center gap-3 transition-colors ${
                           districtFilter === "all"
                             ? "bg-blue-50 text-blue-700"
-                            : "hover:bg-slate-50 text-slate-700"
+                            : "hover:bg-muted/50 text-foreground"
                         }`}
                       >
                         <div className={`h-6 w-6 rounded-lg flex items-center justify-center ${
-                          districtFilter === "all" ? "bg-blue-500 text-white" : "bg-slate-100 text-slate-400"
+                          districtFilter === "all" ? "bg-blue-500 text-white" : "bg-muted text-muted-foreground"
                         }`}>
                           <MapPin className="h-3.5 w-3.5" />
                         </div>
                         <span className="flex-1 text-left text-sm font-medium">Все районы</span>
                         <span className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold ${
-                          districtFilter === "all" ? "bg-blue-100 text-blue-600" : "bg-slate-100 text-slate-500"
+                          districtFilter === "all" ? "bg-blue-100 text-blue-600" : "bg-muted text-muted-foreground"
                         }`}>
                           {districtCounts.all?.toLocaleString() || 0}
                         </span>
@@ -1410,7 +1527,7 @@ export default function BuildingsWithoutGasPage() {
                         )}
                       </button>
 
-                      <div className="h-px bg-slate-100" />
+                      <div className="h-px bg-border" />
 
                       {/* No District Option */}
                       {districtCounts.no_district > 0 && (
@@ -1422,17 +1539,17 @@ export default function BuildingsWithoutGasPage() {
                           className={`w-full px-4 py-2.5 flex items-center gap-3 transition-colors ${
                             districtFilter === "no_district"
                               ? "bg-blue-50 text-blue-700"
-                              : "hover:bg-slate-50 text-slate-700"
+                              : "hover:bg-muted/50 text-foreground"
                           }`}
                         >
                           <div className={`h-6 w-6 rounded-lg flex items-center justify-center text-[10px] font-bold ${
-                            districtFilter === "no_district" ? "bg-blue-500 text-white" : "bg-slate-100 text-slate-500"
+                            districtFilter === "no_district" ? "bg-blue-500 text-white" : "bg-muted text-muted-foreground"
                           }`}>
                             ?
                           </div>
                           <span className="flex-1 text-left text-sm font-medium">Без района</span>
                           <span className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold tabular-nums ${
-                            districtFilter === "no_district" ? "bg-blue-100 text-blue-600" : "bg-slate-100 text-slate-500"
+                            districtFilter === "no_district" ? "bg-blue-100 text-blue-600" : "bg-muted text-muted-foreground"
                           }`}>
                             {districtCounts.no_district?.toLocaleString() || 0}
                           </span>
@@ -1442,7 +1559,7 @@ export default function BuildingsWithoutGasPage() {
                         </button>
                       )}
 
-                      {districtCounts.no_district > 0 && <div className="h-px bg-slate-100" />}
+                      {districtCounts.no_district > 0 && <div className="h-px bg-border" />}
 
                       {/* District List */}
                       <div className="max-h-[280px] overflow-y-auto custom-scrollbar">
@@ -1456,17 +1573,17 @@ export default function BuildingsWithoutGasPage() {
                             className={`w-full px-4 py-2.5 flex items-center gap-3 transition-colors ${
                               districtFilter === district
                                 ? "bg-blue-50 text-blue-700"
-                                : "hover:bg-slate-50 text-slate-700"
+                                : "hover:bg-muted/50 text-foreground"
                             }`}
                           >
                             <div className={`h-6 w-6 rounded-lg flex items-center justify-center text-[10px] font-bold ${
-                              districtFilter === district ? "bg-blue-500 text-white" : "bg-slate-100 text-slate-500"
+                              districtFilter === district ? "bg-blue-500 text-white" : "bg-muted text-muted-foreground"
                             }`}>
                               {index + 1}
                             </div>
                             <span className="flex-1 text-left text-sm font-medium truncate">{district}</span>
                             <span className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold tabular-nums ${
-                              districtFilter === district ? "bg-blue-100 text-blue-600" : "bg-slate-100 text-slate-500"
+                              districtFilter === district ? "bg-blue-100 text-blue-600" : "bg-muted text-muted-foreground"
                             }`}>
                               {districtCounts[district]?.toLocaleString() || 0}
                             </span>
@@ -1482,25 +1599,62 @@ export default function BuildingsWithoutGasPage() {
               </div>
             </div>
 
+            {/* Map Layers Section */}
+            <div className="rounded-xl border border-border bg-background overflow-hidden">
+              <div className="px-4 py-2.5 border-b border-border">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Слои карты</p>
+              </div>
+              <div className="p-2 space-y-0.5">
+                <button
+                  onClick={() => startTransition(() => setShowHeatmap(!showHeatmap))}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    showHeatmap
+                      ? "bg-orange-500/10 text-orange-500 border border-orange-500/20"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground border border-transparent"
+                  }`}
+                >
+                  <Flame className="h-4 w-4 shrink-0" />
+                  <span>Тепловая карта</span>
+                  <div className={`ml-auto h-4 w-7 rounded-full flex items-center px-0.5 transition-colors ${showHeatmap ? "bg-orange-500" : "bg-muted"}`}>
+                    <div className={`h-3 w-3 rounded-full bg-white shadow transition-transform ${showHeatmap ? "translate-x-3" : "translate-x-0"}`} />
+                  </div>
+                </button>
+                <button
+                  onClick={() => startTransition(() => setShowRenovationAreas(!showRenovationAreas))}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    showRenovationAreas
+                      ? "bg-purple-500/10 text-purple-500 border border-purple-500/20"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground border border-transparent"
+                  }`}
+                >
+                  <Layers className="h-4 w-4 shrink-0" />
+                  <span>Реновация</span>
+                  <div className={`ml-auto h-4 w-7 rounded-full flex items-center px-0.5 transition-colors ${showRenovationAreas ? "bg-purple-500" : "bg-muted"}`}>
+                    <div className={`h-3 w-3 rounded-full bg-white shadow transition-transform ${showRenovationAreas ? "translate-x-3" : "translate-x-0"}`} />
+                  </div>
+                </button>
+              </div>
+            </div>
+
             {/* Categories Section - Card Style */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="bg-background rounded-xl border border-border shadow-sm overflow-hidden">
               <button
                 onClick={() => document.getElementById('categories-content')?.classList.toggle('hidden')}
-                className="w-full px-4 py-3.5 flex items-center justify-between hover:bg-slate-50/50 transition-colors"
+                className="w-full px-4 py-3.5 flex items-center justify-between hover:bg-muted/50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm">
-                    <Filter className="h-4 w-4 text-white" />
+                  <div className="h-8 w-8 rounded-xl bg-muted flex items-center justify-center">
+                    <Filter className="h-4 w-4 text-muted-foreground" />
                   </div>
-                  <span className="text-sm font-semibold text-slate-700">Категории данных</span>
+                  <span className="text-sm font-semibold text-foreground">Категории данных</span>
                 </div>
-                <ChevronDown className="h-4 w-4 text-slate-400" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </button>
 
               <div id="categories-content" className="px-4 pb-4 space-y-2">
                 {/* ALSECO */}
-                <div className="rounded-xl border-2 border-orange-100 bg-gradient-to-r from-orange-50/50 to-transparent overflow-hidden">
-                  <label className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-orange-50/50 transition-colors">
+                <div className="rounded-xl border border-border bg-muted/30 overflow-hidden">
+                  <label className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors">
                     <div className="relative">
                       <input
                         type="checkbox"
@@ -1508,18 +1662,18 @@ export default function BuildingsWithoutGasPage() {
                         onChange={(e) => startTransition(() => setShowAlseco(e.target.checked))}
                         className="peer sr-only"
                       />
-                      <div className="h-5 w-5 rounded-lg border-2 border-slate-200 bg-white peer-checked:border-orange-500 peer-checked:bg-orange-500 transition-all flex items-center justify-center">
+                      <div className="h-5 w-5 rounded-lg border-2 border-border bg-background peer-checked:border-orange-500 peer-checked:bg-orange-500 transition-all flex items-center justify-center">
                         {showAlseco && <CheckCircle className="h-3.5 w-3.5 text-white" />}
                       </div>
                     </div>
                     <div className="flex-1">
-                      <span className="text-sm font-semibold text-slate-700">ALSECO</span>
-                      <span className="text-xs text-slate-400 ml-2">({categoryCounts.general.toLocaleString()})</span>
+                      <span className="text-sm font-semibold text-foreground">ALSECO</span>
+                      <span className="text-xs text-muted-foreground ml-2">({categoryCounts.general.toLocaleString()})</span>
                     </div>
-                    <div className="h-3 w-3 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shadow-sm shadow-orange-200"></div>
+                    <div className="h-3 w-3 rounded-full bg-orange-500"></div>
                   </label>
                   {showAlseco && (
-                    <div className="px-4 pb-3 pt-1 space-y-1.5 border-t border-orange-100/50" onClick={(e) => e.stopPropagation()}>
+                    <div className="px-4 pb-3 pt-1 space-y-1.5 border-t border-border" onClick={(e) => e.stopPropagation()}>
                       <label className="flex items-center gap-2.5 py-1 cursor-pointer group" onClick={(e) => e.stopPropagation()}>
                         <input
                           type="checkbox"
@@ -1528,10 +1682,10 @@ export default function BuildingsWithoutGasPage() {
                             e.stopPropagation()
                             startTransition(() => setShowAlsecoInAlmaty(e.target.checked))
                           }}
-                          className="h-4 w-4 rounded border-slate-200 text-orange-500 focus:ring-orange-500/20"
+                          className="h-4 w-4 rounded border-border text-orange-500 focus:ring-orange-500/20"
                         />
-                        <span className="flex-1 text-xs text-slate-500 group-hover:text-slate-700 transition-colors">В Алматы</span>
-                        <span className="text-[10px] text-slate-400 font-medium">({inAlmatyCounts.general.toLocaleString()})</span>
+                        <span className="flex-1 text-xs text-muted-foreground group-hover:text-foreground transition-colors">В Алматы</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">({inAlmatyCounts.general.toLocaleString()})</span>
                       </label>
                       <label className="flex items-center gap-2.5 py-1 cursor-pointer group" onClick={(e) => e.stopPropagation()}>
                         <input
@@ -1541,12 +1695,12 @@ export default function BuildingsWithoutGasPage() {
                             e.stopPropagation()
                             startTransition(() => setShowAlsecoNotInAlmaty(e.target.checked))
                           }}
-                          className="h-4 w-4 rounded border-slate-200 text-orange-500 focus:ring-orange-500/20"
+                          className="h-4 w-4 rounded border-border text-orange-500 focus:ring-orange-500/20"
                         />
-                        <span className="flex-1 text-xs text-slate-500 group-hover:text-slate-700 transition-colors">Не в Алматы</span>
-                        <span className="text-[10px] text-slate-400 font-medium">({notInAlmatyCounts.general.toLocaleString()})</span>
+                        <span className="flex-1 text-xs text-muted-foreground group-hover:text-foreground transition-colors">Не в Алматы</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">({notInAlmatyCounts.general.toLocaleString()})</span>
                       </label>
-                      <div className="border-t border-orange-100/50 my-1"></div>
+                      <div className="border-t border-border my-1"></div>
                       <label className="flex items-center gap-2.5 py-1 cursor-pointer group" onClick={(e) => e.stopPropagation()}>
                         <input
                           type="checkbox"
@@ -1555,13 +1709,13 @@ export default function BuildingsWithoutGasPage() {
                             e.stopPropagation()
                             startTransition(() => setShowApproximate(e.target.checked))
                           }}
-                          className="h-4 w-4 rounded border-slate-200 text-yellow-500 focus:ring-yellow-500/20"
+                          className="h-4 w-4 rounded border-border text-yellow-500 focus:ring-yellow-500/20"
                         />
                         <div className="flex items-center gap-1.5 flex-1">
                           <div className="w-2.5 h-2.5 rounded-full bg-yellow-500"></div>
-                          <span className="text-xs text-slate-500 group-hover:text-slate-700 transition-colors">Приближённые</span>
+                          <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">Приближённые</span>
                         </div>
-                        <span className="text-[10px] text-slate-400 font-medium">({approximateCount.toLocaleString()})</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">({approximateCount.toLocaleString()})</span>
                       </label>
                       <label className="flex items-center gap-2.5 py-1 cursor-pointer group" onClick={(e) => e.stopPropagation()}>
                         <input
@@ -1571,20 +1725,20 @@ export default function BuildingsWithoutGasPage() {
                             e.stopPropagation()
                             startTransition(() => setShowExact(e.target.checked))
                           }}
-                          className="h-4 w-4 rounded border-slate-200 text-emerald-500 focus:ring-emerald-500/20"
+                          className="h-4 w-4 rounded border-border text-emerald-500 focus:ring-emerald-500/20"
                         />
                         <div className="flex items-center gap-1.5 flex-1">
                           <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                          <span className="text-xs text-slate-500 group-hover:text-slate-700 transition-colors">Точные</span>
+                          <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">Точные</span>
                         </div>
-                        <span className="text-[10px] text-slate-400 font-medium">({exactCount.toLocaleString()})</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">({exactCount.toLocaleString()})</span>
                       </label>
                     </div>
                   )}
                 </div>
 
                 {/* ИЖС */}
-                <label className="flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-emerald-100 bg-gradient-to-r from-emerald-50/50 to-transparent cursor-pointer hover:bg-emerald-50/50 transition-colors">
+                <label className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors">
                   <div className="relative">
                     <input
                       type="checkbox"
@@ -1592,19 +1746,19 @@ export default function BuildingsWithoutGasPage() {
                       onChange={(e) => startTransition(() => setShowIzhs(e.target.checked))}
                       className="peer sr-only"
                     />
-                    <div className="h-5 w-5 rounded-lg border-2 border-slate-200 bg-white peer-checked:border-emerald-500 peer-checked:bg-emerald-500 transition-all flex items-center justify-center">
+                    <div className="h-5 w-5 rounded-lg border-2 border-border bg-background peer-checked:border-emerald-500 peer-checked:bg-emerald-500 transition-all flex items-center justify-center">
                       {showIzhs && <CheckCircle className="h-3.5 w-3.5 text-white" />}
                     </div>
                   </div>
                   <div className="flex-1">
-                    <span className="text-sm font-semibold text-slate-700">Районные акиматы</span>
-                    <span className="text-xs text-slate-400 ml-2">({categoryCounts.izhs.toLocaleString()})</span>
+                    <span className="text-sm font-semibold text-foreground">Районные акиматы</span>
+                    <span className="text-xs text-muted-foreground ml-2">({categoryCounts.izhs.toLocaleString()})</span>
                   </div>
-                  <div className="h-3 w-3 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-sm shadow-emerald-200"></div>
+                  <div className="h-3 w-3 rounded-full bg-emerald-500"></div>
                 </label>
 
                 {/* СУСН */}
-                <label className="flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-blue-100 bg-gradient-to-r from-blue-50/50 to-transparent cursor-pointer hover:bg-blue-50/50 transition-colors">
+                <label className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors">
                   <div className="relative">
                     <input
                       type="checkbox"
@@ -1612,32 +1766,32 @@ export default function BuildingsWithoutGasPage() {
                       onChange={(e) => startTransition(() => setShowSusn(e.target.checked))}
                       className="peer sr-only"
                     />
-                    <div className="h-5 w-5 rounded-lg border-2 border-slate-200 bg-white peer-checked:border-blue-500 peer-checked:bg-blue-500 transition-all flex items-center justify-center">
+                    <div className="h-5 w-5 rounded-lg border-2 border-border bg-background peer-checked:border-blue-500 peer-checked:bg-blue-500 transition-all flex items-center justify-center">
                       {showSusn && <CheckCircle className="h-3.5 w-3.5 text-white" />}
                     </div>
                   </div>
                   <div className="flex-1">
-                    <span className="text-sm font-semibold text-slate-700">СУСН</span>
-                    <span className="text-xs text-slate-400 ml-2">({categoryCounts.susn.toLocaleString()})</span>
+                    <span className="text-sm font-semibold text-foreground">СУСН</span>
+                    <span className="text-xs text-muted-foreground ml-2">({categoryCounts.susn.toLocaleString()})</span>
                   </div>
-                  <div className="h-3 w-3 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-sm shadow-blue-200"></div>
+                  <div className="h-3 w-3 rounded-full bg-blue-500"></div>
                 </label>
               </div>
             </div>
 
             {/* Gas Connection Filters */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="bg-background rounded-xl border border-border shadow-sm overflow-hidden">
               <button
                 onClick={() => document.getElementById('gas-filters')?.classList.toggle('hidden')}
-                className="w-full px-4 py-3.5 flex items-center justify-between hover:bg-slate-50/50 transition-colors"
+                className="w-full px-4 py-3.5 flex items-center justify-between hover:bg-muted/50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-sm">
-                    <Filter className="h-4 w-4 text-white" />
+                  <div className="h-8 w-8 rounded-xl bg-muted flex items-center justify-center">
+                    <Filter className="h-4 w-4 text-muted-foreground" />
                   </div>
-                  <span className="text-sm font-semibold text-slate-700">Газоснабжение</span>
+                  <span className="text-sm font-semibold text-foreground">Газоснабжение</span>
                 </div>
-                <ChevronDown className="h-4 w-4 text-slate-400" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </button>
 
               <div id="gas-filters" className="px-4 pb-4 pt-2 space-y-1.5">
@@ -1646,53 +1800,53 @@ export default function BuildingsWithoutGasPage() {
                     type="checkbox"
                     checked={showWithoutGas}
                     onChange={(e) => startTransition(() => setShowWithoutGas(e.target.checked))}
-                    className="h-4 w-4 rounded border-slate-200 text-cyan-500 focus:ring-cyan-500/20"
+                    className="h-4 w-4 rounded border-border text-cyan-500 focus:ring-cyan-500/20"
                   />
-                  <span className="flex-1 text-xs text-slate-600 group-hover:text-slate-800 transition-colors">Не подключен к газу</span>
-                  <span className="text-[10px] text-slate-400 font-medium">({gasCounts.withoutGas.toLocaleString()})</span>
+                  <span className="flex-1 text-xs text-foreground group-hover:text-foreground transition-colors">Не подключен к газу</span>
+                  <span className="text-[10px] text-muted-foreground font-medium">({gasCounts.withoutGas.toLocaleString()})</span>
                 </label>
                 <label className="flex items-center gap-2.5 py-1.5 cursor-pointer group">
                   <input
                     type="checkbox"
                     checked={showWithGas}
                     onChange={(e) => startTransition(() => setShowWithGas(e.target.checked))}
-                    className="h-4 w-4 rounded border-slate-200 text-cyan-500 focus:ring-cyan-500/20"
+                    className="h-4 w-4 rounded border-border text-cyan-500 focus:ring-cyan-500/20"
                   />
-                  <span className="flex-1 text-xs text-slate-600 group-hover:text-slate-800 transition-colors">Подключен к газу</span>
-                  <span className="text-[10px] text-slate-400 font-medium">({gasCounts.withGas.toLocaleString()})</span>
+                  <span className="flex-1 text-xs text-foreground group-hover:text-foreground transition-colors">Подключен к газу</span>
+                  <span className="text-[10px] text-muted-foreground font-medium">({gasCounts.withGas.toLocaleString()})</span>
                 </label>
                 <label className="flex items-center gap-2.5 py-1.5 cursor-pointer group">
                   <input
                     type="checkbox"
                     checked={showUnknownGas}
                     onChange={(e) => startTransition(() => setShowUnknownGas(e.target.checked))}
-                    className="h-4 w-4 rounded border-slate-200 text-cyan-500 focus:ring-cyan-500/20"
+                    className="h-4 w-4 rounded border-border text-cyan-500 focus:ring-cyan-500/20"
                   />
-                  <span className="flex-1 text-xs text-slate-600 group-hover:text-slate-800 transition-colors">Не указано</span>
-                  <span className="text-[10px] text-slate-400 font-medium">({gasCounts.unknown.toLocaleString()})</span>
+                  <span className="flex-1 text-xs text-foreground group-hover:text-foreground transition-colors">Не указано</span>
+                  <span className="text-[10px] text-muted-foreground font-medium">({gasCounts.unknown.toLocaleString()})</span>
                 </label>
               </div>
             </div>
 
             {/* ALSECO Filters - Collapsible */}
             {showAlseco && (
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="bg-background rounded-xl border border-border shadow-sm overflow-hidden">
               <button
                 onClick={() => document.getElementById('alseco-filters')?.classList.toggle('hidden')}
-                className="w-full px-4 py-3.5 flex items-center justify-between hover:bg-slate-50/50 transition-colors"
+                className="w-full px-4 py-3.5 flex items-center justify-between hover:bg-muted/50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-sm">
-                    <Settings className="h-4 w-4 text-white" />
+                  <div className="h-8 w-8 rounded-xl bg-muted flex items-center justify-center">
+                    <Settings className="h-4 w-4 text-muted-foreground" />
                   </div>
-                  <span className="text-sm font-semibold text-slate-700">Фильтры ALSECO</span>
+                  <span className="text-sm font-semibold text-foreground">Фильтры ALSECO</span>
                 </div>
-                <ChevronDown className="h-4 w-4 text-slate-400" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </button>
 
               <div id="alseco-filters" className="px-4 pb-4 space-y-3">
                 {/* ИЖС Types */}
-                <div className="rounded-xl bg-slate-50/80 p-3">
+                <div className="rounded-xl bg-muted/50 p-3">
                   <div className="flex items-center justify-between mb-2">
                     <label className="flex items-center gap-2 cursor-pointer" onClick={(e) => e.stopPropagation()}>
                       <input
@@ -1702,18 +1856,18 @@ export default function BuildingsWithoutGasPage() {
                           e.stopPropagation()
                           startTransition(() => setShowAlsecoIzhsTypes(e.target.checked))
                         }}
-                        className="h-4 w-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500/20"
+                        className="h-4 w-4 rounded border-border text-orange-500 focus:ring-orange-500/20"
                       />
-                      <span className="text-xs font-semibold text-slate-600">ИЖС типы</span>
+                      <span className="text-xs font-semibold text-foreground">ИЖС типы</span>
                     </label>
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
                         setShowAlsecoIzhsSubfilters(!showAlsecoIzhsSubfilters)
                       }}
-                      className={`p-1 rounded-lg hover:bg-slate-200/50 transition-all ${showAlsecoIzhsSubfilters ? 'rotate-180' : ''}`}
+                      className={`p-1 rounded-lg hover:bg-muted transition-all ${showAlsecoIzhsSubfilters ? 'rotate-180' : ''}`}
                     >
-                      <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
                     </button>
                   </div>
                   {showAlsecoIzhsSubfilters && showAlsecoIzhsTypes && (
@@ -1727,10 +1881,10 @@ export default function BuildingsWithoutGasPage() {
                               e.stopPropagation()
                               startTransition(() => setSelectedAlsecoIzhsTypes(prev => ({ ...prev, [label]: e.target.checked })))
                             }}
-                            className="h-3.5 w-3.5 rounded border-slate-300 text-orange-500 focus:ring-orange-500/20"
+                            className="h-3.5 w-3.5 rounded border-border text-orange-500 focus:ring-orange-500/20"
                           />
-                          <span className="text-[11px] text-slate-500 group-hover:text-slate-700 flex-1">{label}</span>
-                          <span className="text-[10px] text-slate-300 tabular-nums">{(alsecoTypeCounts[label] || 0).toLocaleString()}</span>
+                          <span className="text-[11px] text-muted-foreground group-hover:text-foreground flex-1">{label}</span>
+                          <span className="text-[10px] text-muted-foreground tabular-nums">{(alsecoTypeCounts[label] || 0).toLocaleString()}</span>
                         </label>
                       ))}
                     </div>
@@ -1738,7 +1892,7 @@ export default function BuildingsWithoutGasPage() {
                 </div>
 
                 {/* Non-ИЖС Types */}
-                <div className="rounded-xl bg-slate-50/80 p-3">
+                <div className="rounded-xl bg-muted/50 p-3">
                   <div className="flex items-center justify-between mb-2">
                     <label className="flex items-center gap-2 cursor-pointer" onClick={(e) => e.stopPropagation()}>
                       <input
@@ -1748,18 +1902,18 @@ export default function BuildingsWithoutGasPage() {
                           e.stopPropagation()
                           startTransition(() => setShowAlsecoNonIzhsTypes(e.target.checked))
                         }}
-                        className="h-4 w-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500/20"
+                        className="h-4 w-4 rounded border-border text-orange-500 focus:ring-orange-500/20"
                       />
-                      <span className="text-xs font-semibold text-slate-600">Не ИЖС типы</span>
+                      <span className="text-xs font-semibold text-foreground">Не ИЖС типы</span>
                     </label>
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
                         setShowAlsecoNonIzhsSubfilters(!showAlsecoNonIzhsSubfilters)
                       }}
-                      className={`p-1 rounded-lg hover:bg-slate-200/50 transition-all ${showAlsecoNonIzhsSubfilters ? 'rotate-180' : ''}`}
+                      className={`p-1 rounded-lg hover:bg-muted transition-all ${showAlsecoNonIzhsSubfilters ? 'rotate-180' : ''}`}
                     >
-                      <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
                     </button>
                   </div>
                   {showAlsecoNonIzhsSubfilters && showAlsecoNonIzhsTypes && (
@@ -1773,10 +1927,10 @@ export default function BuildingsWithoutGasPage() {
                               e.stopPropagation()
                               startTransition(() => setSelectedAlsecoNonIzhsTypes(prev => ({ ...prev, [label]: e.target.checked })))
                             }}
-                            className="h-3.5 w-3.5 rounded border-slate-300 text-orange-500 focus:ring-orange-500/20"
+                            className="h-3.5 w-3.5 rounded border-border text-orange-500 focus:ring-orange-500/20"
                           />
-                          <span className="text-[11px] text-slate-500 group-hover:text-slate-700 flex-1 truncate">{label}</span>
-                          <span className="text-[10px] text-slate-300 tabular-nums">{(alsecoTypeCounts[label] || 0).toLocaleString()}</span>
+                          <span className="text-[11px] text-muted-foreground group-hover:text-foreground flex-1 truncate">{label}</span>
+                          <span className="text-[10px] text-muted-foreground tabular-nums">{(alsecoTypeCounts[label] || 0).toLocaleString()}</span>
                         </label>
                       ))}
                     </div>
@@ -1790,19 +1944,175 @@ export default function BuildingsWithoutGasPage() {
             <div className="flex gap-2">
               <button
                 onClick={exportToJSON}
-                className="flex-1 h-9 rounded-xl bg-slate-50 border border-slate-100 text-xs font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all flex items-center justify-center gap-1.5"
+                className="flex-1 h-9 rounded-xl bg-muted/50 border border-border text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all flex items-center justify-center gap-1.5"
               >
                 <Download className="h-3 w-3" /> JSON
               </button>
               <button
                 onClick={async () => { await clearBuildingsCache(); fetchBuildings(true); }}
-                className="h-9 px-3 rounded-xl bg-red-50 text-red-400 text-xs font-medium border border-red-100 hover:bg-red-100 hover:text-red-600 transition-all flex items-center justify-center gap-1.5"
+                className="h-9 px-3 rounded-xl bg-muted/50 border border-border text-xs font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-all flex items-center justify-center gap-1.5"
               >
                 <X className="h-3 w-3" /> Кэш
               </button>
             </div>
           </div>
-        </div>
+          )}
+          </div>
+        </aside>
+
+        {/* Right area: tab bar + map */}
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+          {/* Tab Toolbar */}
+          <div className="flex shrink-0 items-center gap-1 border-b border-border bg-background px-4">
+            <button
+              onClick={() => setActiveTab("map")}
+              className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === "map"
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Building2 className="h-4 w-4 shrink-0" />
+              <span>Карта зданий</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("analytics")}
+              className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === "analytics"
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <BarChart3 className="h-4 w-4 shrink-0" />
+              <span>Аналитика</span>
+            </button>
+
+            <div className="w-px h-5 bg-border mx-1" />
+
+            <button
+              onClick={exportToCSV}
+              className="flex items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              title="Экспорт CSV"
+            >
+              <Download className="h-4 w-4 shrink-0" />
+              <span>CSV</span>
+            </button>
+
+            <button
+              onClick={() => fetchBuildings(true)}
+              disabled={loading}
+              className="flex items-center justify-center border-b-2 border-transparent px-3 py-3 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
+              title="Обновить данные"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+
+          </div>
+
+          {activeTab === "analytics" ? (
+            <BuildingsAnalytics buildings={buildings} />
+          ) : (
+          <div className="relative flex-1 overflow-hidden">
+            {/* Map background */}
+            <div className="absolute inset-0 z-0">
+              {loading ? (
+                <div className="flex h-full items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+                  <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full mx-4">
+                    <div className="flex items-center justify-center mb-6">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-800 text-center mb-2">
+                      {loadingProgress.status || "Загрузка..."}
+                    </h3>
+                    {loadingProgress.total > 0 && (
+                      <>
+                        <div className="w-full bg-gray-200 rounded-full h-3 mb-2 overflow-hidden">
+                          <div
+                            className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-300 ease-out"
+                            style={{ width: `${(loadingProgress.loaded / loadingProgress.total) * 100}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-sm text-gray-600 text-center">
+                          {loadingProgress.loaded.toLocaleString()} / {loadingProgress.total.toLocaleString()} объектов
+                        </p>
+                      </>
+                    )}
+                    <div className="mt-4 flex items-center justify-center gap-2">
+                      <span className="text-xs text-gray-400">Время загрузки:</span>
+                      <span className="text-sm font-mono font-medium text-blue-600">
+                        {Math.floor(loadingElapsed / 60)}:{(loadingElapsed % 60).toString().padStart(2, '0')}
+                      </span>
+                    </div>
+                    {loadingElapsed > 15 && (
+                      <p className="text-xs text-amber-600 text-center mt-2">
+                        ⏳ Загрузка занимает больше времени чем обычно...
+                      </p>
+                    )}
+                    {loadingElapsed > 30 && (
+                      <p className="text-xs text-orange-600 text-center mt-1">
+                        Сервер обрабатывает ~50,000 записей. Пожалуйста, подождите.
+                      </p>
+                    )}
+                    {loadingElapsed > 60 && (
+                      <button
+                        onClick={() => {
+                          setLoading(false)
+                          setError("Превышено время ожидания. Попробуйте позже.")
+                        }}
+                        className="mt-3 w-full py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                      >
+                        Отменить загрузку
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ) : error ? (
+                <div className="flex h-full flex-col items-center justify-center gap-3 bg-background">
+                  <AlertCircle className="h-12 w-12 text-orange-500" />
+                  <p className="text-red-500 font-semibold">{error}</p>
+                  <p className="text-sm text-muted-foreground">Используются тестовые данные для демонстрации</p>
+                  <Button variant="outline" size="sm" onClick={() => fetchBuildings(true)}>
+                    Попробовать снова
+                  </Button>
+                </div>
+              ) : (
+                <BuildingsMap
+                  buildings={deferredFilteredBuildings.filter(b => b.latitude && b.longitude)}
+                  renovationAreas={renovationAreas}
+                  districts={districts}
+                  selectedDistrictId={deferredSelectedDistrictId}
+                  showHeatmap={deferredShowHeatmap}
+                  showRenovationAreas={deferredShowRenovationAreas}
+                  showOnlySeasonalUnused={deferredShowOnlySeasonalUnused}
+                  onBuildingClick={handleBuildingClick}
+                  darkMode={resolvedTheme === "dark"}
+                />
+              )}
+            </div>
+
+            {/* Floating UI — stats cards and building detail panel */}
+            <div className="relative z-10 h-full w-full pointer-events-none">
+
+              {/* Marker legend — bottom center */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
+                <div className="flex items-center gap-3 rounded-xl border border-border bg-background/80 backdrop-blur-sm px-4 py-2 shadow-sm">
+                  {[
+                    { color: "#10b981", label: "Точные" },
+                    { color: "#eab308", label: "Приближённые" },
+                    { color: "#8b5cf6", label: "Не ИЖС" },
+                    { color: "#ec4899", label: "Сезонные" },
+                  ].map((item) => (
+                    <div key={item.label} className="flex items-center gap-1.5">
+                      <svg width="9" height="12" viewBox="0 0 11 15">
+                        <path d="M5.5 0C2.46 0 0 2.46 0 5.5 0 9.63 5.5 15 5.5 15S11 9.63 11 5.5C11 2.46 8.54 0 5.5 0z" fill={item.color}/>
+                        <circle cx="5.5" cy="5.5" r="2.2" fill="white" opacity="0.95"/>
+                      </svg>
+                      <span className="text-[11px] text-foreground/70 font-medium">{item.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
           {/* Statistics Cards - Right Side */}
           <div className="absolute top-4 right-0 w-[170px] flex flex-col gap-2.5 pointer-events-auto z-10">
@@ -1813,7 +2123,7 @@ export default function BuildingsWithoutGasPage() {
                 className={`flex-1 py-1.5 px-2 rounded-lg text-[9px] font-bold transition-all ${
                   selectedStatsCategory === "general"
                     ? "bg-orange-500 text-white shadow-sm"
-                    : "text-slate-500 hover:bg-slate-100"
+                    : "text-muted-foreground hover:bg-muted"
                 }`}
               >
                 ALSECO
@@ -1823,7 +2133,7 @@ export default function BuildingsWithoutGasPage() {
                 className={`flex-1 py-1.5 px-2 rounded-lg text-[9px] font-bold transition-all ${
                   selectedStatsCategory === "izhs"
                     ? "bg-green-500 text-white shadow-sm"
-                    : "text-slate-500 hover:bg-slate-100"
+                    : "text-muted-foreground hover:bg-muted"
                 }`}
               >
                 Данные районных акиматов
@@ -1833,7 +2143,7 @@ export default function BuildingsWithoutGasPage() {
                 className={`flex-1 py-1.5 px-2 rounded-lg text-[9px] font-bold transition-all ${
                   selectedStatsCategory === "susn"
                     ? "bg-blue-500 text-white shadow-sm"
-                    : "text-slate-500 hover:bg-slate-100"
+                    : "text-muted-foreground hover:bg-muted"
                 }`}
               >
               СУСН
@@ -1959,300 +2269,10 @@ export default function BuildingsWithoutGasPage() {
 
           
 
-          {/* Side Panel for Building Details */}
-          {showSidePanel && selectedBuilding && (
-          <div className="absolute top-0 left-[300px] h-full w-[320px] pointer-events-auto z-10 flex flex-col bg-white/95 backdrop-blur-md border-r border-slate-200 shadow-[15px_0_30px_-5px_rgba(0,0,0,0.1)] animate-in slide-in-from-left duration-300">
-            {/* Unified Header */}
-            <div className="h-[72px] px-5 flex items-center justify-between border-b border-slate-200 shrink-0">
-              <div className="flex items-center gap-3">
-                <div className={`h-10 w-10 flex items-center justify-center rounded-xl ${
-                  selectedBuilding.building_category === "general" ? "bg-orange-100 text-orange-600" : "bg-blue-100 text-blue-600"
-                }`}>
-                  <MapPin className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold tracking-[0.1em] text-slate-400 uppercase">Карточка объекта</p>
-                  <h2 className="text-sm font-bold text-slate-900 leading-tight">Информация</h2>
-                </div>
-              </div>
-              <button 
-                onClick={() => { setShowSidePanel(false); setSelectedBuilding(null); }}
-                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-              >
-                <X className="h-5 w-5 text-slate-400" />
-              </button>
             </div>
-
-            {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-6">
-              {/* Main Address Card */}
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Адрес и район</label>
-                <h3 className="text-m font-bold text-slate-900 leading-snug">{selectedBuilding.address}</h3>
-                <p className="text-sm text-slate-500 mt-1 flex items-center gap-1.5">
-                  <MapPin className="h-3.5 w-3.5 text-blue-500" /> {selectedBuilding.district}
-                </p>
-              </div>
-
-              {/* Gas Status Alert - Dynamic */}
-              {selectedBuilding.has_gas === true ? (
-                <div className="p-4 rounded-2xl bg-green-50 border border-green-100 flex gap-3">
-                  <div className="h-8 w-8 shrink-0 rounded-full bg-green-500 flex items-center justify-center shadow-sm">
-                    <CheckCircle className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-green-900 uppercase tracking-tight">Газ подключен</h4>
-                    <p className="text-[11px] text-green-700 leading-relaxed mt-0.5">
-                      Объект имеет централизованное газоснабжение.
-                    </p>
-                  </div>
-                </div>
-              ) : selectedBuilding.has_gas === false ? (
-                <div className="p-4 rounded-2xl bg-orange-50 border border-orange-100 flex gap-3">
-                  <div className="h-8 w-8 shrink-0 rounded-full bg-orange-500 flex items-center justify-center shadow-sm">
-                    <AlertCircle className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-orange-900 uppercase tracking-tight">Газ отсутствует</h4>
-                    <p className="text-[11px] text-orange-700 leading-relaxed mt-0.5">
-                      Объект числится в списках на газификацию или использует альтернативные источники.
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex gap-3">
-                  <div className="h-8 w-8 shrink-0 rounded-full bg-slate-400 flex items-center justify-center shadow-sm">
-                    <HelpCircle className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-700 uppercase tracking-tight">Статус газа неизвестен</h4>
-                    <p className="text-[11px] text-slate-500 leading-relaxed mt-0.5">
-                      Информация о газоснабжении данного объекта отсутствует.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Building Type Section */}
-              <section className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-3">
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1">Категория</p>
-                  <p className="text-sm font-semibold text-gray-700 leading-relaxed">
-                    {selectedBuilding.building_type}
-                  </p>
-                </div>
-                {selectedBuilding.building_type_raw && (
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1">Тип здания</p>
-                    <p className="text-sm font-semibold text-gray-700 leading-relaxed">
-                      {selectedBuilding.building_type_raw}
-                    </p>
-                  </div>
-                )}
-              </section>
-
-              {/* Additional Flags */}
-              {(selectedBuilding.is_not_in_almaty || selectedBuilding.is_seasonal_or_unused) && (
-                <div className="space-y-2">
-                  {selectedBuilding.is_not_in_almaty && (
-                    <div className="p-3 rounded-xl bg-blue-50 border border-blue-100 flex items-center gap-2">
-                      <div className="h-6 w-6 rounded-full bg-blue-500 flex items-center justify-center">
-                        <MapPin className="h-3 w-3 text-white" />
-                      </div>
-                      <p className="text-xs font-medium text-blue-800">Не в Алматы</p>
-                    </div>
-                  )}
-                  {selectedBuilding.is_seasonal_or_unused && (
-                    <div className="p-3 rounded-xl bg-amber-50 border border-amber-100 flex items-center gap-2">
-                      <div className="h-6 w-6 rounded-full bg-amber-500 flex items-center justify-center">
-                        <Calendar className="h-3 w-3 text-white" />
-                      </div>
-                      <p className="text-xs font-medium text-amber-800">Сезонное / Не используется</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Contact Information */}
-              {(selectedBuilding.fio || selectedBuilding.mobile_home_number) && (
-                <div className="pt-4 border-t border-slate-100">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Контактная информация</label>
-                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-2">
-                    {selectedBuilding.fio && (
-                      <div>
-                        <p className="text-[9px] text-slate-400 uppercase">ФИО</p>
-                        <p className="text-sm font-medium text-slate-700">{selectedBuilding.fio}</p>
-                      </div>
-                    )}
-                    {selectedBuilding.mobile_home_number && (
-                      <div>
-                        <p className="text-[9px] text-slate-400 uppercase">Телефон</p>
-                        <p className="text-sm font-medium text-slate-700">{selectedBuilding.mobile_home_number}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Gas Details */}
-              {(selectedBuilding.type_of_gas || selectedBuilding.gas_connection_available !== null && selectedBuilding.gas_connection_available !== undefined) && (
-                <div className="pt-4 border-t border-slate-100">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Детали газоснабжения</label>
-                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-2">
-                    {selectedBuilding.type_of_gas && (
-                      <div className="flex justify-between">
-                        <span className="text-[10px] text-slate-500">Тип газа:</span>
-                        <span className="text-[10px] font-medium text-slate-700">{selectedBuilding.type_of_gas}</span>
-                      </div>
-                    )}
-                    {selectedBuilding.gas_connection_available !== null && selectedBuilding.gas_connection_available !== undefined && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] text-slate-500">Тех. возможность подключения:</span>
-                        <span className={`text-[10px] font-medium ${selectedBuilding.gas_connection_available ? 'text-green-600' : 'text-red-600'}`}>
-                          {selectedBuilding.gas_connection_available ? 'Да' : 'Нет'}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Reasons for No Gas */}
-              {(selectedBuilding.property_not_legalized || selectedBuilding.property_not_eligible_for_gas_connection || selectedBuilding.no_funds_for_gas_connection || selectedBuilding.other_reason) && (
-                <div className="pt-4 border-t border-slate-100">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Причины отсутствия газа</label>
-                  <div className="space-y-2">
-                    {selectedBuilding.property_not_legalized && (
-                      <div className="p-2 rounded-lg bg-red-50 border border-red-100 flex items-center gap-2">
-                        <div className="h-5 w-5 rounded-full bg-red-500 flex items-center justify-center">
-                          <X className="h-3 w-3 text-white" />
-                        </div>
-                        <p className="text-[10px] font-medium text-red-800">Объект не узаконен</p>
-                      </div>
-                    )}
-                    {selectedBuilding.property_not_eligible_for_gas_connection && (
-                      <div className="p-2 rounded-lg bg-red-50 border border-red-100 flex items-center gap-2">
-                        <div className="h-5 w-5 rounded-full bg-red-500 flex items-center justify-center">
-                          <X className="h-3 w-3 text-white" />
-                        </div>
-                        <p className="text-[10px] font-medium text-red-800">Не подлежит газификации</p>
-                      </div>
-                    )}
-                    {selectedBuilding.no_funds_for_gas_connection && (
-                      <div className="p-2 rounded-lg bg-amber-50 border border-amber-100 flex items-center gap-2">
-                        <div className="h-5 w-5 rounded-full bg-amber-500 flex items-center justify-center">
-                          <AlertCircle className="h-3 w-3 text-white" />
-                        </div>
-                        <p className="text-[10px] font-medium text-amber-800">Нет средств на подключение</p>
-                      </div>
-                    )}
-                    {selectedBuilding.other_reason && (
-                      <div className="p-2 rounded-lg bg-slate-100 border border-slate-200">
-                        <p className="text-[9px] text-slate-400 uppercase mb-1">Другая причина</p>
-                        <p className="text-[10px] text-slate-700">{selectedBuilding.other_reason}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Bathhouse Info */}
-              {(selectedBuilding.has_private_bathhouse !== null && selectedBuilding.has_private_bathhouse !== undefined) || selectedBuilding.bathhouse_fuel_type ? (
-                <div className="pt-4 border-t border-slate-100">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Баня</label>
-                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-2">
-                    {selectedBuilding.has_private_bathhouse !== null && selectedBuilding.has_private_bathhouse !== undefined && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] text-slate-500">Частная баня:</span>
-                        <span className={`text-[10px] font-medium ${selectedBuilding.has_private_bathhouse ? 'text-green-600' : 'text-slate-500'}`}>
-                          {selectedBuilding.has_private_bathhouse ? 'Есть' : 'Нет'}
-                        </span>
-                      </div>
-                    )}
-                    {selectedBuilding.bathhouse_fuel_type && (
-                      <div className="flex justify-between">
-                        <span className="text-[10px] text-slate-500">Тип топлива бани:</span>
-                        <span className="text-[10px] font-medium text-slate-700">{selectedBuilding.bathhouse_fuel_type}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : null}
-
-              {/* Specialist Comment */}
-              {selectedBuilding.specialist_comment && (
-                <div className="pt-4 border-t border-slate-100">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Комментарий специалиста</label>
-                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
-                    <p className="text-[11px] text-slate-700 leading-relaxed">{selectedBuilding.specialist_comment}</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Geolocation Section */}
-              <div className="pt-4 border-t border-slate-100">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Геолокация</label>
-                <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 font-mono text-[10px] text-slate-500 space-y-1">
-                  <div className="flex justify-between">
-                    <span>Широта:</span> <span className="font-bold">{selectedBuilding.latitude?.toFixed(6) || "—"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Долгота:</span> <span className="font-bold">{selectedBuilding.longitude?.toFixed(6) || "—"}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Territorial Affiliation */}
-              {(selectedBuilding.inside_izhs || selectedBuilding.inside_susn || selectedBuilding.inside_alseco) && (
-                <div className="pt-4 border-t border-slate-100">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Территориальная принадлежность</label>
-                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-2">
-                    {selectedBuilding.inside_izhs && (
-                      <div className="flex justify-between">
-                        <span className="text-[10px] text-slate-500">Внутри ИЖС:</span>
-                        <span className="text-[10px] font-medium text-slate-700">{selectedBuilding.inside_izhs}</span>
-                      </div>
-                    )}
-                    {selectedBuilding.inside_susn && (
-                      <div className="flex justify-between">
-                        <span className="text-[10px] text-slate-500">Внутри СУСН:</span>
-                        <span className="text-[10px] font-medium text-slate-700">{selectedBuilding.inside_susn}</span>
-                      </div>
-                    )}
-                    {selectedBuilding.inside_alseco && (
-                      <div className="flex justify-between">
-                        <span className="text-[10px] text-slate-500">Внутри Alseco:</span>
-                        <span className="text-[10px] font-medium text-slate-700">{selectedBuilding.inside_alseco}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Technical Info */}
-              <div className="pt-4 border-t border-slate-100">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Техническая информация</label>
-                <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 font-mono text-[10px] text-slate-500 space-y-1">
-                  <div className="flex justify-between">
-                    <span>ID:</span> <span className="font-bold">{selectedBuilding.id}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Район ID:</span> <span className="font-bold">{selectedBuilding.district_id ?? "—"}</span>
-                  </div>
-                  {selectedBuilding.gas_id && (
-                    <div className="flex justify-between">
-                      <span>Gas ID:</span> <span className="font-bold">{selectedBuilding.gas_id}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span>Категория:</span> <span className="font-bold uppercase">{selectedBuilding.building_category}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* end floating overlay */}
           </div>
-        )}
-        </div>
+          )}
         </div>
       </main>
     </>

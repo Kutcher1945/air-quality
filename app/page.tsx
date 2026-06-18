@@ -262,16 +262,22 @@ export default function AirQualityDashboard() {
       .catch(() => {})
   }, [])
 
-  useEffect(() => { fetchSensors() }, [fetchSensors])
+  useEffect(() => {
+    fetchSensors()
+    const id = setInterval(fetchSensors, 10 * 60 * 1000)
+    return () => clearInterval(id)
+  }, [fetchSensors])
 
   useEffect(() => {
-    fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE ?? "https://admin.smartalmaty.kz/api/v1"}/air/eco-iq/current/`,
-      { headers: { Accept: "application/json" } },
-    )
-      .then((r) => r.json())
-      .then((data: EcoIqSensor[]) => setEcoIqSensors(Array.isArray(data) ? data : []))
-      .catch(() => {})
+    const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "https://admin.smartalmaty.kz/api/v1"
+    const fetchEcoIq = () =>
+      fetch(`${BASE}/air/eco-iq/current/`, { headers: { Accept: "application/json" } })
+        .then((r) => r.json())
+        .then((data: EcoIqSensor[]) => setEcoIqSensors(Array.isArray(data) ? data : []))
+        .catch(() => {})
+    fetchEcoIq()
+    const id = setInterval(fetchEcoIq, 10 * 60 * 1000)
+    return () => clearInterval(id)
   }, [])
   useEffect(() => {
     setTimeseriesLoading(true)

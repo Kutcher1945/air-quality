@@ -1120,10 +1120,6 @@
     height: calc(var(--spacing) * .5);
   }
 
-  .h-1 {
-    height: calc(var(--spacing) * 1);
-  }
-
   .h-1\.5 {
     height: calc(var(--spacing) * 1.5);
   }
@@ -1346,10 +1342,6 @@
 
   .w-\[min\(260px\,75vw\)\] {
     width: min(260px, 75vw);
-  }
-
-  .w-\[min\(380px\,82vw\)\] {
-    width: min(380px, 82vw);
   }
 
   .w-full {

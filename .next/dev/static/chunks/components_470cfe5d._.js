@@ -772,7 +772,7 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
                 map.setLayoutProperty("hex-pm25-line", "visibility", vis);
             } catch  {}
             if (!heatmapVisible) return;
-            const BASE = ("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
+            const BASE = ("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
             fetch(`${BASE}/air/hex-pm25/`, {
                 headers: {
                     Accept: "application/json"

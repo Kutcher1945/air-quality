@@ -32,6 +32,7 @@ import { AnalyticsTab } from "@/components/analytics-tab"
 import { AiTab } from "@/components/ai-tab"
 import type { Sensor, AirSensor, EcoIqSensor } from "@/components/sensor-map-yandex"
 import type { AirMetricMode } from "@/lib/pm25"
+import { pm25ToEpaAqi } from "@/lib/pm25"
 import { TimeSlider } from "@/components/time-slider"
 
 // Inverse US EPA 2024 PM2.5 AQI → concentration (µg/m³).
@@ -72,8 +73,8 @@ interface AQIData {
 }
 
 interface TimeSensor {
-  id: number
-  sensor_id: number
+  id: number | string
+  sensor_id: number | null
   name: string | null
   latitude: number
   longitude: number
@@ -82,7 +83,7 @@ interface TimeSensor {
 }
 
 interface TimeseriesData {
-  days: string[]
+  hours: string[]
   sensors: TimeSensor[]
 }
 
@@ -178,17 +179,15 @@ export default function AirQualityDashboard() {
   const [timeseriesLoading, setTimeseriesLoading] = useState(true)
   const [selectedDayIdx, setSelectedDayIdx] = useState<number | null>(null)
 
-  // Build the last-30-days list client-side so the slider shows immediately.
+  // Build last-48-hours client-side so slider shows immediately before data loads.
   const timeseriesDays = useMemo<string[]>(() => {
-    if (timeseries) return timeseries.days
-    const days: string[] = []
-    const today = new Date()
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date(today)
-      d.setDate(today.getDate() - i)
-      days.push(d.toISOString().slice(0, 10))
-    }
-    return days
+    if (timeseries) return timeseries.hours
+    const now = new Date()
+    now.setMinutes(0, 0, 0)
+    return Array.from({ length: 48 }, (_, i) => {
+      const d = new Date(now.getTime() - (47 - i) * 3600_000)
+      return d.toISOString().replace(/\.\d{3}Z$/, "+00:00")
+    })
   }, [timeseries])
 
   const MIN_YEAR = 2019
@@ -277,7 +276,7 @@ export default function AirQualityDashboard() {
   useEffect(() => {
     setTimeseriesLoading(true)
     const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "https://admin.smartalmaty.kz/api/v1"
-    fetch(`${BASE}/air/analytics/map-timeseries/?days=30`, { headers: { Accept: "application/json" } })
+    fetch(`${BASE}/air/analytics/map-timeseries-hourly/?hours=48`, { headers: { Accept: "application/json" } })
       .then((r) => r.json())
       .then((data: TimeseriesData) => setTimeseries(data))
       .catch(() => {})
@@ -321,14 +320,29 @@ export default function AirQualityDashboard() {
   const displaySensors = useMemo(() => {
     if (selectedDayIdx === null || !timeseries) return filteredSensors
     const valueMap: Record<number, number | null> = {}
-    for (const tsSensor of timeseries.sensors) {
-      valueMap[tsSensor.id] = tsSensor.values[selectedDayIdx] ?? null
+    for (const tsSensor of timeseries.sensors.filter(s => s.source === "aai")) {
+      if (tsSensor.sensor_id != null)
+        valueMap[tsSensor.sensor_id] = tsSensor.values[selectedDayIdx] ?? null
     }
     return filteredSensors.map((s) => {
       const historical = valueMap[s.sensor_id as number]
       return historical !== undefined ? { ...s, value: historical } : s
     })
   }, [filteredSensors, selectedDayIdx, timeseries])
+
+  const displayEcoIqSensors = useMemo(() => {
+    if (selectedDayIdx === null || !timeseries) return ecoIqSensors
+    const valueMap: Record<string, number | null> = {}
+    for (const tsSensor of timeseries.sensors.filter(s => s.source === "iqair")) {
+      valueMap[String(tsSensor.id)] = tsSensor.values[selectedDayIdx] ?? null
+    }
+    return ecoIqSensors.map((s) => {
+      if (!(String(s.id) in valueMap)) return s
+      const pm25 = valueMap[String(s.id)]
+      const aqi  = pm25 != null ? (pm25ToEpaAqi(pm25)?.aqi ?? null) : null
+      return { ...s, pm25_concentration: pm25, pm25_aqi: aqi, aqi }
+    })
+  }, [ecoIqSensors, selectedDayIdx, timeseries])
 
   const sensorsWithData = useMemo(
     () => sensors.filter((s) => s.value != null),
@@ -602,7 +616,7 @@ export default function AirQualityDashboard() {
             ) : (
               <SensorMap
                 sensors={displaySensors}
-                ecoIqSensors={selectedDayIdx === null ? ecoIqSensors : []}
+                ecoIqSensors={displayEcoIqSensors}
                 onSensorSelect={(s) => setSelectedSensor(s)}
                 onEcoIqSelect={(s) => setSelectedSensor(ecoIqToAirSensor(s))}
                 focusedSensor={selectedSensor}
@@ -614,7 +628,7 @@ export default function AirQualityDashboard() {
             {/* Time slider — renders immediately with client-side days, data loads in background */}
             {!sensorsLoading && !sensorsError && (
               <TimeSlider
-                days={timeseriesDays}
+                slots={timeseriesDays}
                 selectedIdx={selectedDayIdx}
                 onSelect={setSelectedDayIdx}
                 loading={timeseriesLoading}

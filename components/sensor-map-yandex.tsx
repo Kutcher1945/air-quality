@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState, useMemo } from "react"
+import { useTheme } from "next-themes"
 import mapboxgl from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
 import { pm25Color, pm25Label, pm25ToEpaAqi } from "@/lib/pm25"
@@ -129,6 +130,72 @@ function makeEcoIqEl(s: EcoIqSensor, onClick: () => void): HTMLElement {
   return el
 }
 
+// ── Custom layer setup (called on initial load and after style change) ─────────
+
+function addCustomLayers(
+  map: mapboxgl.Map,
+  trafficVisible: boolean,
+  heatmapVisible: boolean,
+  hexData: object | null,
+): void {
+  map.addSource("mapbox-traffic", {
+    type: "vector",
+    url: "mapbox://mapbox.mapbox-traffic-v1",
+  })
+  map.addLayer({
+    id: "traffic-layer",
+    type: "line",
+    source: "mapbox-traffic",
+    "source-layer": "traffic",
+    layout: { visibility: trafficVisible ? "visible" : "none" },
+    paint: {
+      "line-width": ["interpolate", ["linear"], ["zoom"], 8, 1, 16, 5],
+      "line-color": [
+        "match", ["get", "congestion"],
+        "low",      "#4ade80",
+        "moderate", "#facc15",
+        "heavy",    "#fb923c",
+        "severe",   "#f87171",
+        "#4ade80",
+      ],
+    },
+  })
+
+  map.addSource("hex-pm25", {
+    type: "geojson",
+    data: (hexData ?? { type: "FeatureCollection", features: [] }) as any,
+  })
+  map.addLayer({
+    id: "hex-pm25-fill",
+    type: "fill",
+    source: "hex-pm25",
+    layout: { visibility: heatmapVisible ? "visible" : "none" },
+    paint: {
+      "fill-opacity": 0.75,
+      "fill-color": [
+        "case",
+        ["==", ["get", "avg_pm25"], null], "rgba(0,0,0,0)",
+        [
+          "interpolate", ["linear"], ["get", "avg_pm25"],
+          0,   "#22c55e",
+          15,  "#84cc16",
+          35,  "#eab308",
+          55,  "#f97316",
+          100, "#ef4444",
+          150, "#a855f7",
+        ],
+      ],
+    },
+  })
+  map.addLayer({
+    id: "hex-pm25-line",
+    type: "line",
+    source: "hex-pm25",
+    layout: { visibility: heatmapVisible ? "visible" : "none" },
+    paint: { "line-color": "rgba(0,0,0,0.15)", "line-width": 0.5 },
+  })
+}
+
 // ── District loader ────────────────────────────────────────────────────────────
 
 async function loadDistricts(map: mapboxgl.Map): Promise<void> {
@@ -195,6 +262,9 @@ export default function SensorMapYandex({
   const onSelectRef      = useRef(onSensorSelect)
   const onEcoSelectRef   = useRef(onEcoIqSelect)
 
+  const { resolvedTheme } = useTheme()
+  const darkMode = resolvedTheme === "dark"
+
   const [mapReady, setMapReady]             = useState(false)
   const [trafficVisible, setTrafficVisible] = useState(false)
   const [windVisible, setWindVisible]       = useState(false)
@@ -202,6 +272,15 @@ export default function SensorMapYandex({
   const [mapBounds, setMapBounds]           = useState<{
     north: number; south: number; east: number; west: number
   } | null>(null)
+
+  // Refs so style-rebuild callback always reads the latest values
+  const trafficVisRef      = useRef(false)
+  const heatmapVisRef      = useRef(false)
+  const hexDataRef         = useRef<object | null>(null)
+  // Track which style the map was last told to use — prevents redundant setStyle calls
+  const appliedStyleRef    = useRef<string>("")
+  useEffect(() => { trafficVisRef.current = trafficVisible }, [trafficVisible])
+  useEffect(() => { heatmapVisRef.current = heatmapVisible }, [heatmapVisible])
 
   useEffect(() => { onSelectRef.current   = onSensorSelect },  [onSensorSelect])
   useEffect(() => { onEcoSelectRef.current = onEcoIqSelect }, [onEcoIqSelect])
@@ -230,9 +309,14 @@ export default function SensorMapYandex({
     if (!containerRef.current || mapRef.current) return
 
     mapboxgl.accessToken = MAPBOX_TOKEN
+    // Always start with the light style — next-themes resolvedTheme is undefined until
+    // client hydration, so darkMode is always false at mount. The darkMode effect will
+    // switch to dark-v11 immediately after theme resolves if the user prefers dark.
+    const initialStyle = "mapbox://styles/mapbox/streets-v12"
+    appliedStyleRef.current = initialStyle
     const map = new mapboxgl.Map({
       container: containerRef.current,
-      style: "mapbox://styles/mapbox/streets-v12",
+      style: initialStyle,
       center: DEFAULT_CENTER,
       zoom: 11,
     })
@@ -249,66 +333,7 @@ export default function SensorMapYandex({
 
     map.on("load", () => {
       updateBounds()
-      // Traffic source + layer (hidden by default)
-      map.addSource("mapbox-traffic", {
-        type: "vector",
-        url: "mapbox://mapbox.mapbox-traffic-v1",
-      })
-      map.addLayer({
-        id: "traffic-layer",
-        type: "line",
-        source: "mapbox-traffic",
-        "source-layer": "traffic",
-        layout: { visibility: "none" },
-        paint: {
-          "line-width": ["interpolate", ["linear"], ["zoom"], 8, 1, 16, 5],
-          "line-color": [
-            "match", ["get", "congestion"],
-            "low",      "#4ade80",
-            "moderate", "#facc15",
-            "heavy",    "#fb923c",
-            "severe",   "#f87171",
-            "#4ade80",
-          ],
-        },
-      })
-
-      // Hexagon PM2.5 source — filled by fetch after map loads
-      map.addSource("hex-pm25", {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
-      })
-      // Fill layer — colour by avg_pm25
-      map.addLayer({
-        id: "hex-pm25-fill",
-        type: "fill",
-        source: "hex-pm25",
-        layout: { visibility: "none" },
-        paint: {
-          "fill-opacity": 0.75,
-          "fill-color": [
-            "case",
-            ["==", ["get", "avg_pm25"], null], "rgba(0,0,0,0)",
-            [
-              "interpolate", ["linear"], ["get", "avg_pm25"],
-              0,   "#22c55e",
-              15,  "#84cc16",
-              35,  "#eab308",
-              55,  "#f97316",
-              100, "#ef4444",
-              150, "#a855f7",
-            ],
-          ],
-        },
-      })
-      map.addLayer({
-        id: "hex-pm25-line",
-        type: "line",
-        source: "hex-pm25",
-        layout: { visibility: "none" },
-        paint: { "line-color": "rgba(0,0,0,0.15)", "line-width": 0.5 },
-      })
-
+      addCustomLayers(map, false, false, null)
       loadDistricts(map)
       setMapReady(true)
     })
@@ -458,6 +483,7 @@ export default function SensorMapYandex({
     fetch(`${BASE}/air/hex-pm25/`, { headers: { Accept: "application/json" } })
       .then(r => r.json())
       .then(geojson => {
+        hexDataRef.current = geojson
         try {
           const src = map.getSource("hex-pm25") as mapboxgl.GeoJSONSource | undefined
           src?.setData(geojson)
@@ -465,6 +491,24 @@ export default function SensorMapYandex({
       })
       .catch(() => {})
   }, [heatmapVisible, mapReady])
+
+  // ── Dark / light map theme ────────────────────────────────────────────
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !mapReady) return
+    const style = darkMode
+      ? "mapbox://styles/mapbox/dark-v11"
+      : "mapbox://styles/mapbox/streets-v12"
+    // Skip if the map already has this style loaded — avoids wiping layers on mount
+    if (appliedStyleRef.current === style) return
+    appliedStyleRef.current = style
+    map.setStyle(style)
+    map.once("style.load", () => {
+      // setStyle wipes all custom sources/layers — rebuild them
+      addCustomLayers(map, trafficVisRef.current, heatmapVisRef.current, hexDataRef.current)
+      loadDistricts(map)
+    })
+  }, [darkMode, mapReady])
 
   // Summary label for wind button — average over grid
   const windSummary = useMemo(() => {

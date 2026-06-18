@@ -229,12 +229,14 @@ __turbopack_context__.s([
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$polyfills$2f$process$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = /*#__PURE__*/ __turbopack_context__.i("[project]/node_modules/next/dist/build/polyfills/process.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$themes$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next-themes/dist/index.mjs [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$mapbox$2d$gl$2f$dist$2f$mapbox$2d$gl$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/mapbox-gl/dist/mapbox-gl.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/pm25.ts [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$wind$2d$layer$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/wind-layer.tsx [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
+;
 ;
 ;
 ;
@@ -308,6 +310,117 @@ function makeEcoIqEl(s, onClick) {
     el.addEventListener("click", onClick);
     return el;
 }
+// ── Custom layer setup (called on initial load and after style change) ─────────
+function addCustomLayers(map, trafficVisible, heatmapVisible, hexData) {
+    map.addSource("mapbox-traffic", {
+        type: "vector",
+        url: "mapbox://mapbox.mapbox-traffic-v1"
+    });
+    map.addLayer({
+        id: "traffic-layer",
+        type: "line",
+        source: "mapbox-traffic",
+        "source-layer": "traffic",
+        layout: {
+            visibility: trafficVisible ? "visible" : "none"
+        },
+        paint: {
+            "line-width": [
+                "interpolate",
+                [
+                    "linear"
+                ],
+                [
+                    "zoom"
+                ],
+                8,
+                1,
+                16,
+                5
+            ],
+            "line-color": [
+                "match",
+                [
+                    "get",
+                    "congestion"
+                ],
+                "low",
+                "#4ade80",
+                "moderate",
+                "#facc15",
+                "heavy",
+                "#fb923c",
+                "severe",
+                "#f87171",
+                "#4ade80"
+            ]
+        }
+    });
+    map.addSource("hex-pm25", {
+        type: "geojson",
+        data: hexData ?? {
+            type: "FeatureCollection",
+            features: []
+        }
+    });
+    map.addLayer({
+        id: "hex-pm25-fill",
+        type: "fill",
+        source: "hex-pm25",
+        layout: {
+            visibility: heatmapVisible ? "visible" : "none"
+        },
+        paint: {
+            "fill-opacity": 0.75,
+            "fill-color": [
+                "case",
+                [
+                    "==",
+                    [
+                        "get",
+                        "avg_pm25"
+                    ],
+                    null
+                ],
+                "rgba(0,0,0,0)",
+                [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "get",
+                        "avg_pm25"
+                    ],
+                    0,
+                    "#22c55e",
+                    15,
+                    "#84cc16",
+                    35,
+                    "#eab308",
+                    55,
+                    "#f97316",
+                    100,
+                    "#ef4444",
+                    150,
+                    "#a855f7"
+                ]
+            ]
+        }
+    });
+    map.addLayer({
+        id: "hex-pm25-line",
+        type: "line",
+        source: "hex-pm25",
+        layout: {
+            visibility: heatmapVisible ? "visible" : "none"
+        },
+        paint: {
+            "line-color": "rgba(0,0,0,0.15)",
+            "line-width": 0.5
+        }
+    });
+}
 // ── District loader ────────────────────────────────────────────────────────────
 async function loadDistricts(map) {
     try {
@@ -375,11 +488,33 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
     const fittedRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(false);
     const onSelectRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(onSensorSelect);
     const onEcoSelectRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(onEcoIqSelect);
+    const { resolvedTheme } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$themes$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useTheme"])();
+    const darkMode = resolvedTheme === "dark";
     const [mapReady, setMapReady] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [trafficVisible, setTrafficVisible] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [windVisible, setWindVisible] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [heatmapVisible, setHeatmapVisible] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [mapBounds, setMapBounds] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
+    // Refs so style-rebuild callback always reads the latest values
+    const trafficVisRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(false);
+    const heatmapVisRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(false);
+    const hexDataRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    // Track which style the map was last told to use — prevents redundant setStyle calls
+    const appliedStyleRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])("");
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "SensorMapYandex.useEffect": ()=>{
+            trafficVisRef.current = trafficVisible;
+        }
+    }["SensorMapYandex.useEffect"], [
+        trafficVisible
+    ]);
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "SensorMapYandex.useEffect": ()=>{
+            heatmapVisRef.current = heatmapVisible;
+        }
+    }["SensorMapYandex.useEffect"], [
+        heatmapVisible
+    ]);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "SensorMapYandex.useEffect": ()=>{
             onSelectRef.current = onSensorSelect;
@@ -422,9 +557,14 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
         "SensorMapYandex.useEffect": ()=>{
             if (!containerRef.current || mapRef.current) return;
             __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$mapbox$2d$gl$2f$dist$2f$mapbox$2d$gl$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].accessToken = MAPBOX_TOKEN;
+            // Always start with the light style — next-themes resolvedTheme is undefined until
+            // client hydration, so darkMode is always false at mount. The darkMode effect will
+            // switch to dark-v11 immediately after theme resolves if the user prefers dark.
+            const initialStyle = "mapbox://styles/mapbox/streets-v12";
+            appliedStyleRef.current = initialStyle;
             const map = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$mapbox$2d$gl$2f$dist$2f$mapbox$2d$gl$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].Map({
                 container: containerRef.current,
-                style: "mapbox://styles/mapbox/streets-v12",
+                style: initialStyle,
                 center: DEFAULT_CENTER,
                 zoom: 11
             });
@@ -448,117 +588,7 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
             map.on("load", {
                 "SensorMapYandex.useEffect": ()=>{
                     updateBounds();
-                    // Traffic source + layer (hidden by default)
-                    map.addSource("mapbox-traffic", {
-                        type: "vector",
-                        url: "mapbox://mapbox.mapbox-traffic-v1"
-                    });
-                    map.addLayer({
-                        id: "traffic-layer",
-                        type: "line",
-                        source: "mapbox-traffic",
-                        "source-layer": "traffic",
-                        layout: {
-                            visibility: "none"
-                        },
-                        paint: {
-                            "line-width": [
-                                "interpolate",
-                                [
-                                    "linear"
-                                ],
-                                [
-                                    "zoom"
-                                ],
-                                8,
-                                1,
-                                16,
-                                5
-                            ],
-                            "line-color": [
-                                "match",
-                                [
-                                    "get",
-                                    "congestion"
-                                ],
-                                "low",
-                                "#4ade80",
-                                "moderate",
-                                "#facc15",
-                                "heavy",
-                                "#fb923c",
-                                "severe",
-                                "#f87171",
-                                "#4ade80"
-                            ]
-                        }
-                    });
-                    // Hexagon PM2.5 source — filled by fetch after map loads
-                    map.addSource("hex-pm25", {
-                        type: "geojson",
-                        data: {
-                            type: "FeatureCollection",
-                            features: []
-                        }
-                    });
-                    // Fill layer — colour by avg_pm25
-                    map.addLayer({
-                        id: "hex-pm25-fill",
-                        type: "fill",
-                        source: "hex-pm25",
-                        layout: {
-                            visibility: "none"
-                        },
-                        paint: {
-                            "fill-opacity": 0.75,
-                            "fill-color": [
-                                "case",
-                                [
-                                    "==",
-                                    [
-                                        "get",
-                                        "avg_pm25"
-                                    ],
-                                    null
-                                ],
-                                "rgba(0,0,0,0)",
-                                [
-                                    "interpolate",
-                                    [
-                                        "linear"
-                                    ],
-                                    [
-                                        "get",
-                                        "avg_pm25"
-                                    ],
-                                    0,
-                                    "#22c55e",
-                                    15,
-                                    "#84cc16",
-                                    35,
-                                    "#eab308",
-                                    55,
-                                    "#f97316",
-                                    100,
-                                    "#ef4444",
-                                    150,
-                                    "#a855f7"
-                                ]
-                            ]
-                        }
-                    });
-                    map.addLayer({
-                        id: "hex-pm25-line",
-                        type: "line",
-                        source: "hex-pm25",
-                        layout: {
-                            visibility: "none"
-                        },
-                        paint: {
-                            "line-color": "rgba(0,0,0,0.15)",
-                            "line-width": 0.5
-                        }
-                    });
+                    addCustomLayers(map, false, false, null);
                     loadDistricts(map);
                     setMapReady(true);
                 }
@@ -751,6 +781,7 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
                 "SensorMapYandex.useEffect": (r)=>r.json()
             }["SensorMapYandex.useEffect"]).then({
                 "SensorMapYandex.useEffect": (geojson)=>{
+                    hexDataRef.current = geojson;
                     try {
                         const src = map.getSource("hex-pm25");
                         src?.setData(geojson);
@@ -762,6 +793,28 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
         }
     }["SensorMapYandex.useEffect"], [
         heatmapVisible,
+        mapReady
+    ]);
+    // ── Dark / light map theme ────────────────────────────────────────────
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "SensorMapYandex.useEffect": ()=>{
+            const map = mapRef.current;
+            if (!map || !mapReady) return;
+            const style = darkMode ? "mapbox://styles/mapbox/dark-v11" : "mapbox://styles/mapbox/streets-v12";
+            // Skip if the map already has this style loaded — avoids wiping layers on mount
+            if (appliedStyleRef.current === style) return;
+            appliedStyleRef.current = style;
+            map.setStyle(style);
+            map.once("style.load", {
+                "SensorMapYandex.useEffect": ()=>{
+                    // setStyle wipes all custom sources/layers — rebuild them
+                    addCustomLayers(map, trafficVisRef.current, heatmapVisRef.current, hexDataRef.current);
+                    loadDistricts(map);
+                }
+            }["SensorMapYandex.useEffect"]);
+        }
+    }["SensorMapYandex.useEffect"], [
+        darkMode,
         mapReady
     ]);
     // Summary label for wind button — average over grid
@@ -800,7 +853,7 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
                 className: "h-full w-full rounded-xl"
             }, void 0, false, {
                 fileName: "[project]/components/sensor-map-yandex.tsx",
-                lineNumber: 480,
+                lineNumber: 524,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$wind$2d$layer$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -809,7 +862,7 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
                 visible: windVisible
             }, void 0, false, {
                 fileName: "[project]/components/sensor-map-yandex.tsx",
-                lineNumber: 482,
+                lineNumber: 526,
                 columnNumber: 7
             }, this),
             !valid.length && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -817,7 +870,7 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
                 children: "Нет данных сенсоров"
             }, void 0, false, {
                 fileName: "[project]/components/sensor-map-yandex.tsx",
-                lineNumber: 485,
+                lineNumber: 529,
                 columnNumber: 9
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -840,7 +893,7 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
                                         d: "M8 6h8l2 6H6L8 6z"
                                     }, void 0, false, {
                                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                                        lineNumber: 502,
+                                        lineNumber: 546,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
@@ -849,7 +902,7 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
                                         r: "2"
                                     }, void 0, false, {
                                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                                        lineNumber: 503,
+                                        lineNumber: 547,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
@@ -858,27 +911,27 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
                                         r: "2"
                                     }, void 0, false, {
                                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                                        lineNumber: 504,
+                                        lineNumber: 548,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
                                         d: "M3 12h18"
                                     }, void 0, false, {
                                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                                        lineNumber: 505,
+                                        lineNumber: 549,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/sensor-map-yandex.tsx",
-                                lineNumber: 501,
+                                lineNumber: 545,
                                 columnNumber: 11
                             }, this),
                             "Пробки"
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                        lineNumber: 492,
+                        lineNumber: 536,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -898,27 +951,27 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
                                         d: "M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"
                                     }, void 0, false, {
                                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                                        lineNumber: 520,
+                                        lineNumber: 564,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
                                         d: "M9.6 4.6A2 2 0 1 1 11 8H2"
                                     }, void 0, false, {
                                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                                        lineNumber: 521,
+                                        lineNumber: 565,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
                                         d: "M12.6 19.4A2 2 0 1 0 14 16H2"
                                     }, void 0, false, {
                                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                                        lineNumber: 522,
+                                        lineNumber: 566,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/sensor-map-yandex.tsx",
-                                lineNumber: 519,
+                                lineNumber: 563,
                                 columnNumber: 11
                             }, this),
                             "Ветер",
@@ -931,13 +984,13 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/sensor-map-yandex.tsx",
-                                lineNumber: 526,
+                                lineNumber: 570,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                        lineNumber: 510,
+                        lineNumber: 554,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -959,43 +1012,47 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
                                         r: "3"
                                     }, void 0, false, {
                                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                                        lineNumber: 542,
+                                        lineNumber: 586,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
                                         d: "M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
                                     }, void 0, false, {
                                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                                        lineNumber: 543,
+                                        lineNumber: 587,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/sensor-map-yandex.tsx",
-                                lineNumber: 541,
+                                lineNumber: 585,
                                 columnNumber: 11
                             }, this),
                             "PM₂.₅"
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                        lineNumber: 532,
+                        lineNumber: 576,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/sensor-map-yandex.tsx",
-                lineNumber: 491,
+                lineNumber: 535,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/sensor-map-yandex.tsx",
-        lineNumber: 479,
+        lineNumber: 523,
         columnNumber: 5
     }, this);
 }
-_s(SensorMapYandex, "STNhHvxBd7lODht/4viIPvD7hiQ=");
+_s(SensorMapYandex, "nEu3VaSNa8907mUHegGr7Mn4hBo=", false, function() {
+    return [
+        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$themes$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useTheme"]
+    ];
+});
 _c = SensorMapYandex;
 var _c;
 __turbopack_context__.k.register(_c, "SensorMapYandex");

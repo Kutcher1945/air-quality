@@ -618,10 +618,6 @@
     pointer-events: none;
   }
 
-  .\!visible {
-    visibility: visible !important;
-  }
-
   .collapse {
     visibility: collapse;
   }
@@ -712,6 +708,10 @@
 
   .bottom-0 {
     bottom: calc(var(--spacing) * 0);
+  }
+
+  .bottom-3 {
+    bottom: calc(var(--spacing) * 3);
   }
 
   .bottom-4 {
@@ -1215,8 +1215,12 @@
     width: 320px;
   }
 
-  .w-\[min\(540px\,90vw\)\] {
-    width: min(540px, 90vw);
+  .w-\[min\(260px\,75vw\)\] {
+    width: min(260px, 75vw);
+  }
+
+  .w-\[min\(380px\,82vw\)\] {
+    width: min(380px, 82vw);
   }
 
   .w-full {
@@ -1331,10 +1335,6 @@
 
   .cursor-pointer {
     cursor: pointer;
-  }
-
-  .resize {
-    resize: both;
   }
 
   .resize-none {

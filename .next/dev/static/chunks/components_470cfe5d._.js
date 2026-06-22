@@ -605,6 +605,22 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
             })["SensorMapYandex.useEffect"];
         }
     }["SensorMapYandex.useEffect"], []);
+    // ── Keep canvas in sync with container size ────────────────────────────
+    // Mapbox caches the canvas size at init/last-resize. Switching tabs toggles this
+    // container between `hidden` (0×0) and `flex` without firing a window resize event,
+    // so without this the map renders at a stale, tiny size after returning to the tab.
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "SensorMapYandex.useEffect": ()=>{
+            if (!containerRef.current) return;
+            const observer = new ResizeObserver({
+                "SensorMapYandex.useEffect": ()=>mapRef.current?.resize()
+            }["SensorMapYandex.useEffect"]);
+            observer.observe(containerRef.current);
+            return ({
+                "SensorMapYandex.useEffect": ()=>observer.disconnect()
+            })["SensorMapYandex.useEffect"];
+        }
+    }["SensorMapYandex.useEffect"], []);
     // ── Fly to focused sensor ─────────────────────────────────────────────
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "SensorMapYandex.useEffect": ()=>{
@@ -772,7 +788,7 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
                 map.setLayoutProperty("hex-pm25-line", "visibility", vis);
             } catch  {}
             if (!heatmapVisible) return;
-            const BASE = ("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
+            const BASE = ("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
             fetch(`${BASE}/air/hex-pm25/`, {
                 headers: {
                     Accept: "application/json"
@@ -853,7 +869,7 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
                 className: "h-full w-full rounded-xl"
             }, void 0, false, {
                 fileName: "[project]/components/sensor-map-yandex.tsx",
-                lineNumber: 524,
+                lineNumber: 535,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$wind$2d$layer$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -862,7 +878,7 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
                 visible: windVisible
             }, void 0, false, {
                 fileName: "[project]/components/sensor-map-yandex.tsx",
-                lineNumber: 526,
+                lineNumber: 537,
                 columnNumber: 7
             }, this),
             !valid.length && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -870,7 +886,7 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
                 children: "Нет данных сенсоров"
             }, void 0, false, {
                 fileName: "[project]/components/sensor-map-yandex.tsx",
-                lineNumber: 529,
+                lineNumber: 540,
                 columnNumber: 9
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -893,7 +909,7 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
                                         d: "M8 6h8l2 6H6L8 6z"
                                     }, void 0, false, {
                                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                                        lineNumber: 546,
+                                        lineNumber: 557,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
@@ -902,7 +918,7 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
                                         r: "2"
                                     }, void 0, false, {
                                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                                        lineNumber: 547,
+                                        lineNumber: 558,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
@@ -911,27 +927,27 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
                                         r: "2"
                                     }, void 0, false, {
                                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                                        lineNumber: 548,
+                                        lineNumber: 559,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
                                         d: "M3 12h18"
                                     }, void 0, false, {
                                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                                        lineNumber: 549,
+                                        lineNumber: 560,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/sensor-map-yandex.tsx",
-                                lineNumber: 545,
+                                lineNumber: 556,
                                 columnNumber: 11
                             }, this),
                             "Пробки"
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                        lineNumber: 536,
+                        lineNumber: 547,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -951,27 +967,27 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
                                         d: "M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"
                                     }, void 0, false, {
                                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                                        lineNumber: 564,
+                                        lineNumber: 575,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
                                         d: "M9.6 4.6A2 2 0 1 1 11 8H2"
                                     }, void 0, false, {
                                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                                        lineNumber: 565,
+                                        lineNumber: 576,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
                                         d: "M12.6 19.4A2 2 0 1 0 14 16H2"
                                     }, void 0, false, {
                                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                                        lineNumber: 566,
+                                        lineNumber: 577,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/sensor-map-yandex.tsx",
-                                lineNumber: 563,
+                                lineNumber: 574,
                                 columnNumber: 11
                             }, this),
                             "Ветер",
@@ -984,13 +1000,13 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/sensor-map-yandex.tsx",
-                                lineNumber: 570,
+                                lineNumber: 581,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                        lineNumber: 554,
+                        lineNumber: 565,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1012,43 +1028,43 @@ function SensorMapYandex({ sensors, ecoIqSensors = [], onSensorSelect, onEcoIqSe
                                         r: "3"
                                     }, void 0, false, {
                                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                                        lineNumber: 586,
+                                        lineNumber: 597,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
                                         d: "M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
                                     }, void 0, false, {
                                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                                        lineNumber: 587,
+                                        lineNumber: 598,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/sensor-map-yandex.tsx",
-                                lineNumber: 585,
+                                lineNumber: 596,
                                 columnNumber: 11
                             }, this),
                             "PM₂.₅"
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/sensor-map-yandex.tsx",
-                        lineNumber: 576,
+                        lineNumber: 587,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/sensor-map-yandex.tsx",
-                lineNumber: 535,
+                lineNumber: 546,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/sensor-map-yandex.tsx",
-        lineNumber: 523,
+        lineNumber: 534,
         columnNumber: 5
     }, this);
 }
-_s(SensorMapYandex, "nEu3VaSNa8907mUHegGr7Mn4hBo=", false, function() {
+_s(SensorMapYandex, "TseVPAQ/HKfOz/CMrQoGbjfNBa4=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$themes$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useTheme"]
     ];

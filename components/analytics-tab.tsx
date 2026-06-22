@@ -22,6 +22,16 @@ interface SensorHealth {
   avg_pm25_30d: number | null
 }
 interface HourlyPoint { hour: number; avg_pm25: number | null; p25: number | null; p75: number | null }
+interface EcoIqCurrent {
+  id: string
+  name: string | null
+  is_high_precision: boolean
+  aqi: number | null
+  pm25_concentration: number | null
+  wind_speed: number | null
+  wind_direction: number | null
+}
+interface ExtraParamPoint { sensor_id: number; value: number | null }
 
 export interface AnalyticsTabProps {
   sensors: AirSensor[]
@@ -51,6 +61,11 @@ function rolling7(dateMap: Record<string, number>): { day: number; value: number
     const avg = window.reduce((s, [, v]) => s + v, 0) / window.length
     return { day: getDayOfYear(entries[i + 6][0]), value: Math.round(avg * 10) / 10 }
   })
+}
+
+const COMPASS_LABELS = ["С", "СВ", "В", "ЮВ", "Ю", "ЮЗ", "З", "СЗ"]
+function degToCompass(deg: number): string {
+  return COMPASS_LABELS[Math.round(deg / 45) % 8]
 }
 
 function coverageColor(pct: number | null): string {
@@ -147,11 +162,16 @@ function ExceedanceHeatmap({ data, year }: { data: Record<string, number>; year:
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export function AnalyticsTab({ sensors, sensorsLoading }: AnalyticsTabProps) {
+export function AnalyticsTab({ sensors }: AnalyticsTabProps) {
   const [calendarByYear, setCalendarByYear] = useState<Record<number, Record<string, number>>>({})
   const [districtDaily, setDistrictDaily] = useState<DistrictDay[]>([])
   const [sensorHealth, setSensorHealth] = useState<SensorHealth[]>([])
   const [hourlyData, setHourlyData] = useState<HourlyPoint[]>([])
+  const [ecoIqSensors, setEcoIqSensors] = useState<EcoIqCurrent[]>([])
+  const [temperature, setTemperature] = useState<ExtraParamPoint[]>([])
+  const [humidity, setHumidity] = useState<ExtraParamPoint[]>([])
+  const [co2, setCo2] = useState<ExtraParamPoint[]>([])
+  const [tvoc, setTvoc] = useState<ExtraParamPoint[]>([])
 
 
   useEffect(() => {
@@ -190,6 +210,22 @@ export function AnalyticsTab({ sensors, sensorsLoading }: AnalyticsTabProps) {
       .then((r) => r.json())
       .then((res) => setHourlyData(res.data || []))
       .catch(() => {})
+
+    fetch(`${BASE}/air/eco-iq/current/`, { headers: { Accept: "application/json" } })
+      .then((r) => r.json())
+      .then((res) => setEcoIqSensors(res.data ?? res ?? []))
+      .catch(() => {})
+
+    const extraParam = (parameter: string, setter: (v: ExtraParamPoint[]) => void) =>
+      fetch(`${BASE}/air/current/?parameter=${parameter}&limit=500`, { headers: { Accept: "application/json" } })
+        .then((r) => r.json())
+        .then((res) => setter((res.results ?? res ?? []).map((d: { sensor_id: number; value: number | null }) => ({ sensor_id: d.sensor_id, value: d.value }))))
+        .catch(() => {})
+
+    extraParam("temperature", setTemperature)
+    extraParam("humidity", setHumidity)
+    extraParam("co2", setCo2)
+    extraParam("tvoc", setTvoc)
   }, [])
 
   // ── Derived ──────────────────────────────────────────────────────────────────
@@ -280,6 +316,48 @@ export function AnalyticsTab({ sensors, sensorsLoading }: AnalyticsTabProps) {
     return { online, offline }
   }, [sensorHealth])
 
+  // ── EcoIQ / IQAir network ────────────────────────────────────────────────────
+
+  const ecoIqWithPm25 = useMemo(() => ecoIqSensors.filter((s) => s.pm25_concentration != null), [ecoIqSensors])
+  const ecoIqMedian = useMemo(() => medianOf(ecoIqWithPm25.map((s) => s.pm25_concentration!)), [ecoIqWithPm25])
+  const ecoIqHighPrecisionCount = useMemo(() => ecoIqSensors.filter((s) => s.is_high_precision).length, [ecoIqSensors])
+
+  const windPoints = useMemo(
+    () => ecoIqSensors.filter((s) => s.wind_speed != null && s.wind_direction != null && s.wind_speed > 0),
+    [ecoIqSensors],
+  )
+  const windSummary = useMemo(() => {
+    if (!windPoints.length) return null
+    const avgSpeed = windPoints.reduce((s, p) => s + (p.wind_speed ?? 0), 0) / windPoints.length
+    // Average direction via unit vectors — avoids the 350°/10° wraparound bug of a plain mean.
+    const rad = (d: number) => (d * Math.PI) / 180
+    const sumX = windPoints.reduce((s, p) => s + Math.cos(rad(p.wind_direction ?? 0)), 0)
+    const sumY = windPoints.reduce((s, p) => s + Math.sin(rad(p.wind_direction ?? 0)), 0)
+    const avgDir = ((Math.atan2(sumY, sumX) * 180) / Math.PI + 360) % 360
+    return { speed: avgSpeed, direction: avgDir, compass: degToCompass(avgDir) }
+  }, [windPoints])
+
+  // ── Extra AAI parameters ─────────────────────────────────────────────────────
+
+  const avgExtra = (points: ExtraParamPoint[]): number | null => {
+    const vals = points.map((p) => p.value).filter((v): v is number => v != null)
+    if (!vals.length) return null
+    return Math.round((vals.reduce((s, v) => s + v, 0) / vals.length) * 10) / 10
+  }
+  const avgTemperature = useMemo(() => avgExtra(temperature), [temperature])
+  const avgHumidity = useMemo(() => avgExtra(humidity), [humidity])
+  const avgCo2 = useMemo(() => avgExtra(co2), [co2])
+  const avgTvoc = useMemo(() => avgExtra(tvoc), [tvoc])
+
+  // ── AAI vs EcoIQ comparison ───────────────────────────────────────────────────
+
+  const networkComparison = useMemo(() => {
+    if (cityMedian == null || ecoIqMedian == null) return null
+    const diff = Math.round((cityMedian - ecoIqMedian) * 10) / 10
+    const diffPct = ecoIqMedian !== 0 ? Math.round((diff / ecoIqMedian) * 100) : 0
+    return { diff, diffPct }
+  }, [cityMedian, ecoIqMedian])
+
   const exceedanceData = calendarByYear[thisYear] ?? {}
   const medColor = cityMedian != null ? pm25Color(cityMedian) : "#9ca3af"
 
@@ -327,6 +405,48 @@ export function AnalyticsTab({ sensors, sensorsLoading }: AnalyticsTabProps) {
         <KpiCard label="Онлайн" value={String(healthSummary.online)} sub="данные < 2 ч назад" color="#22c55e" />
         <KpiCard label="Оффлайн" value={String(healthSummary.offline)} sub="нет данных ≥ 2 ч" color="#ef4444" />
       </div>
+
+      {/* Extra AAI parameters */}
+      {(avgTemperature != null || avgHumidity != null || avgCo2 != null || avgTvoc != null) && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <KpiCard label="Температура" value={avgTemperature != null ? `${avgTemperature}°C` : "—"} sub="средняя по сети AAI" color="#f97316" />
+          <KpiCard label="Влажность" value={avgHumidity != null ? `${avgHumidity}%` : "—"} sub="средняя по сети AAI" color="#06b6d4" />
+          <KpiCard label="CO₂" value={avgCo2 != null ? `${avgCo2}` : "—"} sub="ppm, средний" color="#a855f7" />
+          <KpiCard label="TVOC" value={avgTvoc != null ? `${avgTvoc}` : "—"} sub="ppb, средний" color="#eab308" />
+        </div>
+      )}
+
+      {/* EcoIQ / IQAir network */}
+      {ecoIqSensors.length > 0 && (
+        <div className="rounded-xl border border-border bg-card p-4">
+          <h3 className="mb-3 text-sm font-semibold">Сеть IQAir / EcoIQ</h3>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <KpiCard label="Станций" value={String(ecoIqSensors.length)} sub={`из них ${ecoIqHighPrecisionCount} высокоточных`} color="#3b82f6" />
+            <KpiCard
+              label="Медиана PM2.5"
+              value={ecoIqMedian != null ? ecoIqMedian.toFixed(1) : "—"}
+              sub="µg/m³ по сети IQAir"
+              color={ecoIqMedian != null ? pm25Color(ecoIqMedian) : "#9ca3af"}
+            />
+            <KpiCard
+              label="Ветер"
+              value={windSummary ? `${windSummary.speed.toFixed(1)} м/с` : "—"}
+              sub={windSummary ? `${windSummary.compass}, ${Math.round(windSummary.direction)}°` : "нет данных"}
+              color="#06b6d4"
+            />
+            <KpiCard
+              label="AAI vs IQAir"
+              value={networkComparison ? `${networkComparison.diff > 0 ? "+" : ""}${networkComparison.diff}` : "—"}
+              sub={networkComparison ? `${networkComparison.diffPct > 0 ? "+" : ""}${networkComparison.diffPct}% к IQAir` : "недостаточно данных"}
+              color={networkComparison && networkComparison.diff > 0 ? "#ef4444" : "#22c55e"}
+            />
+          </div>
+          <p className="mt-3 text-[11px] text-muted-foreground">
+            AAI — собственная сеть из {sensors.length} датчиков (PM2.5, температура, влажность, CO₂, TVOC). IQAir/EcoIQ — внешняя сеть из {ecoIqSensors.length} станций
+            с дополнительными данными по ветру. Сети не объединяются в общие KPI выше, так как отличаются точностью и плотностью покрытия.
+          </p>
+        </div>
+      )}
 
       {/* Donut + District ranking */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">

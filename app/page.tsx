@@ -2,8 +2,7 @@
 
 import dynamic from "next/dynamic"
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { ChevronLeft, ChevronRight, Moon, Sun, Map, CalendarDays, BarChart2, Sparkles } from "lucide-react"
-import { useTheme } from "next-themes"
+import { ChevronLeft, ChevronRight, Map, CalendarDays, BarChart2, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -157,7 +156,6 @@ function getAQICategory(aqi: number) {
 }
 
 export default function AirQualityDashboard() {
-  const { resolvedTheme, setTheme } = useTheme()
   const [activeTab, setActiveTab] = useState<ActiveTab>("map")
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
   const [sidebarAqiData, setSidebarAqiData] = useState<Record<string, number>>({})
@@ -168,10 +166,10 @@ export default function AirQualityDashboard() {
   const [sensorsLoading, setSensorsLoading] = useState(true)
   const [sensorsError, setSensorsError] = useState<string | null>(null)
   const [ecoIqSensors, setEcoIqSensors] = useState<EcoIqSensor[]>([])
+  const [iqairDaily, setIqairDaily] = useState<{ date: string; avg_pm25: number }[]>([])
   const [sensorSearch, setSensorSearch] = useState("")
   const [sourceFilter, setSourceFilter] = useState<string | "all">("all")
   const [districtFilter, setDistrictFilter] = useState<string | "all">("all")
-  const [mounted, setMounted] = useState(false)
   const [hoveredDay, setHoveredDay] = useState<HoveredDay | null>(null)
   const [selectedSensor, setSelectedSensor] = useState<AirSensor | null>(null)
   const [metricMode, setMetricMode] = useState<AirMetricMode>("epa-aqi")
@@ -192,7 +190,6 @@ export default function AirQualityDashboard() {
 
   const MIN_YEAR = 2019
   const MAX_YEAR = new Date().getFullYear()
-  const themeIsDark = resolvedTheme === "dark"
 
   const fetchSensors = useCallback(async () => {
     try {
@@ -280,6 +277,13 @@ export default function AirQualityDashboard() {
     return () => clearInterval(id)
   }, [])
   useEffect(() => {
+    const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "https://admin.smartalmaty.kz/api/v1"
+    fetch(`${BASE}/air/eco-iq/city-daily/?days=30`, { headers: { Accept: "application/json" } })
+      .then((r) => r.json())
+      .then((res) => setIqairDaily(res.data ?? []))
+      .catch(() => {})
+  }, [])
+  useEffect(() => {
     setTimeseriesLoading(true)
     const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "https://admin.smartalmaty.kz/api/v1"
     fetch(`${BASE}/air/analytics/map-timeseries-hourly/?hours=48`, { headers: { Accept: "application/json" } })
@@ -288,8 +292,6 @@ export default function AirQualityDashboard() {
       .catch(() => {})
       .finally(() => setTimeseriesLoading(false))
   }, [])
-
-  useEffect(() => { setMounted(true) }, [])
 
   const sources = useMemo(() => {
     const set = new Set<string>()
@@ -353,6 +355,11 @@ export default function AirQualityDashboard() {
   const sensorsWithData = useMemo(
     () => sensors.filter((s) => s.value != null),
     [sensors],
+  )
+
+  const ecoIqWithData = useMemo(
+    () => ecoIqSensors.filter((s) => s.pm25_concentration != null),
+    [ecoIqSensors],
   )
 
   const activeSensors = sensors
@@ -553,7 +560,7 @@ export default function AirQualityDashboard() {
                     searchPlaceholder="Поиск района…"
                   />
                   <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {filteredSensors.length} / {sensors.length} · {sensorsWithData.length} с PM2.5
+                    {filteredSensors.length} AAI + {ecoIqSensors.length} IQAir · {sensorsWithData.length + ecoIqWithData.length} с PM2.5
                   </span>
                   <Button
                     variant="ghost"
@@ -590,19 +597,6 @@ export default function AirQualityDashboard() {
                   </Button>
                 </>
               )}
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setTheme(themeIsDark ? "light" : "dark")}
-                className="h-8 w-8 border-border"
-                aria-label="Toggle theme"
-              >
-                {mounted
-                  ? themeIsDark
-                    ? <Sun className="h-4 w-4" />
-                    : <Moon className="h-4 w-4" />
-                  : <div className="h-4 w-4" />}
-              </Button>
             </div>
           </div>
 
@@ -645,9 +639,12 @@ export default function AirQualityDashboard() {
             {!sensorsLoading && !sensorsError && (
               <div className="absolute bottom-4 left-4 z-[1000] flex items-center gap-2 rounded-xl border border-border bg-background/90 px-3 py-2 text-xs backdrop-blur-sm">
                 <span className="font-semibold text-foreground">{activeSensors.length}</span>
-                <span className="text-muted-foreground">активных</span>
+                <span className="text-muted-foreground">AAI</span>
+                <span className="text-border">+</span>
+                <span className="font-semibold text-foreground">{ecoIqSensors.length}</span>
+                <span className="text-muted-foreground">IQAir</span>
                 <span className="text-border">·</span>
-                <span className="font-semibold text-foreground">{sensorsWithData.length}</span>
+                <span className="font-semibold text-foreground">{sensorsWithData.length + ecoIqWithData.length}</span>
                 <span className="text-muted-foreground">с PM2.5</span>
               </div>
             )}
@@ -708,6 +705,29 @@ export default function AirQualityDashboard() {
             ) : (
               <div className="min-h-0 flex-1 grid grid-cols-4 grid-rows-3 gap-2">
                 {Array.from({ length: 12 }, (_, i) => renderMonthCalendar(i))}
+              </div>
+            )}
+
+            {/* IQAir / EcoIQ — last 30 days, separate source from the main government calendar above */}
+            {iqairDaily.length > 0 && (
+              <div className="mt-2 shrink-0 rounded-lg border border-border bg-card px-3 py-2">
+                <div className="mb-1.5 flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-foreground">IQAir / EcoIQ — последние 30 дней</span>
+                  <span className="text-[10px] text-muted-foreground">{ecoIqSensors.length} станций · отдельная сеть</span>
+                </div>
+                <div className="flex gap-1">
+                  {iqairDaily.map(({ date, avg_pm25 }) => (
+                    <div
+                      key={date}
+                      className="group relative h-6 flex-1 rounded-sm"
+                      style={{ backgroundColor: pm25ToHex(avg_pm25), opacity: 0.85 }}
+                    >
+                      <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 -translate-x-1/2 whitespace-nowrap rounded-md bg-popover px-2 py-1 text-[10px] text-popover-foreground opacity-0 shadow-md group-hover:opacity-100">
+                        {new Date(date).toLocaleDateString("ru-RU", { day: "numeric", month: "short" })}: {avg_pm25.toFixed(1)} µg/m³ — {pm25ToLabel(avg_pm25)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

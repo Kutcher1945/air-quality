@@ -950,7 +950,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
             return;
         }
         setSensorLoading(true);
-        const BASE = ("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
+        const BASE = ("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
         const url = selectedSensor.ecoIqStationId ? `${BASE}/air/eco-iq/${selectedSensor.ecoIqStationId}/daily/?days=180` : `${BASE}/air/sensors/${selectedSensor.sensor_id}/daily/?parameter=pm25&limit=180`;
         fetch(url, {
             headers: {
@@ -2479,6 +2479,19 @@ function rolling7(dateMap) {
         };
     });
 }
+const COMPASS_LABELS = [
+    "С",
+    "СВ",
+    "В",
+    "ЮВ",
+    "Ю",
+    "ЮЗ",
+    "З",
+    "СЗ"
+];
+function degToCompass(deg) {
+    return COMPASS_LABELS[Math.round(deg / 45) % 8];
+}
 function coverageColor(pct) {
     if (pct == null) return "#9ca3af";
     if (pct >= 90) return "#22c55e";
@@ -2523,7 +2536,7 @@ const DISTRICT_COLORS = [
     "#06b6d4",
     "#ec4899"
 ];
-const BASE = ("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
+const BASE = ("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
 function doyToMonth(v) {
     for(let i = DOY_MONTH_STARTS.length - 1; i >= 0; i--){
         if (v >= DOY_MONTH_STARTS[i]) return MONTH_LABELS[i];
@@ -2540,7 +2553,7 @@ function KpiCard({ label, value, sub, color }) {
                 children: label
             }, void 0, false, {
                 fileName: "[project]/components/analytics-tab.tsx",
-                lineNumber: 81,
+                lineNumber: 96,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2551,7 +2564,7 @@ function KpiCard({ label, value, sub, color }) {
                 children: value
             }, void 0, false, {
                 fileName: "[project]/components/analytics-tab.tsx",
-                lineNumber: 82,
+                lineNumber: 97,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2559,13 +2572,13 @@ function KpiCard({ label, value, sub, color }) {
                 children: sub
             }, void 0, false, {
                 fileName: "[project]/components/analytics-tab.tsx",
-                lineNumber: 83,
+                lineNumber: 98,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/analytics-tab.tsx",
-        lineNumber: 80,
+        lineNumber: 95,
         columnNumber: 5
     }, this);
 }
@@ -2617,7 +2630,7 @@ function ExceedanceHeatmap({ data, year }) {
                     children: label
                 }, label, false, {
                     fileName: "[project]/components/analytics-tab.tsx",
-                    lineNumber: 126,
+                    lineNumber: 141,
                     columnNumber: 9
                 }, this)),
             days.map((day, i)=>{
@@ -2639,27 +2652,32 @@ function ExceedanceHeatmap({ data, year }) {
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 140,
+                        lineNumber: 155,
                         columnNumber: 13
                     }, this)
                 }, day.date, false, {
                     fileName: "[project]/components/analytics-tab.tsx",
-                    lineNumber: 132,
+                    lineNumber: 147,
                     columnNumber: 11
                 }, this);
             })
         ]
     }, void 0, true, {
         fileName: "[project]/components/analytics-tab.tsx",
-        lineNumber: 120,
+        lineNumber: 135,
         columnNumber: 5
     }, this);
 }
-function AnalyticsTab({ sensors, sensorsLoading }) {
+function AnalyticsTab({ sensors }) {
     const [calendarByYear, setCalendarByYear] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])({});
     const [districtDaily, setDistrictDaily] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
     const [sensorHealth, setSensorHealth] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
     const [hourlyData, setHourlyData] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
+    const [ecoIqSensors, setEcoIqSensors] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
+    const [temperature, setTemperature] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
+    const [humidity, setHumidity] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
+    const [co2, setCo2] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
+    const [tvoc, setTvoc] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         const thisYear = new Date().getFullYear();
         const years = [
@@ -2702,6 +2720,23 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                 Accept: "application/json"
             }
         }).then((r)=>r.json()).then((res)=>setHourlyData(res.data || [])).catch(()=>{});
+        fetch(`${BASE}/air/eco-iq/current/`, {
+            headers: {
+                Accept: "application/json"
+            }
+        }).then((r)=>r.json()).then((res)=>setEcoIqSensors(res.data ?? res ?? [])).catch(()=>{});
+        const extraParam = (parameter, setter)=>fetch(`${BASE}/air/current/?parameter=${parameter}&limit=500`, {
+                headers: {
+                    Accept: "application/json"
+                }
+            }).then((r)=>r.json()).then((res)=>setter((res.results ?? res ?? []).map((d)=>({
+                        sensor_id: d.sensor_id,
+                        value: d.value
+                    })))).catch(()=>{});
+        extraParam("temperature", setTemperature);
+        extraParam("humidity", setHumidity);
+        extraParam("co2", setCo2);
+        extraParam("tvoc", setTvoc);
     }, []);
     // ── Derived ──────────────────────────────────────────────────────────────────
     const activeSensors = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>sensors.filter((s)=>s.value != null), [
@@ -2846,6 +2881,66 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
     }, [
         sensorHealth
     ]);
+    // ── EcoIQ / IQAir network ────────────────────────────────────────────────────
+    const ecoIqWithPm25 = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>ecoIqSensors.filter((s)=>s.pm25_concentration != null), [
+        ecoIqSensors
+    ]);
+    const ecoIqMedian = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>medianOf(ecoIqWithPm25.map((s)=>s.pm25_concentration)), [
+        ecoIqWithPm25
+    ]);
+    const ecoIqHighPrecisionCount = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>ecoIqSensors.filter((s)=>s.is_high_precision).length, [
+        ecoIqSensors
+    ]);
+    const windPoints = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>ecoIqSensors.filter((s)=>s.wind_speed != null && s.wind_direction != null && s.wind_speed > 0), [
+        ecoIqSensors
+    ]);
+    const windSummary = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>{
+        if (!windPoints.length) return null;
+        const avgSpeed = windPoints.reduce((s, p)=>s + (p.wind_speed ?? 0), 0) / windPoints.length;
+        // Average direction via unit vectors — avoids the 350°/10° wraparound bug of a plain mean.
+        const rad = (d)=>d * Math.PI / 180;
+        const sumX = windPoints.reduce((s, p)=>s + Math.cos(rad(p.wind_direction ?? 0)), 0);
+        const sumY = windPoints.reduce((s, p)=>s + Math.sin(rad(p.wind_direction ?? 0)), 0);
+        const avgDir = (Math.atan2(sumY, sumX) * 180 / Math.PI + 360) % 360;
+        return {
+            speed: avgSpeed,
+            direction: avgDir,
+            compass: degToCompass(avgDir)
+        };
+    }, [
+        windPoints
+    ]);
+    // ── Extra AAI parameters ─────────────────────────────────────────────────────
+    const avgExtra = (points)=>{
+        const vals = points.map((p)=>p.value).filter((v)=>v != null);
+        if (!vals.length) return null;
+        return Math.round(vals.reduce((s, v)=>s + v, 0) / vals.length * 10) / 10;
+    };
+    const avgTemperature = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>avgExtra(temperature), [
+        temperature
+    ]);
+    const avgHumidity = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>avgExtra(humidity), [
+        humidity
+    ]);
+    const avgCo2 = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>avgExtra(co2), [
+        co2
+    ]);
+    const avgTvoc = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>avgExtra(tvoc), [
+        tvoc
+    ]);
+    // ── AAI vs EcoIQ comparison ───────────────────────────────────────────────────
+    const networkComparison = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>{
+        if (cityMedian == null || ecoIqMedian == null) return null;
+        const diff = Math.round((cityMedian - ecoIqMedian) * 10) / 10;
+        const diffPct = ecoIqMedian !== 0 ? Math.round(diff / ecoIqMedian * 100) : 0;
+        return {
+            diff,
+            diffPct
+        };
+    }, [
+        cityMedian,
+        ecoIqMedian
+    ]);
     const exceedanceData = calendarByYear[thisYear] ?? {};
     const medColor = cityMedian != null ? (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["pm25Color"])(cityMedian) : "#9ca3af";
     const monthlyStats = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>{
@@ -2898,7 +2993,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                         color: medColor
                     }, void 0, false, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 323,
+                        lineNumber: 401,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(KpiCard, {
@@ -2908,7 +3003,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                         color: medColor
                     }, void 0, false, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 324,
+                        lineNumber: 402,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(KpiCard, {
@@ -2918,7 +3013,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                         color: "#3b82f6"
                     }, void 0, false, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 325,
+                        lineNumber: 403,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(KpiCard, {
@@ -2928,7 +3023,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                         color: whoExceedPct != null && whoExceedPct > 50 ? "#ef4444" : "#22c55e"
                     }, void 0, false, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 326,
+                        lineNumber: 404,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(KpiCard, {
@@ -2938,7 +3033,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                         color: "#22c55e"
                     }, void 0, false, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 327,
+                        lineNumber: 405,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(KpiCard, {
@@ -2948,14 +3043,143 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                         color: "#ef4444"
                     }, void 0, false, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 328,
+                        lineNumber: 406,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/analytics-tab.tsx",
-                lineNumber: 322,
+                lineNumber: 400,
                 columnNumber: 7
+            }, this),
+            (avgTemperature != null || avgHumidity != null || avgCo2 != null || avgTvoc != null) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "grid grid-cols-2 gap-3 sm:grid-cols-4",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(KpiCard, {
+                        label: "Температура",
+                        value: avgTemperature != null ? `${avgTemperature}°C` : "—",
+                        sub: "средняя по сети AAI",
+                        color: "#f97316"
+                    }, void 0, false, {
+                        fileName: "[project]/components/analytics-tab.tsx",
+                        lineNumber: 412,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(KpiCard, {
+                        label: "Влажность",
+                        value: avgHumidity != null ? `${avgHumidity}%` : "—",
+                        sub: "средняя по сети AAI",
+                        color: "#06b6d4"
+                    }, void 0, false, {
+                        fileName: "[project]/components/analytics-tab.tsx",
+                        lineNumber: 413,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(KpiCard, {
+                        label: "CO₂",
+                        value: avgCo2 != null ? `${avgCo2}` : "—",
+                        sub: "ppm, средний",
+                        color: "#a855f7"
+                    }, void 0, false, {
+                        fileName: "[project]/components/analytics-tab.tsx",
+                        lineNumber: 414,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(KpiCard, {
+                        label: "TVOC",
+                        value: avgTvoc != null ? `${avgTvoc}` : "—",
+                        sub: "ppb, средний",
+                        color: "#eab308"
+                    }, void 0, false, {
+                        fileName: "[project]/components/analytics-tab.tsx",
+                        lineNumber: 415,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/components/analytics-tab.tsx",
+                lineNumber: 411,
+                columnNumber: 9
+            }, this),
+            ecoIqSensors.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "rounded-xl border border-border bg-card p-4",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                        className: "mb-3 text-sm font-semibold",
+                        children: "Сеть IQAir / EcoIQ"
+                    }, void 0, false, {
+                        fileName: "[project]/components/analytics-tab.tsx",
+                        lineNumber: 422,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "grid grid-cols-2 gap-3 sm:grid-cols-4",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(KpiCard, {
+                                label: "Станций",
+                                value: String(ecoIqSensors.length),
+                                sub: `из них ${ecoIqHighPrecisionCount} высокоточных`,
+                                color: "#3b82f6"
+                            }, void 0, false, {
+                                fileName: "[project]/components/analytics-tab.tsx",
+                                lineNumber: 424,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(KpiCard, {
+                                label: "Медиана PM2.5",
+                                value: ecoIqMedian != null ? ecoIqMedian.toFixed(1) : "—",
+                                sub: "µg/m³ по сети IQAir",
+                                color: ecoIqMedian != null ? (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["pm25Color"])(ecoIqMedian) : "#9ca3af"
+                            }, void 0, false, {
+                                fileName: "[project]/components/analytics-tab.tsx",
+                                lineNumber: 425,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(KpiCard, {
+                                label: "Ветер",
+                                value: windSummary ? `${windSummary.speed.toFixed(1)} м/с` : "—",
+                                sub: windSummary ? `${windSummary.compass}, ${Math.round(windSummary.direction)}°` : "нет данных",
+                                color: "#06b6d4"
+                            }, void 0, false, {
+                                fileName: "[project]/components/analytics-tab.tsx",
+                                lineNumber: 431,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(KpiCard, {
+                                label: "AAI vs IQAir",
+                                value: networkComparison ? `${networkComparison.diff > 0 ? "+" : ""}${networkComparison.diff}` : "—",
+                                sub: networkComparison ? `${networkComparison.diffPct > 0 ? "+" : ""}${networkComparison.diffPct}% к IQAir` : "недостаточно данных",
+                                color: networkComparison && networkComparison.diff > 0 ? "#ef4444" : "#22c55e"
+                            }, void 0, false, {
+                                fileName: "[project]/components/analytics-tab.tsx",
+                                lineNumber: 437,
+                                columnNumber: 13
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/components/analytics-tab.tsx",
+                        lineNumber: 423,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        className: "mt-3 text-[11px] text-muted-foreground",
+                        children: [
+                            "AAI — собственная сеть из ",
+                            sensors.length,
+                            " датчиков (PM2.5, температура, влажность, CO₂, TVOC). IQAir/EcoIQ — внешняя сеть из ",
+                            ecoIqSensors.length,
+                            " станций с дополнительными данными по ветру. Сети не объединяются в общие KPI выше, так как отличаются точностью и плотностью покрытия."
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/components/analytics-tab.tsx",
+                        lineNumber: 444,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/components/analytics-tab.tsx",
+                lineNumber: 421,
+                columnNumber: 9
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "grid grid-cols-1 gap-4 lg:grid-cols-2",
@@ -2968,7 +3192,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                 children: "Распределение по категориям"
                             }, void 0, false, {
                                 fileName: "[project]/components/analytics-tab.tsx",
-                                lineNumber: 335,
+                                lineNumber: 455,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2990,12 +3214,12 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                             fill: e.color
                                                         }, i, false, {
                                                             fileName: "[project]/components/analytics-tab.tsx",
-                                                            lineNumber: 340,
+                                                            lineNumber: 460,
                                                             columnNumber: 47
                                                         }, this))
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/analytics-tab.tsx",
-                                                    lineNumber: 339,
+                                                    lineNumber: 459,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Tooltip$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Tooltip"], {
@@ -3005,18 +3229,18 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                         ]
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/analytics-tab.tsx",
-                                                    lineNumber: 342,
+                                                    lineNumber: 462,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/components/analytics-tab.tsx",
-                                            lineNumber: 338,
+                                            lineNumber: 458,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/components/analytics-tab.tsx",
-                                        lineNumber: 337,
+                                        lineNumber: 457,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3031,7 +3255,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                         }
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/analytics-tab.tsx",
-                                                        lineNumber: 348,
+                                                        lineNumber: 468,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3039,7 +3263,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                         children: c.label
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/analytics-tab.tsx",
-                                                        lineNumber: 349,
+                                                        lineNumber: 469,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3047,30 +3271,30 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                         children: c.count
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/analytics-tab.tsx",
-                                                        lineNumber: 350,
+                                                        lineNumber: 470,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, c.label, true, {
                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                lineNumber: 347,
+                                                lineNumber: 467,
                                                 columnNumber: 17
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/components/analytics-tab.tsx",
-                                        lineNumber: 345,
+                                        lineNumber: 465,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/analytics-tab.tsx",
-                                lineNumber: 336,
+                                lineNumber: 456,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 334,
+                        lineNumber: 454,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3081,7 +3305,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                 children: "Рейтинг районов — медиана PM2.5"
                             }, void 0, false, {
                                 fileName: "[project]/components/analytics-tab.tsx",
-                                lineNumber: 359,
+                                lineNumber: 479,
                                 columnNumber: 11
                             }, this),
                             districtRanking.length > 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$ResponsiveContainer$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["ResponsiveContainer"], {
@@ -3103,7 +3327,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                             stroke: "var(--border)"
                                         }, void 0, false, {
                                             fileName: "[project]/components/analytics-tab.tsx",
-                                            lineNumber: 363,
+                                            lineNumber: 483,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$XAxis$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["XAxis"], {
@@ -3114,7 +3338,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                             stroke: "var(--muted-foreground)"
                                         }, void 0, false, {
                                             fileName: "[project]/components/analytics-tab.tsx",
-                                            lineNumber: 364,
+                                            lineNumber: 484,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$YAxis$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["YAxis"], {
@@ -3127,7 +3351,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                             stroke: "var(--muted-foreground)"
                                         }, void 0, false, {
                                             fileName: "[project]/components/analytics-tab.tsx",
-                                            lineNumber: 365,
+                                            lineNumber: 485,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Tooltip$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Tooltip"], {
@@ -3137,7 +3361,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                 ]
                                         }, void 0, false, {
                                             fileName: "[project]/components/analytics-tab.tsx",
-                                            lineNumber: 366,
+                                            lineNumber: 486,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$ReferenceLine$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["ReferenceLine"], {
@@ -3152,7 +3376,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                             }
                                         }, void 0, false, {
                                             fileName: "[project]/components/analytics-tab.tsx",
-                                            lineNumber: 367,
+                                            lineNumber: 487,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$Bar$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Bar"], {
@@ -3168,7 +3392,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                         fill: (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["pm25Color"])(e.median)
                                                     }, i, false, {
                                                         fileName: "[project]/components/analytics-tab.tsx",
-                                                        lineNumber: 369,
+                                                        lineNumber: 489,
                                                         columnNumber: 50
                                                     }, this)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$LabelList$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["LabelList"], {
@@ -3179,43 +3403,43 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                     }
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/analytics-tab.tsx",
-                                                    lineNumber: 370,
+                                                    lineNumber: 490,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/components/analytics-tab.tsx",
-                                            lineNumber: 368,
+                                            lineNumber: 488,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 362,
+                                    lineNumber: 482,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/components/analytics-tab.tsx",
-                                lineNumber: 361,
+                                lineNumber: 481,
                                 columnNumber: 13
                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                 className: "text-sm text-muted-foreground",
                                 children: "Загрузка данных…"
                             }, void 0, false, {
                                 fileName: "[project]/components/analytics-tab.tsx",
-                                lineNumber: 375,
+                                lineNumber: 495,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 358,
+                        lineNumber: 478,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/analytics-tab.tsx",
-                lineNumber: 332,
+                lineNumber: 452,
                 columnNumber: 7
             }, this),
             yoyChartData.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3226,7 +3450,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                         children: "Сравнение по годам (7-дневное скользящее среднее PM2.5)"
                     }, void 0, false, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 383,
+                        lineNumber: 503,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$ResponsiveContainer$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["ResponsiveContainer"], {
@@ -3246,7 +3470,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                     stroke: "var(--border)"
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 386,
+                                    lineNumber: 506,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$XAxis$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["XAxis"], {
@@ -3264,7 +3488,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                     stroke: "var(--muted-foreground)"
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 387,
+                                    lineNumber: 507,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$YAxis$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["YAxis"], {
@@ -3275,7 +3499,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                     unit: " µg"
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 388,
+                                    lineNumber: 508,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Tooltip$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Tooltip"], {
@@ -3285,7 +3509,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                         ]
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 389,
+                                    lineNumber: 509,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Legend$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Legend"], {
@@ -3294,7 +3518,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                     }
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 390,
+                                    lineNumber: 510,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$ReferenceLine$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["ReferenceLine"], {
@@ -3309,7 +3533,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                     }
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 391,
+                                    lineNumber: 511,
                                     columnNumber: 15
                                 }, this),
                                 [
@@ -3330,24 +3554,24 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                         name: String(y)
                                     }, y, false, {
                                         fileName: "[project]/components/analytics-tab.tsx",
-                                        lineNumber: 394,
+                                        lineNumber: 514,
                                         columnNumber: 19
                                     }, this) : null)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/analytics-tab.tsx",
-                            lineNumber: 385,
+                            lineNumber: 505,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 384,
+                        lineNumber: 504,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/analytics-tab.tsx",
-                lineNumber: 382,
+                lineNumber: 502,
                 columnNumber: 9
             }, this),
             Object.keys(exceedanceData).length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3364,7 +3588,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/analytics-tab.tsx",
-                                lineNumber: 406,
+                                lineNumber: 526,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3396,25 +3620,25 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                 }
                                             }, void 0, false, {
                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                lineNumber: 410,
+                                                lineNumber: 530,
                                                 columnNumber: 19
                                             }, this),
                                             l
                                         ]
                                     }, l, true, {
                                         fileName: "[project]/components/analytics-tab.tsx",
-                                        lineNumber: 409,
+                                        lineNumber: 529,
                                         columnNumber: 17
                                     }, this))
                             }, void 0, false, {
                                 fileName: "[project]/components/analytics-tab.tsx",
-                                lineNumber: 407,
+                                lineNumber: 527,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 405,
+                        lineNumber: 525,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(ExceedanceHeatmap, {
@@ -3422,13 +3646,13 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                         year: thisYear
                     }, void 0, false, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 416,
+                        lineNumber: 536,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/analytics-tab.tsx",
-                lineNumber: 404,
+                lineNumber: 524,
                 columnNumber: 9
             }, this),
             (monthlyStats.length > 0 || worstDays.length > 0) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3445,7 +3669,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/analytics-tab.tsx",
-                                lineNumber: 427,
+                                lineNumber: 547,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$ResponsiveContainer$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["ResponsiveContainer"], {
@@ -3466,7 +3690,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                             vertical: false
                                         }, void 0, false, {
                                             fileName: "[project]/components/analytics-tab.tsx",
-                                            lineNumber: 430,
+                                            lineNumber: 550,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$XAxis$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["XAxis"], {
@@ -3477,7 +3701,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                             stroke: "var(--muted-foreground)"
                                         }, void 0, false, {
                                             fileName: "[project]/components/analytics-tab.tsx",
-                                            lineNumber: 431,
+                                            lineNumber: 551,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$YAxis$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["YAxis"], {
@@ -3488,7 +3712,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                             unit: " µg"
                                         }, void 0, false, {
                                             fileName: "[project]/components/analytics-tab.tsx",
-                                            lineNumber: 432,
+                                            lineNumber: 552,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Tooltip$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Tooltip"], {
@@ -3502,7 +3726,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                             labelFormatter: (l)=>`${l} ${thisYear}`
                                         }, void 0, false, {
                                             fileName: "[project]/components/analytics-tab.tsx",
-                                            lineNumber: 433,
+                                            lineNumber: 553,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$ReferenceLine$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["ReferenceLine"], {
@@ -3517,7 +3741,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                             }
                                         }, void 0, false, {
                                             fileName: "[project]/components/analytics-tab.tsx",
-                                            lineNumber: 437,
+                                            lineNumber: 557,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$Bar$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Bar"], {
@@ -3533,7 +3757,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                         fill: (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["pm25Color"])(e.avg)
                                                     }, i, false, {
                                                         fileName: "[project]/components/analytics-tab.tsx",
-                                                        lineNumber: 439,
+                                                        lineNumber: 559,
                                                         columnNumber: 49
                                                     }, this)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$LabelList$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["LabelList"], {
@@ -3544,24 +3768,24 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                     }
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/analytics-tab.tsx",
-                                                    lineNumber: 440,
+                                                    lineNumber: 560,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/components/analytics-tab.tsx",
-                                            lineNumber: 438,
+                                            lineNumber: 558,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 429,
+                                    lineNumber: 549,
                                     columnNumber: 17
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/components/analytics-tab.tsx",
-                                lineNumber: 428,
+                                lineNumber: 548,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3574,7 +3798,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                 children: m.month
                                             }, void 0, false, {
                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                lineNumber: 447,
+                                                lineNumber: 567,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3585,7 +3809,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                 children: m.avg
                                             }, void 0, false, {
                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                lineNumber: 448,
+                                                lineNumber: 568,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3598,24 +3822,24 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                lineNumber: 449,
+                                                lineNumber: 569,
                                                 columnNumber: 21
                                             }, this)
                                         ]
                                     }, m.month, true, {
                                         fileName: "[project]/components/analytics-tab.tsx",
-                                        lineNumber: 446,
+                                        lineNumber: 566,
                                         columnNumber: 19
                                     }, this))
                             }, void 0, false, {
                                 fileName: "[project]/components/analytics-tab.tsx",
-                                lineNumber: 444,
+                                lineNumber: 564,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 426,
+                        lineNumber: 546,
                         columnNumber: 13
                     }, this),
                     worstDays.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3630,7 +3854,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/analytics-tab.tsx",
-                                lineNumber: 459,
+                                lineNumber: 579,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3645,7 +3869,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                 children: i + 1
                                             }, void 0, false, {
                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                lineNumber: 465,
+                                                lineNumber: 585,
                                                 columnNumber: 23
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3656,7 +3880,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                 })
                                             }, void 0, false, {
                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                lineNumber: 466,
+                                                lineNumber: 586,
                                                 columnNumber: 23
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3671,7 +3895,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                         }
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/analytics-tab.tsx",
-                                                        lineNumber: 470,
+                                                        lineNumber: 590,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3683,37 +3907,37 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/analytics-tab.tsx",
-                                                        lineNumber: 474,
+                                                        lineNumber: 594,
                                                         columnNumber: 25
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                lineNumber: 469,
+                                                lineNumber: 589,
                                                 columnNumber: 23
                                             }, this)
                                         ]
                                     }, date, true, {
                                         fileName: "[project]/components/analytics-tab.tsx",
-                                        lineNumber: 464,
+                                        lineNumber: 584,
                                         columnNumber: 21
                                     }, this);
                                 })
                             }, void 0, false, {
                                 fileName: "[project]/components/analytics-tab.tsx",
-                                lineNumber: 460,
+                                lineNumber: 580,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 458,
+                        lineNumber: 578,
                         columnNumber: 13
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/analytics-tab.tsx",
-                lineNumber: 422,
+                lineNumber: 542,
                 columnNumber: 9
             }, this),
             (worstSensors.length > 0 || bestSensors.length > 0) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3727,7 +3951,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                 children: "Топ-10 загрязнённых датчиков сейчас"
                             }, void 0, false, {
                                 fileName: "[project]/components/analytics-tab.tsx",
-                                lineNumber: 492,
+                                lineNumber: 612,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3742,7 +3966,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                 children: i + 1
                                             }, void 0, false, {
                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                lineNumber: 498,
+                                                lineNumber: 618,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3757,7 +3981,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                         }
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/analytics-tab.tsx",
-                                                        lineNumber: 500,
+                                                        lineNumber: 620,
                                                         columnNumber: 23
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3768,7 +3992,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                                 children: s.sensor_name ?? `#${s.id}`
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                                lineNumber: 502,
+                                                                lineNumber: 622,
                                                                 columnNumber: 25
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3779,37 +4003,37 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                                lineNumber: 503,
+                                                                lineNumber: 623,
                                                                 columnNumber: 25
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/analytics-tab.tsx",
-                                                        lineNumber: 501,
+                                                        lineNumber: 621,
                                                         columnNumber: 23
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                lineNumber: 499,
+                                                lineNumber: 619,
                                                 columnNumber: 21
                                             }, this)
                                         ]
                                     }, s.id, true, {
                                         fileName: "[project]/components/analytics-tab.tsx",
-                                        lineNumber: 497,
+                                        lineNumber: 617,
                                         columnNumber: 19
                                     }, this);
                                 })
                             }, void 0, false, {
                                 fileName: "[project]/components/analytics-tab.tsx",
-                                lineNumber: 493,
+                                lineNumber: 613,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 491,
+                        lineNumber: 611,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3820,7 +4044,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                 children: "Топ-10 чистых датчиков сейчас"
                             }, void 0, false, {
                                 fileName: "[project]/components/analytics-tab.tsx",
-                                lineNumber: 513,
+                                lineNumber: 633,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3835,7 +4059,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                 children: i + 1
                                             }, void 0, false, {
                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                lineNumber: 519,
+                                                lineNumber: 639,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3850,7 +4074,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                         }
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/analytics-tab.tsx",
-                                                        lineNumber: 521,
+                                                        lineNumber: 641,
                                                         columnNumber: 23
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3861,7 +4085,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                                 children: s.sensor_name ?? `#${s.id}`
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                                lineNumber: 523,
+                                                                lineNumber: 643,
                                                                 columnNumber: 25
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3872,43 +4096,43 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                                lineNumber: 524,
+                                                                lineNumber: 644,
                                                                 columnNumber: 25
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/analytics-tab.tsx",
-                                                        lineNumber: 522,
+                                                        lineNumber: 642,
                                                         columnNumber: 23
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                lineNumber: 520,
+                                                lineNumber: 640,
                                                 columnNumber: 21
                                             }, this)
                                         ]
                                     }, s.id, true, {
                                         fileName: "[project]/components/analytics-tab.tsx",
-                                        lineNumber: 518,
+                                        lineNumber: 638,
                                         columnNumber: 19
                                     }, this);
                                 })
                             }, void 0, false, {
                                 fileName: "[project]/components/analytics-tab.tsx",
-                                lineNumber: 514,
+                                lineNumber: 634,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 512,
+                        lineNumber: 632,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/analytics-tab.tsx",
-                lineNumber: 489,
+                lineNumber: 609,
                 columnNumber: 9
             }, this),
             hourlyData.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3919,7 +4143,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                         children: "Суточный паттерн PM2.5 (последние 30 дней)"
                     }, void 0, false, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 539,
+                        lineNumber: 659,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3927,7 +4151,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                         children: "По часу суток (Asia/Almaty). Сплошная — среднее, пунктир — P25/P75"
                     }, void 0, false, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 540,
+                        lineNumber: 660,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$ResponsiveContainer$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["ResponsiveContainer"], {
@@ -3947,7 +4171,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                     stroke: "var(--border)"
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 543,
+                                    lineNumber: 663,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$XAxis$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["XAxis"], {
@@ -3959,7 +4183,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                     stroke: "var(--muted-foreground)"
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 544,
+                                    lineNumber: 664,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$YAxis$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["YAxis"], {
@@ -3970,7 +4194,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                     unit: " µg"
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 545,
+                                    lineNumber: 665,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Tooltip$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Tooltip"], {
@@ -3987,7 +4211,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                     }
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 546,
+                                    lineNumber: 666,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$ReferenceLine$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["ReferenceLine"], {
@@ -4002,7 +4226,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                     }
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 550,
+                                    lineNumber: 670,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$Line$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Line"], {
@@ -4015,7 +4239,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                     name: "P75"
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 551,
+                                    lineNumber: 671,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$Line$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Line"], {
@@ -4028,7 +4252,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                     name: "P25"
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 552,
+                                    lineNumber: 672,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$Line$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Line"], {
@@ -4040,24 +4264,24 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                     name: "Среднее"
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 553,
+                                    lineNumber: 673,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/analytics-tab.tsx",
-                            lineNumber: 542,
+                            lineNumber: 662,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 541,
+                        lineNumber: 661,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/analytics-tab.tsx",
-                lineNumber: 538,
+                lineNumber: 658,
                 columnNumber: 9
             }, this),
             districtDynamics.chartData.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4068,7 +4292,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                         children: "Динамика PM2.5 по районам (90 дней)"
                     }, void 0, false, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 562,
+                        lineNumber: 682,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$ResponsiveContainer$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["ResponsiveContainer"], {
@@ -4088,7 +4312,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                     stroke: "var(--border)"
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 565,
+                                    lineNumber: 685,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$XAxis$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["XAxis"], {
@@ -4101,7 +4325,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                     interval: "preserveStartEnd"
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 566,
+                                    lineNumber: 686,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$YAxis$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["YAxis"], {
@@ -4112,7 +4336,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                     unit: " µg"
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 567,
+                                    lineNumber: 687,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Tooltip$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Tooltip"], {
@@ -4122,7 +4346,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                         ]
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 568,
+                                    lineNumber: 688,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Legend$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Legend"], {
@@ -4131,7 +4355,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                     }
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 569,
+                                    lineNumber: 689,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$ReferenceLine$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["ReferenceLine"], {
@@ -4140,7 +4364,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                     strokeDasharray: "3 3"
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 570,
+                                    lineNumber: 690,
                                     columnNumber: 15
                                 }, this),
                                 districtDynamics.districts.map((name, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$Line$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Line"], {
@@ -4152,24 +4376,24 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                         connectNulls: true
                                     }, name, false, {
                                         fileName: "[project]/components/analytics-tab.tsx",
-                                        lineNumber: 572,
+                                        lineNumber: 692,
                                         columnNumber: 17
                                     }, this))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/analytics-tab.tsx",
-                            lineNumber: 564,
+                            lineNumber: 684,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 563,
+                        lineNumber: 683,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/analytics-tab.tsx",
-                lineNumber: 561,
+                lineNumber: 681,
                 columnNumber: 9
             }, this),
             sensorHealth.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4183,7 +4407,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                 children: "Надёжность датчиков (30 дней)"
                             }, void 0, false, {
                                 fileName: "[project]/components/analytics-tab.tsx",
-                                lineNumber: 583,
+                                lineNumber: 703,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4196,7 +4420,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                 className: "h-3.5 w-3.5"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                lineNumber: 586,
+                                                lineNumber: 706,
                                                 columnNumber: 17
                                             }, this),
                                             healthSummary.online,
@@ -4204,7 +4428,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/analytics-tab.tsx",
-                                        lineNumber: 585,
+                                        lineNumber: 705,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -4214,7 +4438,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                 className: "h-3.5 w-3.5"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                lineNumber: 589,
+                                                lineNumber: 709,
                                                 columnNumber: 17
                                             }, this),
                                             healthSummary.offline,
@@ -4222,19 +4446,19 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/analytics-tab.tsx",
-                                        lineNumber: 588,
+                                        lineNumber: 708,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/analytics-tab.tsx",
-                                lineNumber: 584,
+                                lineNumber: 704,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 582,
+                        lineNumber: 702,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4252,7 +4476,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                 children: "Датчик"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                lineNumber: 597,
+                                                lineNumber: 717,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -4260,7 +4484,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                 children: "Район"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                lineNumber: 598,
+                                                lineNumber: 718,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -4268,7 +4492,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                 children: "Uptime"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                lineNumber: 599,
+                                                lineNumber: 719,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -4276,7 +4500,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                 children: "Последнее"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                lineNumber: 600,
+                                                lineNumber: 720,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -4284,18 +4508,18 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                 children: "PM2.5 30д"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/analytics-tab.tsx",
-                                                lineNumber: 601,
+                                                lineNumber: 721,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/analytics-tab.tsx",
-                                        lineNumber: 596,
+                                        lineNumber: 716,
                                         columnNumber: 17
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 595,
+                                    lineNumber: 715,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
@@ -4310,7 +4534,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                     children: s.sensor_name || `#${s.id}`
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/analytics-tab.tsx",
-                                                    lineNumber: 610,
+                                                    lineNumber: 730,
                                                     columnNumber: 23
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -4318,7 +4542,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                     children: s.district_name ?? "—"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/analytics-tab.tsx",
-                                                    lineNumber: 611,
+                                                    lineNumber: 731,
                                                     columnNumber: 23
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -4329,7 +4553,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                     children: s.coverage_pct != null ? `${s.coverage_pct}%` : "—"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/analytics-tab.tsx",
-                                                    lineNumber: 612,
+                                                    lineNumber: 732,
                                                     columnNumber: 23
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -4337,7 +4561,7 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                     children: lastSeenStr
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/analytics-tab.tsx",
-                                                    lineNumber: 615,
+                                                    lineNumber: 735,
                                                     columnNumber: 23
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -4348,42 +4572,42 @@ function AnalyticsTab({ sensors, sensorsLoading }) {
                                                     children: s.avg_pm25_30d != null ? s.avg_pm25_30d : "—"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/analytics-tab.tsx",
-                                                    lineNumber: 616,
+                                                    lineNumber: 736,
                                                     columnNumber: 23
                                                 }, this)
                                             ]
                                         }, s.id, true, {
                                             fileName: "[project]/components/analytics-tab.tsx",
-                                            lineNumber: 609,
+                                            lineNumber: 729,
                                             columnNumber: 21
                                         }, this);
                                     })
                                 }, void 0, false, {
                                     fileName: "[project]/components/analytics-tab.tsx",
-                                    lineNumber: 604,
+                                    lineNumber: 724,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/analytics-tab.tsx",
-                            lineNumber: 594,
+                            lineNumber: 714,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/components/analytics-tab.tsx",
-                        lineNumber: 593,
+                        lineNumber: 713,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/analytics-tab.tsx",
-                lineNumber: 581,
+                lineNumber: 701,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/analytics-tab.tsx",
-        lineNumber: 319,
+        lineNumber: 397,
         columnNumber: 5
     }, this);
 }
@@ -4416,7 +4640,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2
 ;
 ;
 ;
-const BASE = ("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
+const BASE = ("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
 const MONTH_LABELS = [
     "Янв",
     "Фев",
@@ -5525,13 +5749,10 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$left$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronLeft$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/chevron-left.js [app-ssr] (ecmascript) <export default as ChevronLeft>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$right$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronRight$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/chevron-right.js [app-ssr] (ecmascript) <export default as ChevronRight>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$moon$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Moon$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/moon.js [app-ssr] (ecmascript) <export default as Moon>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$sun$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Sun$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/sun.js [app-ssr] (ecmascript) <export default as Sun>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$map$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Map$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/map.js [app-ssr] (ecmascript) <export default as Map>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$calendar$2d$days$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__CalendarDays$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/calendar-days.js [app-ssr] (ecmascript) <export default as CalendarDays>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chart$2d$no$2d$axes$2d$column$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__BarChart2$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/chart-no-axes-column.js [app-ssr] (ecmascript) <export default as BarChart2>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$sparkles$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Sparkles$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/sparkles.js [app-ssr] (ecmascript) <export default as Sparkles>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$themes$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next-themes/dist/index.mjs [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/button.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$header$2d$menu$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/header-menu.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$filter$2d$dropdown$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/filter-dropdown.tsx [app-ssr] (ecmascript)");
@@ -5542,7 +5763,6 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pm25$2e$ts__$5b$app$2
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$time$2d$slider$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/time-slider.tsx [app-ssr] (ecmascript)");
 ;
 "use client";
-;
 ;
 ;
 ;
@@ -5701,7 +5921,6 @@ function getAQICategory(aqi) {
     };
 }
 function AirQualityDashboard() {
-    const { resolvedTheme, setTheme } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$themes$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useTheme"])();
     const [activeTab, setActiveTab] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("map");
     const [currentYear, setCurrentYear] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(new Date().getFullYear());
     const [sidebarAqiData, setSidebarAqiData] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])({});
@@ -5712,10 +5931,10 @@ function AirQualityDashboard() {
     const [sensorsLoading, setSensorsLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(true);
     const [sensorsError, setSensorsError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     const [ecoIqSensors, setEcoIqSensors] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
+    const [iqairDaily, setIqairDaily] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
     const [sensorSearch, setSensorSearch] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("");
     const [sourceFilter, setSourceFilter] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("all");
     const [districtFilter, setDistrictFilter] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("all");
-    const [mounted, setMounted] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const [hoveredDay, setHoveredDay] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     const [selectedSensor, setSelectedSensor] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     const [metricMode, setMetricMode] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("epa-aqi");
@@ -5738,12 +5957,11 @@ function AirQualityDashboard() {
     ]);
     const MIN_YEAR = 2019;
     const MAX_YEAR = new Date().getFullYear();
-    const themeIsDark = resolvedTheme === "dark";
     const fetchSensors = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])(async ()=>{
         try {
             setSensorsLoading(true);
             setSensorsError(null);
-            const response = await fetch(`${("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1"}/air/current/?parameter=pm25&limit=500`, {
+            const response = await fetch(`${("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1"}/air/current/?parameter=pm25&limit=500`, {
                 headers: {
                     Accept: "application/json"
                 }
@@ -5763,7 +5981,7 @@ function AirQualityDashboard() {
         const fetchAirQuality = async ()=>{
             try {
                 setLoading(true);
-                const response = await fetch(`${("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1"}/ecology/api/air-quality-calendar/?year=${currentYear}`, {
+                const response = await fetch(`${("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1"}/ecology/api/air-quality-calendar/?year=${currentYear}`, {
                     headers: {
                         Accept: "application/json"
                     }
@@ -5793,12 +6011,12 @@ function AirQualityDashboard() {
         const thisYear = new Date().getFullYear();
         const prevYear = thisYear - 1;
         Promise.all([
-            fetch(`${("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1"}/ecology/api/air-quality-calendar/?year=${prevYear}`, {
+            fetch(`${("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1"}/ecology/api/air-quality-calendar/?year=${prevYear}`, {
                 headers: {
                     Accept: "application/json"
                 }
             }).then((r)=>r.json()),
-            fetch(`${("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1"}/ecology/api/air-quality-calendar/?year=${thisYear}`, {
+            fetch(`${("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1"}/ecology/api/air-quality-calendar/?year=${thisYear}`, {
                 headers: {
                     Accept: "application/json"
                 }
@@ -5824,7 +6042,7 @@ function AirQualityDashboard() {
         fetchSensors
     ]);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
-        const BASE = ("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
+        const BASE = ("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
         const fetchEcoIq = ()=>fetch(`${BASE}/air/eco-iq/current/`, {
                 headers: {
                     Accept: "application/json"
@@ -5835,16 +6053,21 @@ function AirQualityDashboard() {
         return ()=>clearInterval(id);
     }, []);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        const BASE = ("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
+        fetch(`${BASE}/air/eco-iq/city-daily/?days=30`, {
+            headers: {
+                Accept: "application/json"
+            }
+        }).then((r)=>r.json()).then((res)=>setIqairDaily(res.data ?? [])).catch(()=>{});
+    }, []);
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         setTimeseriesLoading(true);
-        const BASE = ("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
+        const BASE = ("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
         fetch(`${BASE}/air/analytics/map-timeseries-hourly/?hours=48`, {
             headers: {
                 Accept: "application/json"
             }
         }).then((r)=>r.json()).then((data)=>setTimeseries(data)).catch(()=>{}).finally(()=>setTimeseriesLoading(false));
-    }, []);
-    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
-        setMounted(true);
     }, []);
     const sources = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>{
         const set = new Set();
@@ -5923,6 +6146,9 @@ function AirQualityDashboard() {
     const sensorsWithData = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>sensors.filter((s)=>s.value != null), [
         sensors
     ]);
+    const ecoIqWithData = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>ecoIqSensors.filter((s)=>s.pm25_concentration != null), [
+        ecoIqSensors
+    ]);
     const activeSensors = sensors;
     const currentPm25 = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>{
         const values = sensorsWithData.map((s)=>s.value).filter((v)=>v != null).sort((a, b)=>a - b);
@@ -5957,7 +6183,7 @@ function AirQualityDashboard() {
                     children: monthName
                 }, void 0, false, {
                     fileName: "[project]/app/page.tsx",
-                    lineNumber: 387,
+                    lineNumber: 394,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5975,12 +6201,12 @@ function AirQualityDashboard() {
                             children: d
                         }, d, false, {
                             fileName: "[project]/app/page.tsx",
-                            lineNumber: 392,
+                            lineNumber: 399,
                             columnNumber: 13
                         }, this))
                 }, void 0, false, {
                     fileName: "[project]/app/page.tsx",
-                    lineNumber: 390,
+                    lineNumber: 397,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5993,7 +6219,7 @@ function AirQualityDashboard() {
                             length: firstDay
                         }, (_, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {}, `e-${i}`, false, {
                                 fileName: "[project]/app/page.tsx",
-                                lineNumber: 402,
+                                lineNumber: 409,
                                 columnNumber: 13
                             }, this)),
                         Array.from({
@@ -6030,7 +6256,7 @@ function AirQualityDashboard() {
                                         children: day
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 429,
+                                        lineNumber: 436,
                                         columnNumber: 17
                                     }, this),
                                     aqi != null && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -6038,26 +6264,26 @@ function AirQualityDashboard() {
                                         children: aqi.toFixed(0)
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 431,
+                                        lineNumber: 438,
                                         columnNumber: 19
                                     }, this)
                                 ]
                             }, day, true, {
                                 fileName: "[project]/app/page.tsx",
-                                lineNumber: 410,
+                                lineNumber: 417,
                                 columnNumber: 15
                             }, this);
                         })
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/page.tsx",
-                    lineNumber: 397,
+                    lineNumber: 404,
                     columnNumber: 9
                 }, this)
             ]
         }, month, true, {
             fileName: "[project]/app/page.tsx",
-            lineNumber: 386,
+            lineNumber: 393,
             columnNumber: 7
         }, this);
     };
@@ -6066,7 +6292,7 @@ function AirQualityDashboard() {
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$header$2d$menu$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["HeaderMenu"], {}, void 0, false, {
                 fileName: "[project]/app/page.tsx",
-                lineNumber: 443,
+                lineNumber: 450,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6083,7 +6309,7 @@ function AirQualityDashboard() {
                         metricMode: metricMode
                     }, void 0, false, {
                         fileName: "[project]/app/page.tsx",
-                        lineNumber: 448,
+                        lineNumber: 455,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6101,14 +6327,14 @@ function AirQualityDashboard() {
                                                 className: "h-4 w-4"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 472,
+                                                lineNumber: 479,
                                                 columnNumber: 15
                                             }, this),
                                             "Карта сенсоров"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 463,
+                                        lineNumber: 470,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -6120,14 +6346,14 @@ function AirQualityDashboard() {
                                                 className: "h-4 w-4"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 484,
+                                                lineNumber: 491,
                                                 columnNumber: 15
                                             }, this),
                                             "Календарь"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 475,
+                                        lineNumber: 482,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -6139,14 +6365,14 @@ function AirQualityDashboard() {
                                                 className: "h-4 w-4"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 496,
+                                                lineNumber: 503,
                                                 columnNumber: 15
                                             }, this),
                                             "Аналитика"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 487,
+                                        lineNumber: 494,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -6158,14 +6384,14 @@ function AirQualityDashboard() {
                                                 className: "h-4 w-4"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 508,
+                                                lineNumber: 515,
                                                 columnNumber: 15
                                             }, this),
                                             "ИИ-анализ"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 499,
+                                        lineNumber: 506,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6185,19 +6411,19 @@ function AirQualityDashboard() {
                                                                 children: mode === "epa-aqi" ? "US EPA AQI" : "PM2.5 µg/m³"
                                                             }, mode, false, {
                                                                 fileName: "[project]/app/page.tsx",
-                                                                lineNumber: 519,
+                                                                lineNumber: 526,
                                                                 columnNumber: 23
                                                             }, this))
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 517,
+                                                        lineNumber: 524,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                         className: "h-4 w-px bg-border"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 533,
+                                                        lineNumber: 540,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -6208,7 +6434,7 @@ function AirQualityDashboard() {
                                                         className: "h-8 w-44 rounded-md border border-border bg-background px-3 text-sm"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 534,
+                                                        lineNumber: 541,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$filter$2d$dropdown$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FilterDropdown"], {
@@ -6222,7 +6448,7 @@ function AirQualityDashboard() {
                                                         searchPlaceholder: "Поиск поставщика…"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 541,
+                                                        lineNumber: 548,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$filter$2d$dropdown$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FilterDropdown"], {
@@ -6236,22 +6462,22 @@ function AirQualityDashboard() {
                                                         searchPlaceholder: "Поиск района…"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 548,
+                                                        lineNumber: 555,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                         className: "text-xs text-muted-foreground whitespace-nowrap",
                                                         children: [
                                                             filteredSensors.length,
-                                                            " / ",
-                                                            sensors.length,
-                                                            " · ",
-                                                            sensorsWithData.length,
+                                                            " AAI + ",
+                                                            ecoIqSensors.length,
+                                                            " IQAir · ",
+                                                            sensorsWithData.length + ecoIqWithData.length,
                                                             " с PM2.5"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 555,
+                                                        lineNumber: 562,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -6266,7 +6492,7 @@ function AirQualityDashboard() {
                                                         children: "Сброс"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 558,
+                                                        lineNumber: 565,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
@@ -6284,14 +6510,14 @@ function AirQualityDashboard() {
                                                                 className: "mr-1 h-4 w-4"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/page.tsx",
-                                                                lineNumber: 577,
+                                                                lineNumber: 584,
                                                                 columnNumber: 21
                                                             }, this),
                                                             currentYear - 1
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 570,
+                                                        lineNumber: 577,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -6299,7 +6525,7 @@ function AirQualityDashboard() {
                                                         children: currentYear
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 580,
+                                                        lineNumber: 587,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -6314,57 +6540,27 @@ function AirQualityDashboard() {
                                                                 className: "ml-1 h-4 w-4"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/page.tsx",
-                                                                lineNumber: 589,
+                                                                lineNumber: 596,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 581,
+                                                        lineNumber: 588,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
-                                            }, void 0, true),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
-                                                variant: "outline",
-                                                size: "icon",
-                                                onClick: ()=>setTheme(themeIsDark ? "light" : "dark"),
-                                                className: "h-8 w-8 border-border",
-                                                "aria-label": "Toggle theme",
-                                                children: mounted ? themeIsDark ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$sun$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Sun$3e$__["Sun"], {
-                                                    className: "h-4 w-4"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/page.tsx",
-                                                    lineNumber: 602,
-                                                    columnNumber: 23
-                                                }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$moon$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Moon$3e$__["Moon"], {
-                                                    className: "h-4 w-4"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/page.tsx",
-                                                    lineNumber: 603,
-                                                    columnNumber: 23
-                                                }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "h-4 w-4"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/page.tsx",
-                                                    lineNumber: 604,
-                                                    columnNumber: 21
-                                                }, this)
-                                            }, void 0, false, {
-                                                fileName: "[project]/app/page.tsx",
-                                                lineNumber: 593,
-                                                columnNumber: 15
-                                            }, this)
+                                            }, void 0, true)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 513,
+                                        lineNumber: 520,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/page.tsx",
-                                lineNumber: 462,
+                                lineNumber: 469,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6375,7 +6571,7 @@ function AirQualityDashboard() {
                                         children: "Загрузка сенсоров…"
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 612,
+                                        lineNumber: 606,
                                         columnNumber: 15
                                     }, this) : sensorsError ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "flex h-full w-full flex-col items-center justify-center gap-3 text-center",
@@ -6385,7 +6581,7 @@ function AirQualityDashboard() {
                                                 children: sensorsError
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 617,
+                                                lineNumber: 611,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -6395,13 +6591,13 @@ function AirQualityDashboard() {
                                                 children: "Попробовать снова"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 618,
+                                                lineNumber: 612,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 616,
+                                        lineNumber: 610,
                                         columnNumber: 15
                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(SensorMap, {
                                         sensors: displaySensors,
@@ -6413,7 +6609,7 @@ function AirQualityDashboard() {
                                         sourceFilter: sourceFilter
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 623,
+                                        lineNumber: 617,
                                         columnNumber: 15
                                     }, this),
                                     !sensorsLoading && !sensorsError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$time$2d$slider$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TimeSlider"], {
@@ -6423,7 +6619,7 @@ function AirQualityDashboard() {
                                         loading: timeseriesLoading
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 636,
+                                        lineNumber: 630,
                                         columnNumber: 15
                                     }, this),
                                     !sensorsLoading && !sensorsError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6434,15 +6630,39 @@ function AirQualityDashboard() {
                                                 children: activeSensors.length
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 647,
+                                                lineNumber: 641,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                 className: "text-muted-foreground",
-                                                children: "активных"
+                                                children: "AAI"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 648,
+                                                lineNumber: 642,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                className: "text-border",
+                                                children: "+"
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/page.tsx",
+                                                lineNumber: 643,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                className: "font-semibold text-foreground",
+                                                children: ecoIqSensors.length
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/page.tsx",
+                                                lineNumber: 644,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                className: "text-muted-foreground",
+                                                children: "IQAir"
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/page.tsx",
+                                                lineNumber: 645,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -6450,15 +6670,15 @@ function AirQualityDashboard() {
                                                 children: "·"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 649,
+                                                lineNumber: 646,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                 className: "font-semibold text-foreground",
-                                                children: sensorsWithData.length
+                                                children: sensorsWithData.length + ecoIqWithData.length
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 650,
+                                                lineNumber: 647,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -6466,19 +6686,19 @@ function AirQualityDashboard() {
                                                 children: "с PM2.5"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 651,
+                                                lineNumber: 648,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 646,
+                                        lineNumber: 640,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/page.tsx",
-                                lineNumber: 610,
+                                lineNumber: 604,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6488,12 +6708,12 @@ function AirQualityDashboard() {
                                     sensorsLoading: sensorsLoading
                                 }, void 0, false, {
                                     fileName: "[project]/app/page.tsx",
-                                    lineNumber: 658,
+                                    lineNumber: 655,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/page.tsx",
-                                lineNumber: 657,
+                                lineNumber: 654,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6503,12 +6723,12 @@ function AirQualityDashboard() {
                                     sensorsLoading: sensorsLoading
                                 }, void 0, false, {
                                     fileName: "[project]/app/page.tsx",
-                                    lineNumber: 663,
+                                    lineNumber: 660,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/page.tsx",
-                                lineNumber: 662,
+                                lineNumber: 659,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6555,7 +6775,7 @@ function AirQualityDashboard() {
                                                         children: label
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 681,
+                                                        lineNumber: 678,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -6563,18 +6783,18 @@ function AirQualityDashboard() {
                                                         children: value
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 682,
+                                                        lineNumber: 679,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, label, true, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 680,
+                                                lineNumber: 677,
                                                 columnNumber: 19
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 671,
+                                        lineNumber: 668,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6585,7 +6805,7 @@ function AirQualityDashboard() {
                                                 children: currentYear
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 690,
+                                                lineNumber: 687,
                                                 columnNumber: 15
                                             }, this),
                                             lastCalendarDate && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -6596,13 +6816,13 @@ function AirQualityDashboard() {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 692,
+                                                lineNumber: 689,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 689,
+                                        lineNumber: 686,
                                         columnNumber: 13
                                     }, this),
                                     loading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6610,7 +6830,7 @@ function AirQualityDashboard() {
                                         children: "Загрузка данных…"
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 700,
+                                        lineNumber: 697,
                                         columnNumber: 15
                                     }, this) : !Object.keys(aqiData).length ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "flex flex-1 flex-col items-center justify-center gap-1",
@@ -6620,7 +6840,7 @@ function AirQualityDashboard() {
                                                 children: "Ошибка загрузки данных"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 705,
+                                                lineNumber: 702,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -6628,13 +6848,13 @@ function AirQualityDashboard() {
                                                 children: "Убедитесь, что API доступен и возвращает JSON."
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 706,
+                                                lineNumber: 703,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 704,
+                                        lineNumber: 701,
                                         columnNumber: 15
                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "min-h-0 flex-1 grid grid-cols-4 grid-rows-3 gap-2",
@@ -6643,7 +6863,79 @@ function AirQualityDashboard() {
                                         }, (_, i)=>renderMonthCalendar(i))
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 709,
+                                        lineNumber: 706,
+                                        columnNumber: 15
+                                    }, this),
+                                    iqairDaily.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "mt-2 shrink-0 rounded-lg border border-border bg-card px-3 py-2",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "mb-1.5 flex items-center justify-between",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-[11px] font-semibold text-foreground",
+                                                        children: "IQAir / EcoIQ — последние 30 дней"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/page.tsx",
+                                                        lineNumber: 715,
+                                                        columnNumber: 19
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-[10px] text-muted-foreground",
+                                                        children: [
+                                                            ecoIqSensors.length,
+                                                            " станций · отдельная сеть"
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/app/page.tsx",
+                                                        lineNumber: 716,
+                                                        columnNumber: 19
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/app/page.tsx",
+                                                lineNumber: 714,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "flex gap-1",
+                                                children: iqairDaily.map(({ date, avg_pm25 })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "group relative h-6 flex-1 rounded-sm",
+                                                        style: {
+                                                            backgroundColor: pm25ToHex(avg_pm25),
+                                                            opacity: 0.85
+                                                        },
+                                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 -translate-x-1/2 whitespace-nowrap rounded-md bg-popover px-2 py-1 text-[10px] text-popover-foreground opacity-0 shadow-md group-hover:opacity-100",
+                                                            children: [
+                                                                new Date(date).toLocaleDateString("ru-RU", {
+                                                                    day: "numeric",
+                                                                    month: "short"
+                                                                }),
+                                                                ": ",
+                                                                avg_pm25.toFixed(1),
+                                                                " µg/m³ — ",
+                                                                pm25ToLabel(avg_pm25)
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/app/page.tsx",
+                                                            lineNumber: 725,
+                                                            columnNumber: 23
+                                                        }, this)
+                                                    }, date, false, {
+                                                        fileName: "[project]/app/page.tsx",
+                                                        lineNumber: 720,
+                                                        columnNumber: 21
+                                                    }, this))
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/page.tsx",
+                                                lineNumber: 718,
+                                                columnNumber: 17
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/app/page.tsx",
+                                        lineNumber: 713,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6655,7 +6947,7 @@ function AirQualityDashboard() {
                                                         className: `h-3 w-3 flex-shrink-0 rounded-sm ${item.className}`
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 718,
+                                                        lineNumber: 738,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -6667,36 +6959,36 @@ function AirQualityDashboard() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 719,
+                                                        lineNumber: 739,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, item.label, true, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 717,
+                                                lineNumber: 737,
                                                 columnNumber: 17
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 715,
+                                        lineNumber: 735,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/page.tsx",
-                                lineNumber: 667,
+                                lineNumber: 664,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/page.tsx",
-                        lineNumber: 460,
+                        lineNumber: 467,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/page.tsx",
-                lineNumber: 446,
+                lineNumber: 453,
                 columnNumber: 7
             }, this),
             hoveredDay && (()=>{
@@ -6732,7 +7024,7 @@ function AirQualityDashboard() {
                                         children: fullDate
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 746,
+                                        lineNumber: 766,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6743,7 +7035,7 @@ function AirQualityDashboard() {
                                                 children: pm25.toFixed(1)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 748,
+                                                lineNumber: 768,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -6751,19 +7043,19 @@ function AirQualityDashboard() {
                                                 children: "µg/m³"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 749,
+                                                lineNumber: 769,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 747,
+                                        lineNumber: 767,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/page.tsx",
-                                lineNumber: 745,
+                                lineNumber: 765,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6779,7 +7071,7 @@ function AirQualityDashboard() {
                                                 }
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 756,
+                                                lineNumber: 776,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -6787,13 +7079,13 @@ function AirQualityDashboard() {
                                                 children: label
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 757,
+                                                lineNumber: 777,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 755,
+                                        lineNumber: 775,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6806,7 +7098,7 @@ function AirQualityDashboard() {
                                                         children: "Норма ВОЗ 5.0 µg/m³"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 763,
+                                                        lineNumber: 783,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -6820,13 +7112,13 @@ function AirQualityDashboard() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 764,
+                                                        lineNumber: 784,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 762,
+                                                lineNumber: 782,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6839,18 +7131,18 @@ function AirQualityDashboard() {
                                                     }
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/page.tsx",
-                                                    lineNumber: 767,
+                                                    lineNumber: 787,
                                                     columnNumber: 21
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 766,
+                                                lineNumber: 786,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 761,
+                                        lineNumber: 781,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6861,7 +7153,7 @@ function AirQualityDashboard() {
                                                 children: "🚬"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 776,
+                                                lineNumber: 796,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6871,7 +7163,7 @@ function AirQualityDashboard() {
                                                         children: cigs
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 778,
+                                                        lineNumber: 798,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -6879,43 +7171,43 @@ function AirQualityDashboard() {
                                                         children: "сигарет за день"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.tsx",
-                                                        lineNumber: 779,
+                                                        lineNumber: 799,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/page.tsx",
-                                                lineNumber: 777,
+                                                lineNumber: 797,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 775,
+                                        lineNumber: 795,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/page.tsx",
-                                lineNumber: 753,
+                                lineNumber: 773,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/page.tsx",
-                        lineNumber: 743,
+                        lineNumber: 763,
                         columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/page.tsx",
-                    lineNumber: 739,
+                    lineNumber: 759,
                     columnNumber: 11
                 }, this);
             })()
         ]
     }, void 0, true, {
         fileName: "[project]/app/page.tsx",
-        lineNumber: 442,
+        lineNumber: 449,
         columnNumber: 5
     }, this);
 }

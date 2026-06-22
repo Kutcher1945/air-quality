@@ -349,6 +349,17 @@ export default function SensorMapYandex({
     }
   }, [])
 
+  // ── Keep canvas in sync with container size ────────────────────────────
+  // Mapbox caches the canvas size at init/last-resize. Switching tabs toggles this
+  // container between `hidden` (0×0) and `flex` without firing a window resize event,
+  // so without this the map renders at a stale, tiny size after returning to the tab.
+  useEffect(() => {
+    if (!containerRef.current) return
+    const observer = new ResizeObserver(() => mapRef.current?.resize())
+    observer.observe(containerRef.current)
+    return () => observer.disconnect()
+  }, [])
+
   // ── Fly to focused sensor ─────────────────────────────────────────────
   useEffect(() => {
     if (!mapReady || !mapRef.current || !focusedSensor?.latitude || !focusedSensor?.longitude) return

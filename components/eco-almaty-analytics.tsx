@@ -68,7 +68,7 @@ export function EcoAlmatyAnalytics() {
     if (refresh) setRefreshing(true)
     else setLoading(true)
     setError(false)
-    fetch(`/api/plants-stats${refresh ? "?refresh=1" : ""}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE ?? "https://admin.smartalmaty.kz/api/v1"}/ecology/eco-green/plants/stats/${refresh ? "?refresh=1" : ""}`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then((d: PlantStats) => { setStats(d); setLoading(false); setRefreshing(false) })
       .catch(() => { setError(true); setLoading(false); setRefreshing(false) })

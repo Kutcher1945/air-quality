@@ -2193,3 +2193,7 @@ Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
        maybe you don't need to use a ResponsiveContainer.
 [04:43:52.566] Server  LOG        Reload env: .env.local
 [04:43:52.641] Server  LOG      ✓ Compiled in 41ms
+[04:55:32.687] Server  LOG      ✓ Compiled in 35ms
+[04:56:00.792] Server  LOG      ✓ Compiled in 28ms
+[04:56:04.255] Server  LOG      ✓ Compiled in 24ms
+[04:56:09.041] Server  LOG      ✓ Compiled in 27ms

@@ -690,7 +690,7 @@ function EcoAlmatyMap({ visibleLayers }) {
     const [stats, setStats] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "EcoAlmatyMap.useEffect": ()=>{
-            fetch("/api/plants-stats").then({
+            fetch(`${API}/ecology/eco-green/plants/stats/`).then({
                 "EcoAlmatyMap.useEffect": (r)=>r.ok ? r.json() : null
             }["EcoAlmatyMap.useEffect"]).then({
                 "EcoAlmatyMap.useEffect": (d)=>{
@@ -712,7 +712,7 @@ function EcoAlmatyMap({ visibleLayers }) {
             }
             const ctrl = new AbortController();
             setFullDetail(null);
-            fetch(`/api/plants-detail/${extId}`, {
+            fetch(`${API}/ecology/eco-green/plants/${extId}/detail/`, {
                 signal: ctrl.signal
             }).then({
                 "EcoAlmatyMap.useEffect": (r)=>r.ok ? r.json() : null
@@ -796,7 +796,7 @@ function EcoAlmatyMap({ visibleLayers }) {
                     map.addSource("src-plants", {
                         type: "vector",
                         tiles: [
-                            `${location.origin}/api/plants-mvt/{z}/{x}/{y}`
+                            `${API}/ecology/eco-green/plants/tiles/{z}/{x}/{y}.mvt`
                         ],
                         minzoom: 0,
                         maxzoom: 14
@@ -1890,6 +1890,7 @@ __turbopack_context__.s([
     "EcoAlmatyAnalytics",
     ()=>EcoAlmatyAnalytics
 ]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$polyfills$2f$process$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = /*#__PURE__*/ __turbopack_context__.i("[project]/node_modules/next/dist/build/polyfills/process.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$chart$2f$PieChart$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/recharts/es6/chart/PieChart.js [app-client] (ecmascript)");
@@ -2026,7 +2027,7 @@ function EcoAlmatyAnalytics() {
         if (refresh) setRefreshing(true);
         else setLoading(true);
         setError(false);
-        fetch(`/api/plants-stats${refresh ? "?refresh=1" : ""}`).then((r)=>r.ok ? r.json() : Promise.reject()).then((d)=>{
+        fetch(`${("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1"}/ecology/eco-green/plants/stats/${refresh ? "?refresh=1" : ""}`).then((r)=>r.ok ? r.json() : Promise.reject()).then((d)=>{
             setStats(d);
             setLoading(false);
             setRefreshing(false);

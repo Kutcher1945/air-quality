@@ -168,7 +168,7 @@ export function EcoAlmatyMap({ visibleLayers }: Props) {
   }
   const [stats, setStats] = useState<PlantStats | null>(null)
   useEffect(() => {
-    fetch("/api/plants-stats")
+    fetch(`${API}/ecology/eco-green/plants/stats/`)
       .then(r => r.ok ? r.json() : null)
       .then((d: PlantStats | null) => { if (d) setStats(d) })
       .catch(() => {})
@@ -181,7 +181,7 @@ export function EcoAlmatyMap({ visibleLayers }: Props) {
     if (!extId) { setFullDetail(null); return }
     const ctrl = new AbortController()
     setFullDetail(null)
-    fetch(`/api/plants-detail/${extId}`, { signal: ctrl.signal })
+    fetch(`${API}/ecology/eco-green/plants/${extId}/detail/`, { signal: ctrl.signal })
       .then(r => r.ok ? r.json() : null)
       .then((data: Record<string, unknown> | null) => { if (data) setFullDetail(data) })
       .catch(() => {})
@@ -241,7 +241,7 @@ export function EcoAlmatyMap({ visibleLayers }: Props) {
       if (!map.getSource("src-plants")) {
         map.addSource("src-plants", {
           type: "vector",
-          tiles: [`${location.origin}/api/plants-mvt/{z}/{x}/{y}`],
+          tiles: [`${API}/ecology/eco-green/plants/tiles/{z}/{x}/{y}.mvt`],
           minzoom: 0,
           maxzoom: 14,
         })

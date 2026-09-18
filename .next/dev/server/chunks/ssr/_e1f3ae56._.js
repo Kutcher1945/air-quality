@@ -661,7 +661,7 @@ function EcoAlmatyMap({ visibleLayers }) {
     const [drawerTab, setDrawerTab] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("detail");
     const [stats, setStats] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
-        fetch("/api/plants-stats").then((r)=>r.ok ? r.json() : null).then((d)=>{
+        fetch(`${API}/ecology/eco-green/plants/stats/`).then((r)=>r.ok ? r.json() : null).then((d)=>{
             if (d) setStats(d);
         }).catch(()=>{});
     }, []);
@@ -675,7 +675,7 @@ function EcoAlmatyMap({ visibleLayers }) {
         }
         const ctrl = new AbortController();
         setFullDetail(null);
-        fetch(`/api/plants-detail/${extId}`, {
+        fetch(`${API}/ecology/eco-green/plants/${extId}/detail/`, {
             signal: ctrl.signal
         }).then((r)=>r.ok ? r.json() : null).then((data)=>{
             if (data) setFullDetail(data);
@@ -737,7 +737,7 @@ function EcoAlmatyMap({ visibleLayers }) {
                 map.addSource("src-plants", {
                     type: "vector",
                     tiles: [
-                        `${location.origin}/api/plants-mvt/{z}/{x}/{y}`
+                        `${API}/ecology/eco-green/plants/tiles/{z}/{x}/{y}.mvt`
                     ],
                     minzoom: 0,
                     maxzoom: 14
@@ -1915,7 +1915,7 @@ function EcoAlmatyAnalytics() {
         if (refresh) setRefreshing(true);
         else setLoading(true);
         setError(false);
-        fetch(`/api/plants-stats${refresh ? "?refresh=1" : ""}`).then((r)=>r.ok ? r.json() : Promise.reject()).then((d)=>{
+        fetch(`${("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1"}/ecology/eco-green/plants/stats/${refresh ? "?refresh=1" : ""}`).then((r)=>r.ok ? r.json() : Promise.reject()).then((d)=>{
             setStats(d);
             setLoading(false);
             setRefreshing(false);

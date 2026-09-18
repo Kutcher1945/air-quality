@@ -1,8 +1,11 @@
 {
   "/_global-error/page": "/_global-error",
   "/_not-found/page": "/_not-found",
+  "/api/plants-mvt/[z]/[x]/[y]/route": "/api/plants-mvt/[z]/[x]/[y]",
+  "/api/plants-tile/route": "/api/plants-tile",
   "/buildings-without-gas/analytics/page": "/buildings-without-gas/analytics",
   "/buildings-without-gas/page": "/buildings-without-gas",
+  "/eco-almaty/page": "/eco-almaty",
   "/outgoing-calls/page": "/outgoing-calls",
   "/page": "/"
 }

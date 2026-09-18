@@ -1,0 +1,1499 @@
+<title>Сравнительный анализ: AQA Алматы vs AUATECH Усть-Каменогорск</title>
+<style>
+  :root {
+    --bg: #F6F8FB;
+    --surface: #FFFFFF;
+    --surface2: #F0F4F9;
+    --border: #DDE3ED;
+    --text: #0F1C2E;
+    --text-secondary: #4B5A6E;
+    --text-muted: #8494A7;
+    --accent: #2563EB;
+    --accent-soft: #EEF3FF;
+    --green: #16A34A;
+    --green-soft: #F0FDF4;
+    --amber: #B45309;
+    --amber-soft: #FFFBEB;
+    --red: #DC2626;
+    --red-soft: #FFF1F1;
+    --shadow: 0 1px 3px rgba(15,28,46,.07), 0 4px 12px rgba(15,28,46,.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0D1117;
+      --surface: #161B22;
+      --surface2: #1C2430;
+      --border: #2A3445;
+      --text: #E6EDF5;
+      --text-secondary: #8B98A9;
+      --text-muted: #5A6577;
+      --accent: #58A6FF;
+      --accent-soft: #1A2744;
+      --green: #3FB950;
+      --green-soft: #0A1E12;
+      --amber: #E3B341;
+      --amber-soft: #1E1707;
+      --red: #F85149;
+      --red-soft: #1E0A0A;
+      --shadow: 0 1px 3px rgba(0,0,0,.3), 0 4px 12px rgba(0,0,0,.2);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0D1117; --surface: #161B22; --surface2: #1C2430;
+    --border: #2A3445; --text: #E6EDF5; --text-secondary: #8B98A9;
+    --text-muted: #5A6577; --accent: #58A6FF; --accent-soft: #1A2744;
+    --green: #3FB950; --green-soft: #0A1E12; --amber: #E3B341;
+    --amber-soft: #1E1707; --red: #F85149; --red-soft: #1E0A0A;
+    --shadow: 0 1px 3px rgba(0,0,0,.3), 0 4px 12px rgba(0,0,0,.2);
+  }
+  :root[data-theme="light"] {
+    --bg: #F6F8FB; --surface: #FFFFFF; --surface2: #F0F4F9;
+    --border: #DDE3ED; --text: #0F1C2E; --text-secondary: #4B5A6E;
+    --text-muted: #8494A7; --accent: #2563EB; --accent-soft: #EEF3FF;
+    --green: #16A34A; --green-soft: #F0FDF4; --amber: #B45309;
+    --amber-soft: #FFFBEB; --red: #DC2626; --red-soft: #FFF1F1;
+    --shadow: 0 1px 3px rgba(15,28,46,.07), 0 4px 12px rgba(15,28,46,.04);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+
+  /* ── Nav ── */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 0 2rem;
+    height: 52px;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav-brand {
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text);
+    white-space: nowrap;
+    margin-right: 1.5rem;
+    padding-right: 1.5rem;
+    border-right: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 0 0.9rem;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: color .15s, border-color .15s;
+  }
+  .nav a:hover { color: var(--text); border-bottom-color: var(--border); }
+
+  /* ── Layout ── */
+  .page { max-width: 1100px; margin: 0 auto; padding: 3rem 1.5rem 6rem; }
+
+  /* ── Hero ── */
+  .hero {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem;
+    margin-bottom: 2.5rem;
+    box-shadow: var(--shadow);
+  }
+  .hero-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .6rem;
+  }
+  .hero h1 {
+    font-size: 1.9rem;
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: .75rem;
+    text-wrap: balance;
+  }
+  .hero-meta {
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1.75rem;
+  }
+  @media (max-width: 640px) { .hero-grid { grid-template-columns: 1fr; } }
+  .sys-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    background: var(--surface2);
+  }
+  .sys-card-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: .4rem;
+  }
+  .sys-card-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: .25rem;
+  }
+  .sys-card-sub { font-size: 13px; color: var(--text-secondary); }
+
+  /* ── Section ── */
+  .section { margin-bottom: 2.5rem; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: 1rem;
+  }
+  .section-number {
+    width: 28px; height: 28px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .section h2 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* ── Cards grid ── */
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 640px) { .cards { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow);
+  }
+  .card-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    margin-bottom: .5rem;
+  }
+  .card-label.aqa { color: var(--accent); }
+  .card-label.ref { color: var(--amber); }
+  .card h3 { font-size: .95rem; font-weight: 700; color: var(--text); margin-bottom: .5rem; }
+  .card p, .card li { font-size: 13.5px; color: var(--text-secondary); line-height: 1.55; }
+  .card ul { padding-left: 1rem; }
+  .card li { margin-bottom: .25rem; }
+
+  /* ── Comparison table ── */
+  .comp-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    width: 100%;
+  }
+  .comp-table table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .comp-table thead tr {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .comp-table thead th {
+    padding: .85rem 1rem;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: left;
+  }
+  .comp-table thead th:first-child { width: 38%; }
+  .comp-table thead th:nth-child(2) { width: 31%; }
+  .comp-table thead th:nth-child(3) { width: 31%; }
+
+  .comp-table tbody tr { border-bottom: 1px solid var(--border); }
+  .comp-table tbody tr:last-child { border-bottom: none; }
+  .comp-table tbody tr.group-header td {
+    background: var(--surface2);
+    padding: .55rem 1rem;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .comp-table tbody td {
+    padding: .75rem 1rem;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .comp-table tbody td:first-child {
+    color: var(--text);
+    font-weight: 500;
+  }
+  .overflow-x { overflow-x: auto; }
+
+  /* ── Badges ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    font-size: 12px;
+    font-weight: 600;
+    padding: .18rem .55rem;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .badge.yes  { background: var(--green-soft);  color: var(--green); }
+  .badge.no   { background: var(--red-soft);    color: var(--red); }
+  .badge.part { background: var(--amber-soft);  color: var(--amber); }
+  .badge.n    { background: var(--surface2);    color: var(--text-muted); }
+
+  /* ── Score summary ── */
+  .score-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: .75rem;
+    margin-bottom: 2rem;
+  }
+  @media (max-width: 700px) { .score-grid { grid-template-columns: repeat(2, 1fr); } }
+  .score-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  .score-label { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-bottom: .3rem; }
+  .score-val { font-size: 1.7rem; font-weight: 800; line-height: 1; }
+  .score-sub { font-size: 11px; color: var(--text-secondary); margin-top: .3rem; }
+  .score-val.blue { color: var(--accent); }
+  .score-val.green { color: var(--green); }
+  .score-val.amber { color: var(--amber); }
+  .score-val.red { color: var(--red); }
+
+  /* ── Gap list ── */
+  .gap-list { display: flex; flex-direction: column; gap: .6rem; }
+  .gap-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: .85rem 1rem .85rem 1.1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    box-shadow: var(--shadow);
+  }
+  .gap-prio {
+    flex-shrink: 0;
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .gap-prio.p1 { background: #FEE2E2; color: #DC2626; }
+  .gap-prio.p2 { background: #FEF3C7; color: #B45309; }
+  .gap-prio.p3 { background: #DBEAFE; color: #2563EB; }
+  :root[data-theme="dark"] .gap-prio.p1 { background: #3B1111; color: #F87171; }
+  :root[data-theme="dark"] .gap-prio.p2 { background: #2D1F00; color: #FCD34D; }
+  :root[data-theme="dark"] .gap-prio.p3 { background: #0A1E3B; color: #93C5FD; }
+  @media (prefers-color-scheme: dark) {
+    .gap-prio.p1 { background: #3B1111; color: #F87171; }
+    .gap-prio.p2 { background: #2D1F00; color: #FCD34D; }
+    .gap-prio.p3 { background: #0A1E3B; color: #93C5FD; }
+  }
+  .gap-text strong { font-size: 14px; color: var(--text); display: block; margin-bottom: .2rem; }
+  .gap-text span { font-size: 13px; color: var(--text-secondary); }
+
+  /* ── Divider ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+  /* ── Strength list ── */
+  .strength-list { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+  @media (max-width: 640px) { .strength-list { grid-template-columns: 1fr; } }
+  .strength-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green);
+    border-radius: 10px;
+    padding: .75rem 1rem;
+    box-shadow: var(--shadow);
+  }
+  .strength-item strong { font-size: 13.5px; color: var(--text); display: block; margin-bottom: .2rem; }
+  .strength-item span { font-size: 13px; color: var(--text-secondary); }
+
+  code {
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: .85em;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: .1em .35em;
+    border-radius: 4px;
+    color: var(--text);
+  }
+
+  /* ── Download buttons ── */
+  .nav-downloads {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-shrink: 0;
+    padding-left: 1rem;
+  }
+  .dl-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: 12px;
+    font-weight: 600;
+    padding: .38rem .85rem;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .12s, color .12s, border-color .12s;
+    white-space: nowrap;
+  }
+  .dl-btn:hover { background: var(--surface2); color: var(--text); border-color: var(--accent); }
+  .dl-btn.pdf { color: var(--red); border-color: color-mix(in srgb, var(--red) 30%, transparent); }
+  .dl-btn.pdf:hover { background: var(--red-soft); border-color: var(--red); }
+  .dl-btn.word { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
+  .dl-btn.word:hover { background: var(--accent-soft); border-color: var(--accent); }
+
+  /* ── Print ── */
+  @media print {
+    .nav, .nav-downloads { display: none !important; }
+    body { background: #fff !important; color: #000 !important; font-size: 11pt; }
+    .page { max-width: 100%; padding: 1cm 1.5cm; }
+
+    /* Секции могут разрываться страницами — но заголовок остаётся с содержимым */
+    .section { break-inside: auto; }
+    .section-header { break-after: avoid; page-break-after: avoid; }
+
+    /* Небольшие карточки — держать целыми */
+    .hero    { break-inside: avoid; page-break-inside: avoid; border: 1pt solid #ccc; }
+    .score-card { break-inside: avoid; page-break-inside: avoid; }
+    .gap-item   { break-inside: avoid; page-break-inside: avoid; }
+    .card        { break-inside: avoid; page-break-inside: avoid; }
+
+    /* Таблицы — разрешаем разрыв строк между страницами */
+    .comp-table { box-shadow: none !important; break-inside: auto; }
+    .comp-table table { font-size: 9pt; }
+    .comp-table thead { display: table-header-group; }
+
+    /* Убираем тени */
+    .strength-item, .score-card { box-shadow: none !important; }
+
+    .hero h1 { font-size: 18pt; }
+    .score-grid { grid-template-columns: repeat(4, 1fr); }
+    .cards { grid-template-columns: 1fr 1fr; }
+    .strength-list { grid-template-columns: 1fr 1fr; }
+    .badge.yes  { background: #dcfce7 !important; color: #166534 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .badge.no   { background: #fee2e2 !important; color: #991b1b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .badge.part { background: #fef3c7 !important; color: #92400e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    a { color: inherit !important; text-decoration: none !important; }
+  }
+</style>
+
+<nav class="nav">
+  <div class="nav-brand">Сравнительный анализ</div>
+  <a href="#overview">Обзор</a>
+  <a href="#network">Сеть</a>
+  <a href="#map">Карта</a>
+  <a href="#analytics">Аналитика</a>
+  <a href="#incidents">Инциденты</a>
+  <a href="#sources">Источники</a>
+  <a href="#gaps">Разрывы</a>
+  <a href="#strengths">Сильные стороны</a>
+  <div class="nav-downloads">
+    <button class="dl-btn pdf" onclick="downloadPdf()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      PDF
+    </button>
+    <button class="dl-btn word" onclick="downloadWord()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      Word (.doc)
+    </button>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">Технический анализ · июль 2026</div>
+    <h1>AQA Алматы vs AUATECH Усть-Каменогорск</h1>
+    <p class="hero-meta">Функциональное сравнение двух систем мониторинга качества воздуха: оценка покрытия возможностей, выявление разрывов и рекомендации по развитию.</p>
+    <div class="hero-grid">
+      <div class="sys-card">
+        <div class="sys-card-label">Система A (наша)</div>
+        <div class="sys-card-name">AQA — Алматы</div>
+        <div class="sys-card-sub">Next.js + Mapbox · 173 датчика · фокус PM2.5 / AQI · Алматы</div>
+      </div>
+      <div class="sys-card">
+        <div class="sys-card-label">Система B (референс)</div>
+        <div class="sys-card-name">AUATECH — Усть-Каменогорск</div>
+        <div class="sys-card-sub">Государственная сеть · 25 постов · 13 параметров · моделирование источников</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCORE SUMMARY -->
+  <div class="score-grid">
+    <div class="score-card">
+      <div class="score-label">Покрытых фич (из 25)</div>
+      <div class="score-val blue">14</div>
+      <div class="score-sub">AQA реализует полностью</div>
+    </div>
+    <div class="score-card">
+      <div class="score-label">Частично реализованы</div>
+      <div class="score-val amber">5</div>
+      <div class="score-sub">Есть основа, нужно развить</div>
+    </div>
+    <div class="score-card">
+      <div class="score-label">Уникальные для AQA</div>
+      <div class="score-val green">4</div>
+      <div class="score-sub">Нет в референсной системе</div>
+    </div>
+    <div class="score-card">
+      <div class="score-label">Критических разрывов</div>
+      <div class="score-val red">6</div>
+      <div class="score-sub">Требуют приоритетной разработки</div>
+    </div>
+  </div>
+
+  <!-- 1. OVERVIEW -->
+  <div class="section" id="overview">
+    <div class="section-header">
+      <div class="section-number">1</div>
+      <h2>Общее позиционирование и назначение</h2>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-label aqa">AQA · Алматы</div>
+        <h3>Публичный мониторинг для горожан</h3>
+        <ul>
+          <li>Целевая аудитория: жители Алматы, общество</li>
+          <li>Акцент на PM2.5 и индексе AQI (US EPA 2024)</li>
+          <li>Плотная сеть из 173 IoT-датчиков AAI + EcoIQ</li>
+          <li>Гиперлокальные данные (уровень района/улицы)</li>
+          <li>Рекомендации по поведению в зависимости от AQI</li>
+          <li>AI-вкладка с аналитикой</li>
+          <li>Данные пыльцы (один датчик)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-label ref">AUATECH · УК</div>
+        <h3>Регуляторный мониторинг для властей</h3>
+        <ul>
+          <li>Целевая аудитория: государственные органы, надзор</li>
+          <li>13 параметров по санитарным нормам РК/ВОЗ</li>
+          <li>25 официальных постов мониторинга (ГЭМ)</li>
+          <li>Атрибуция промышленных источников</li>
+          <li>Моделирование рассеивания (Impact-расчёт)</li>
+          <li>Реестр инцидентов и превышений</li>
+          <li>Автоматическая генерация Excel-отчётов</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. NETWORK -->
+  <div class="section" id="network">
+    <div class="section-header">
+      <div class="section-number">2</div>
+      <h2>Сеть мониторинга</h2>
+    </div>
+    <div class="overflow-x">
+      <div class="comp-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Параметр</th>
+              <th>AQA (Алматы)</th>
+              <th>AUATECH (УК)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Количество точек мониторинга</td><td>173 датчика + EcoIQ (~30)</td><td>25 официальных постов</td></tr>
+            <tr><td>Тип оборудования</td><td>IoT-датчики (AAI, EcoIQ) — низкоточные</td><td>Государственные посты — сертифицированные</td></tr>
+            <tr><td>Пространственный охват</td><td>~8 районов Алматы, ~27 датчиков вне</td><td>Весь Усть-Каменогорск + пригороды</td></tr>
+            <tr><td>Гранулярность данных</td><td>15 мин (raw) · час · сутки</td><td>Не раскрыта, предположительно час</td></tr>
+            <tr><td>Параметры (основные)</td><td>PM2.5, PM10, CO2, TVOC, T, RH</td><td>PM2.5, PM10, CO, NO2, SO2, O3, H2S, TSP, T, P, RH, HB, ГСБ</td></tr>
+            <tr><td>Промышленные газы (SO2, H2S)</td><td><span class="badge no">✗ нет</span></td><td><span class="badge yes">✓ есть</span></td></tr>
+            <tr><td>Метеопараметры (давление, ветер)</td><td><span class="badge part">~ частично (ветер)</span></td><td><span class="badge yes">✓ полностью</span></td></tr>
+            <tr><td>Данные о пыльце</td><td><span class="badge yes">✓ есть (1 датчик)</span></td><td><span class="badge no">✗ нет</span></td></tr>
+            <tr><td>CO2 / TVOC</td><td><span class="badge yes">✓ есть</span></td><td><span class="badge no">✗ нет</span></td></tr>
+            <tr><td>Паспорт сети / метаданные постов</td><td><span class="badge part">~ базовые</span></td><td><span class="badge yes">✓ полные (расположение, тип, ID)</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. MAP -->
+  <div class="section" id="map">
+    <div class="section-header">
+      <div class="section-number">3</div>
+      <h2>Карта и визуализация</h2>
+    </div>
+    <div class="overflow-x">
+      <div class="comp-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Функция</th>
+              <th>AQA</th>
+              <th>AUATECH</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="group-header"><td colspan="3">Базовая карта</td></tr>
+            <tr>
+              <td>Движок карты</td>
+              <td>Mapbox GL JS</td>
+              <td>Mapbox (предположительно)</td>
+            </tr>
+            <tr>
+              <td>Маркеры датчиков с цветовой индикацией</td>
+              <td><span class="badge yes">✓</span> PM2.5 / AQI / EcoIQ</td>
+              <td><span class="badge yes">✓</span> Концентрации по параметру</td>
+            </tr>
+            <tr>
+              <td>Анимация ветра</td>
+              <td><span class="badge yes">✓</span> WindLayer</td>
+              <td><span class="badge yes">✓</span> есть</td>
+            </tr>
+            <tr>
+              <td>Переключение параметра на карте</td>
+              <td><span class="badge part">~ только PM2.5/AQI</span></td>
+              <td><span class="badge yes">✓</span> PM10, CO, NO2, SO2, O3, H2S, NH3</td>
+            </tr>
+            <tr class="group-header"><td colspan="3">Overlay / слои</td></tr>
+            <tr>
+              <td>Тепловая карта рассеивания (Impact)</td>
+              <td><span class="badge no">✗ нет</span></td>
+              <td><span class="badge yes">✓</span> расчётный слой рассеивания</td>
+            </tr>
+            <tr>
+              <td>Сетка расчётной области (grid)</td>
+              <td><span class="badge no">✗ нет</span></td>
+              <td><span class="badge yes">✓</span> координатная сетка A–I / 1–10</td>
+            </tr>
+            <tr>
+              <td>Районирование (zoning)</td>
+              <td><span class="badge part">~ по district_id</span></td>
+              <td><span class="badge yes">✓</span> визуальные зоны</td>
+            </tr>
+            <tr>
+              <td>Слои карты / переключатели</td>
+              <td><span class="badge part">~ ограничено</span></td>
+              <td><span class="badge yes">✓</span> Объекты + Слои</td>
+            </tr>
+            <tr class="group-header"><td colspan="3">Временной контроль</td></tr>
+            <tr>
+              <td>Таймслайдер (playback по времени)</td>
+              <td><span class="badge yes">✓</span> TimeSlider</td>
+              <td><span class="badge yes">✓</span> есть</td>
+            </tr>
+            <tr>
+              <td>Выбор периода расчёта</td>
+              <td><span class="badge no">✗ нет</span></td>
+              <td><span class="badge yes">✓</span> daterange picker</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. ANALYTICS -->
+  <div class="section" id="analytics">
+    <div class="section-header">
+      <div class="section-number">4</div>
+      <h2>Аналитика и статистика</h2>
+    </div>
+    <div class="overflow-x">
+      <div class="comp-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Функция</th>
+              <th>AQA</th>
+              <th>AUATECH</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="group-header"><td colspan="3">Обзорная панель (дашборд)</td></tr>
+            <tr>
+              <td>Сводные KPI (температура, давление, AQI)</td>
+              <td><span class="badge yes">✓</span> в сайдпанели</td>
+              <td><span class="badge yes">✓</span> карточка города</td>
+            </tr>
+            <tr>
+              <td>Фото / обзор территории</td>
+              <td><span class="badge no">✗ нет</span></td>
+              <td><span class="badge yes">✓</span> аэрофото города</td>
+            </tr>
+            <tr>
+              <td>Население и площадь территории</td>
+              <td><span class="badge no">✗ нет</span></td>
+              <td><span class="badge yes">✓</span> статичные данные</td>
+            </tr>
+            <tr class="group-header"><td colspan="3">Временные ряды</td></tr>
+            <tr>
+              <td>График 24h / 30d / 180d по датчику</td>
+              <td><span class="badge yes">✓</span> AqiSidePanel</td>
+              <td><span class="badge part">~ не показан явно</span></td>
+            </tr>
+            <tr>
+              <td>Цветовой годовой бар по месяцам</td>
+              <td><span class="badge part">~ через календарь</span></td>
+              <td><span class="badge yes">✓</span> горизонтальный, по параметру</td>
+            </tr>
+            <tr>
+              <td>Тепловая таблица постов × месяцы</td>
+              <td><span class="badge no">✗ нет</span></td>
+              <td><span class="badge yes">✓</span> сетка всех постов</td>
+            </tr>
+            <tr>
+              <td>Календарная тепловая карта (месяц)</td>
+              <td><span class="badge yes">✓</span> реализована</td>
+              <td><span class="badge yes">✓</span> реализована</td>
+            </tr>
+            <tr>
+              <td>Среднее по часам суток</td>
+              <td><span class="badge part">~ в планах (ANALYTICS.md)</span></td>
+              <td><span class="badge yes">✓</span> реализовано</td>
+            </tr>
+            <tr>
+              <td>Среднее по дням недели</td>
+              <td><span class="badge no">✗ нет</span></td>
+              <td><span class="badge yes">✓</span> реализовано</td>
+            </tr>
+            <tr>
+              <td>Роза преобладающих загрязнителей (radial)</td>
+              <td><span class="badge no">✗ нет</span></td>
+              <td><span class="badge yes">✓</span> по месяцам года</td>
+            </tr>
+            <tr class="group-header"><td colspan="3">Фильтры и переключатели</td></tr>
+            <tr>
+              <td>Фильтр по году / месяцу</td>
+              <td><span class="badge part">~ частично</span></td>
+              <td><span class="badge yes">✓</span> год + месяц + параметр</td>
+            </tr>
+            <tr>
+              <td>Переключение параметра (SO2, PM10, CO…)</td>
+              <td><span class="badge part">~ только PM-режимы</span></td>
+              <td><span class="badge yes">✓</span> все 8 параметров</td>
+            </tr>
+            <tr class="group-header"><td colspan="3">Отчётность</td></tr>
+            <tr>
+              <td>Экспорт Excel / PDF</td>
+              <td><span class="badge no">✗ нет</span></td>
+              <td><span class="badge yes">✓</span> автоматические ежедневные отчёты</td>
+            </tr>
+            <tr>
+              <td>AI-аналитика / инсайты</td>
+              <td><span class="badge yes">✓</span> AI-вкладка</td>
+              <td><span class="badge no">✗ нет</span></td>
+            </tr>
+            <tr>
+              <td>Рекомендации по поведению (AQI insights)</td>
+              <td><span class="badge yes">✓</span> 6 уровней × 2 карточки</td>
+              <td><span class="badge no">✗ нет</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. INCIDENTS -->
+  <div class="section" id="incidents">
+    <div class="section-header">
+      <div class="section-number">5</div>
+      <h2>Превышения и инциденты</h2>
+    </div>
+    <div class="overflow-x">
+      <div class="comp-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Функция</th>
+              <th>AQA</th>
+              <th>AUATECH</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Реестр превышений / инцидентов</td>
+              <td><span class="badge no">✗ нет</span></td>
+              <td><span class="badge yes">✓</span> список с периодом, веществом, длительностью</td>
+            </tr>
+            <tr>
+              <td>Максимальная концентрация при инциденте</td>
+              <td><span class="badge no">✗ нет</span></td>
+              <td><span class="badge yes">✓</span> с привязкой к посту и времени</td>
+            </tr>
+            <tr>
+              <td>Вклад источников в конкретный инцидент</td>
+              <td><span class="badge no">✗ нет</span></td>
+              <td><span class="badge yes">✓</span> круговая диаграмма + список %</td>
+            </tr>
+            <tr>
+              <td>Пользовательские уведомления (алерты)</td>
+              <td><span class="badge no">✗ нет</span></td>
+              <td><span class="badge yes">✓</span> вкладка уведомлений</td>
+            </tr>
+            <tr>
+              <td>Push / email уведомления о превышениях</td>
+              <td><span class="badge no">✗ нет</span></td>
+              <td><span class="badge yes">✓</span> (судя по разделу)</td>
+            </tr>
+            <tr>
+              <td>Карта инцидента с расчётным слоем</td>
+              <td><span class="badge no">✗ нет</span></td>
+              <td><span class="badge yes">✓</span> Impact-расчёт по каждому инциденту</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. SOURCES -->
+  <div class="section" id="sources">
+    <div class="section-header">
+      <div class="section-number">6</div>
+      <h2>Атрибуция источников и сетевая оптимизация</h2>
+    </div>
+    <div class="overflow-x">
+      <div class="comp-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Функция</th>
+              <th>AQA</th>
+              <th>AUATECH</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="group-header"><td colspan="3">Реестр источников</td></tr>
+            <tr>
+              <td>Каталог промышленных источников</td>
+              <td><span class="badge no">✗ нет</span></td>
+              <td><span class="badge yes">✓</span> АО УКТМК, ТОО Казцинк и др.</td>
+            </tr>
+            <tr>
+              <td>Вклад источника на карте (% концентрация)</td>
+              <td><span class="badge no">✗ нет</span></td>
+              <td><span class="badge yes">✓</span> по каждому объекту</td>
+            </tr>
+            <tr>
+              <td>Расчётные конфигурации (Impact configs)</td>
+              <td><span class="badge no">✗ нет</span></td>
+              <td><span class="badge yes">✓</span> базовая + пользовательские</td>
+            </tr>
+            <tr class="group-header"><td colspan="3">Оптимизация сети</td></tr>
+            <tr>
+              <td>Анализ эффективности сети (плотность, покрытие)</td>
+              <td><span class="badge no">✗ нет</span></td>
+              <td><span class="badge yes">✓</span> метрики 87% / 80%</td>
+            </tr>
+            <tr>
+              <td>Симулятор размещения новых постов</td>
+              <td><span class="badge no">✗ нет</span></td>
+              <td><span class="badge yes">✓</span> слайдер + обновление карты</td>
+            </tr>
+            <tr>
+              <td>Покрытие зон риска</td>
+              <td><span class="badge no">✗ нет</span></td>
+              <td><span class="badge yes">✓</span> расчёт по сумме выбросов</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- 7. GAPS -->
+  <div class="section" id="gaps">
+    <div class="section-header">
+      <div class="section-number">7</div>
+      <h2>Критические разрывы — что нужно построить</h2>
+    </div>
+    <div class="gap-list">
+      <div class="gap-item">
+        <div class="gap-prio p1">P1</div>
+        <div class="gap-text">
+          <strong>Реестр превышений / инцидентов</strong>
+          <span>Нет журнала зафиксированных превышений ПДК. Пользователь не может узнать, когда было превышение, на каком датчике и насколько. Это самое очевидное функциональное отсутствие по сравнению с референсом.</span>
+        </div>
+      </div>
+      <div class="gap-item">
+        <div class="gap-prio p1">P1</div>
+        <div class="gap-text">
+          <strong>Пользовательские уведомления о превышениях</strong>
+          <span>Нет алертов по пороговым значениям. Пользователь узнаёт о плохом воздухе только открыв приложение вручную. Нужны push / email / in-app уведомления при превышении AQI-порога.</span>
+        </div>
+      </div>
+      <div class="gap-item">
+        <div class="gap-prio p1">P1</div>
+        <div class="gap-text">
+          <strong>Экспорт данных (CSV / Excel)</strong>
+          <span>Никакой возможности скачать данные нет. Референс генерирует автоматические ежедневные Excel-отчёты. Для профессиональных пользователей — критично.</span>
+        </div>
+      </div>
+      <div class="gap-item">
+        <div class="gap-prio p1">P1</div>
+        <div class="gap-text">
+          <strong>Переключение параметра в аналитике</strong>
+          <span>Вся аналитика заточена только под PM2.5. Нет возможности посмотреть статистику по PM10, CO2, TVOC. Данные в БД есть — нужен UI-переключатель параметра.</span>
+        </div>
+      </div>
+      <div class="gap-item">
+        <div class="gap-prio p2">P2</div>
+        <div class="gap-text">
+          <strong>Тепловая таблица: посты × период</strong>
+          <span>Референс показывает сетку всех постов мониторинга по строкам и параметры/периоды по столбцам, окрашенную по концентрации. Даёт мгновенный обзор «кто грязнее».</span>
+        </div>
+      </div>
+      <div class="gap-item">
+        <div class="gap-prio p2">P2</div>
+        <div class="gap-text">
+          <strong>Среднее по часам суток и дням недели</strong>
+          <span>Паттерны загрязнения по времени суток и дням недели очень полезны для понимания источников (утренний трафик, производственные смены). Уже запланировано в <code>ANALYTICS.md</code>, нужно реализовать.</span>
+        </div>
+      </div>
+      <div class="gap-item">
+        <div class="gap-prio p3">P3</div>
+        <div class="gap-text">
+          <strong>Роза/диаграмма преобладающих загрязнителей</strong>
+          <span>Радиальная диаграмма с разбивкой по месяцам (SO2 28%, PM2.5 23%, PM10 20%…) — наглядный срез структуры загрязнения. Полезна при множестве параметров.</span>
+        </div>
+      </div>
+      <div class="gap-item">
+        <div class="gap-prio p3">P3</div>
+        <div class="gap-text">
+          <strong>Промышленные параметры (SO2, NO2, H2S)</strong>
+          <span>AQA не охватывает газообразные промышленные загрязнители. Для Алматы актуальны NO2 (трафик) и SO2 (ТЭЦ). Расширение зависит от наличия датчиков.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- 8. STRENGTHS -->
+  <div class="section" id="strengths">
+    <div class="section-header">
+      <div class="section-number">8</div>
+      <h2>Сильные стороны AQA — что есть у нас, но нет в референсе</h2>
+    </div>
+    <div class="strength-list">
+      <div class="strength-item">
+        <strong>173 датчика против 25 постов</strong>
+        <span>В 7× больше точек мониторинга — гиперлокальная картина качества воздуха на уровне микрорайона и улицы.</span>
+      </div>
+      <div class="strength-item">
+        <strong>AI-вкладка с интерпретацией данных</strong>
+        <span>Автоматические инсайты и рекомендации на основе AQI — уникальная функция, нет в референсной системе.</span>
+      </div>
+      <div class="strength-item">
+        <strong>Данные пыльцы</strong>
+        <span>Пыльцевой датчик с 42 параметрами — актуально для аллергиков. Полностью отсутствует в AUATECH.</span>
+      </div>
+      <div class="strength-item">
+        <strong>CO2 и TVOC</strong>
+        <span>Данные о содержании углекислого газа и летучих органических соединений — важны для оценки качества воздуха в помещениях и у дороги.</span>
+      </div>
+      <div class="strength-item">
+        <strong>EcoIQ интеграция</strong>
+        <span>Двойная сеть: собственные AAI-датчики + сторонняя сеть EcoIQ на одной карте. Перекрёстная верификация данных.</span>
+      </div>
+      <div class="strength-item">
+        <strong>US EPA AQI 2024</strong>
+        <span>Международный стандарт AQI, понятный широкой аудитории, с цветовым кодированием. Референс фокусируется на сырых концентрациях.</span>
+      </div>
+      <div class="strength-item">
+        <strong>Тёмная/светлая тема</strong>
+        <span>Полноценная поддержка системной темы — удобство для пользователей в любое время суток.</span>
+      </div>
+      <div class="strength-item">
+        <strong>Карта зданий без газа</strong>
+        <span>Специализированный слой для Алматы — выявление источников угольного отопления. Данная функция выходит за рамки мониторинга воздуха.</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- 9. SUMMARY -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">9</div>
+      <h2>Итоговая оценка</h2>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-label aqa">AQA — выводы</div>
+        <h3>Сильная публичная платформа, слабая операционная</h3>
+        <ul>
+          <li>Отлично подходит для информирования горожан</li>
+          <li>Лучшее пространственное покрытие (173 датчика)</li>
+          <li>Уникальные параметры: пыльца, CO2, AI-инсайты</li>
+          <li>Нет операционных инструментов: алертов, экспорта, истории превышений</li>
+          <li>Аналитика глубже по временным рядам, но уже по параметрам</li>
+          <li>Нет атрибуции источников и моделирования</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-label ref">AUATECH — выводы</div>
+        <h3>Зрелая регуляторная платформа</h3>
+        <ul>
+          <li>Полный набор для государственного мониторинга</li>
+          <li>Расчёт вкладов источников — ключевое конкурентное преимущество</li>
+          <li>Автоматические отчёты и реестр инцидентов</li>
+          <li>Меньше датчиков — меньше гиперлокальности</li>
+          <li>Нет AI, рекомендаций, пыльцы, CO2</li>
+          <li>Целевая аудитория — профессионалы, не горожане</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:3rem">
+    Отчёт сгенерирован автоматически · AQA Алматы · июль 2026
+  </div>
+
+</div>
+
+<script>
+function downloadPdf() {
+  window.print();
+}
+
+function downloadWord() {
+  const wordHtml = `
+<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="UTF-8">
+<style>
+  /* ── Страница: ГОСТ 7.32 (поля: лево 3, право 1.5, верх/низ 2 см) ── */
+  @page {
+    margin: 2cm 1.5cm 2cm 3cm;
+    mso-header-margin: 1.2cm;
+    mso-footer-margin: 1.2cm;
+    mso-header: h1;
+    mso-footer: f1;
+    mso-page-numbers: 1;
+  }
+  @page cover {
+    mso-header: none;
+    mso-footer: none;
+  }
+  body { font-family: "Times New Roman", serif; font-size: 12pt; color: #000; line-height: 1.5; }
+  body { margin: 0; }
+  /* ── Базовые элементы ── */
+  p { margin: 0 0 6pt 0; text-align: justify; }
+  ul, ol { margin: 4pt 0 8pt 0; padding-left: 20pt; }
+  li { margin-bottom: 3pt; text-align: justify; }
+  /* ── Заголовки ── */
+  h1 { font-family: "Times New Roman", serif; font-size: 14pt; font-weight: bold; text-align: center; color: #000; margin: 0 0 12pt 0; }
+  h2 { font-family: "Times New Roman", serif; font-size: 13pt; font-weight: bold; color: #000; margin: 18pt 0 8pt 0; page-break-after: avoid; }
+  h3 { font-family: "Times New Roman", serif; font-size: 12pt; font-weight: bold; color: #000; margin: 12pt 0 6pt 0; page-break-after: avoid; }
+  /* ── Таблицы ── */
+  table { width: 100%; border-collapse: collapse; margin: 8pt 0 14pt 0; font-size: 11pt; font-family: "Times New Roman", serif; page-break-inside: auto; }
+  thead { display: table-header-group; }
+  tr { page-break-inside: avoid; }
+  th { background: #D9E1F2; padding: 5pt 7pt; text-align: center; font-size: 10.5pt; font-weight: bold; border: 1pt solid #000; vertical-align: middle; }
+  td { padding: 4pt 7pt; border: 1pt solid #000; vertical-align: top; line-height: 1.4; font-size: 11pt; }
+  .td-center { text-align: center; }
+  tr.grp td { background: #EEF2F8; font-size: 10pt; font-weight: bold; font-style: italic; }
+  /* ── Статусы ── */
+  .yes  { color: #1A6B2F; font-weight: bold; }
+  .no   { color: #C00000; font-weight: bold; }
+  .part { color: #7F4F00; font-weight: bold; }
+  /* ── Приоритеты ── */
+  .prio { display: inline-block; font-weight: bold; font-size: 10pt; padding: 1pt 5pt; border: 1pt solid; margin-right: 4pt; }
+  .p1 { color: #C00000; border-color: #C00000; }
+  .p2 { color: #7F4F00; border-color: #7F4F00; }
+  .p3 { color: #1F3864; border-color: #1F3864; }
+  /* ── Вспомогательные ── */
+  .indent { margin-left: 1.25cm; }
+  .note { font-size: 10pt; font-style: italic; color: #444; }
+  .center { text-align: center; }
+  .right { text-align: right; }
+  .bold { font-weight: bold; }
+  .underline { text-decoration: underline; }
+  hr.section { border: none; border-top: 1pt solid #000; margin: 10pt 0; }
+
+  /* ── Колонтитулы ── */
+  div.mso-header p, div.mso-footer p {
+    font-family: "Times New Roman", serif; font-size: 10pt; color: #444;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ КОЛОНТИТУЛЫ ══ -->
+<div style="mso-element:header" id="h1">
+  <table style="width:100%;border:none;border-bottom:1pt solid #000;margin-bottom:4pt">
+    <tr>
+      <td style="border:none;font-size:10pt;font-family:'Times New Roman',serif;padding:0 0 3pt 0">
+        Сравнительный анализ систем мониторинга качества воздуха
+      </td>
+      <td style="border:none;text-align:right;font-size:10pt;font-family:'Times New Roman',serif;padding:0 0 3pt 0">
+        AQA Алматы · Июль 2026
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div style="mso-element:footer" id="f1">
+  <table style="width:100%;border:none;border-top:1pt solid #000;margin-top:4pt">
+    <tr>
+      <td style="border:none;font-size:10pt;font-family:'Times New Roman',serif;padding:3pt 0 0 0">
+        Конфиденциально · Для служебного пользования
+      </td>
+      <td style="border:none;text-align:center;font-size:10pt;font-family:'Times New Roman',serif;padding:3pt 0 0 0">
+        - <span style="mso-field-code:' PAGE '"></span> -
+      </td>
+      <td style="border:none;text-align:right;font-size:10pt;font-family:'Times New Roman',serif;padding:3pt 0 0 0">
+        Стр. <span style="mso-field-code:' PAGE '"></span> из <span style="mso-field-code:' NUMPAGES '"></span>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<!-- ══ ТИТУЛЬНЫЙ ЛИСТ ══ -->
+<div style="page:cover;mso-page-break-before:always">
+  <p style="text-align:center;margin-top:60pt;font-size:12pt">&nbsp;</p>
+
+  <p style="text-align:center;font-size:12pt;margin-bottom:4pt">
+    ТОО «АКА Инновации» / Дирекция цифрового развития
+  </p>
+  <p style="text-align:center;font-size:11pt;color:#444;margin-bottom:40pt">
+    Департамент систем экологического мониторинга
+  </p>
+
+  <p style="text-align:center;margin:0 0 6pt 0">
+    <span style="font-size:11pt">АНАЛИТИЧЕСКАЯ СПРАВКА</span>
+  </p>
+  <p style="text-align:center;font-size:11pt;margin-bottom:2pt">
+    № АС-ЭМ-2026-07
+  </p>
+  <p style="text-align:center;font-size:10pt;color:#666;margin-bottom:40pt">
+    г. Алматы, июль 2026 г.
+  </p>
+
+  <p style="text-align:center;margin:0 auto 8pt auto">
+    <span style="font-size:18pt;font-weight:bold">СРАВНИТЕЛЬНЫЙ АНАЛИЗ</span>
+  </p>
+  <p style="text-align:center;font-size:15pt;font-weight:bold;margin-bottom:6pt">
+    СИСТЕМ МОНИТОРИНГА КАЧЕСТВА ВОЗДУХА
+  </p>
+  <p style="text-align:center;font-size:13pt;margin-bottom:50pt">
+    AQA (г. Алматы) и AUATECH (г. Усть-Каменогорск)
+  </p>
+
+  <table style="width:60%;margin:0 auto;border:none">
+    <tr>
+      <td style="border:none;width:45%;text-align:right;font-size:11pt;padding:3pt 8pt 3pt 0;color:#444">Исполнитель:</td>
+      <td style="border:none;font-size:11pt;padding:3pt 0">Отдел аналитики</td>
+    </tr>
+    <tr>
+      <td style="border:none;text-align:right;font-size:11pt;padding:3pt 8pt 3pt 0;color:#444">Дата составления:</td>
+      <td style="border:none;font-size:11pt;padding:3pt 0">Июль 2026 г.</td>
+    </tr>
+    <tr>
+      <td style="border:none;text-align:right;font-size:11pt;padding:3pt 8pt 3pt 0;color:#444">Гриф:</td>
+      <td style="border:none;font-size:11pt;padding:3pt 0">ДСП (для служебного пользования)</td>
+    </tr>
+  </table>
+
+  <p style="text-align:center;margin-top:80pt;font-size:10pt;color:#888">
+    При использовании документа ссылка на источник обязательна
+  </p>
+</div>
+
+<!-- ══ ОГЛАВЛЕНИЕ ══ -->
+<p style="mso-break-type:page-break;page-break-before:always">&nbsp;</p>
+
+<h1 style="margin-top:0">СОДЕРЖАНИЕ</h1>
+<hr class="section">
+
+<table style="width:100%;border:none;margin-top:8pt">
+  <tr><td style="border:none;padding:3pt 0">1. Цель и область применения</td><td style="border:none;text-align:right;padding:3pt 0">3</td></tr>
+  <tr><td style="border:none;padding:3pt 0">2. Краткая сводка результатов</td><td style="border:none;text-align:right;padding:3pt 0">3</td></tr>
+  <tr><td style="border:none;padding:3pt 0">3. Сравнительный анализ по функциональным блокам</td><td style="border:none;text-align:right;padding:3pt 0">4</td></tr>
+  <tr><td style="border:none;padding:3pt 0 3pt 20pt" class="note">3.1. Общее позиционирование и назначение</td><td style="border:none;text-align:right;padding:3pt 0">4</td></tr>
+  <tr><td style="border:none;padding:3pt 0 3pt 20pt" class="note">3.2. Сеть мониторинга</td><td style="border:none;text-align:right;padding:3pt 0">4</td></tr>
+  <tr><td style="border:none;padding:3pt 0 3pt 20pt" class="note">3.3. Картографическая визуализация</td><td style="border:none;text-align:right;padding:3pt 0">5</td></tr>
+  <tr><td style="border:none;padding:3pt 0 3pt 20pt" class="note">3.4. Аналитика и статистика</td><td style="border:none;text-align:right;padding:3pt 0">6</td></tr>
+  <tr><td style="border:none;padding:3pt 0 3pt 20pt" class="note">3.5. Превышения и инциденты</td><td style="border:none;text-align:right;padding:3pt 0">7</td></tr>
+  <tr><td style="border:none;padding:3pt 0 3pt 20pt" class="note">3.6. Атрибуция источников и оптимизация сети</td><td style="border:none;text-align:right;padding:3pt 0">7</td></tr>
+  <tr><td style="border:none;padding:3pt 0">4. Анализ разрывов и приоритеты разработки</td><td style="border:none;text-align:right;padding:3pt 0">8</td></tr>
+  <tr><td style="border:none;padding:3pt 0">5. Конкурентные преимущества AQA</td><td style="border:none;text-align:right;padding:3pt 0">9</td></tr>
+  <tr><td style="border:none;padding:3pt 0">6. Выводы и рекомендации</td><td style="border:none;text-align:right;padding:3pt 0">9</td></tr>
+</table>
+
+<!-- ══ РАЗДЕЛ 1 ══ -->
+<p style="mso-break-type:page-break;page-break-before:always">&nbsp;</p>
+
+<h2>1. Цель и область применения</h2>
+
+<p>Настоящая аналитическая справка подготовлена в целях объективного сравнения функциональных возможностей двух систем мониторинга качества атмосферного воздуха: платформы <strong>AQA</strong> (г. Алматы) и платформы <strong>AUATECH</strong> (г. Усть-Каменогорск).</p>
+
+<p>Область применения — оценка текущего состояния разработки AQA, выявление функциональных разрывов по отношению к референсной системе, а также формирование приоритетного плана доработки.</p>
+
+<p>В рамках анализа рассматривались следующие функциональные блоки:</p>
+<ul>
+  <li>общее позиционирование, назначение и целевая аудитория;</li>
+  <li>сеть мониторинга: охват, оборудование, измеряемые параметры;</li>
+  <li>картографическая визуализация и интерактивные слои;</li>
+  <li>аналитика, статистика и формирование отчётов;</li>
+  <li>управление превышениями и инцидентами;</li>
+  <li>атрибуция источников загрязнения и оптимизация сети.</li>
+</ul>
+
+<p class="note">Источники данных: техническая документация платформы AQA, скриншоты интерфейса AUATECH, данные API-эндпоинтов AQA, файл ANALYTICS.md.</p>
+
+<!-- ══ РАЗДЕЛ 2 ══ -->
+<h2>2. Краткая сводка результатов</h2>
+
+<p>По итогам анализа 25 функциональных критериев получены следующие результаты:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:55%">Показатель</th>
+      <th style="width:15%" class="td-center">Значение</th>
+      <th>Пояснение</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Критерии, реализованные в AQA полностью</td>
+      <td class="td-center"><strong>14 из 25</strong></td>
+      <td>Включая карту, таймслайдер, AQI, AI-вкладку</td>
+    </tr>
+    <tr>
+      <td>Критерии, реализованные частично</td>
+      <td class="td-center"><strong>5</strong></td>
+      <td>Есть основа, требуется развитие</td>
+    </tr>
+    <tr>
+      <td>Уникальные возможности AQA (отсутствуют в референсе)</td>
+      <td class="td-center"><strong>4</strong></td>
+      <td>AI-инсайты, пыльца, CO2/TVOC, EcoIQ</td>
+    </tr>
+    <tr>
+      <td>Критические разрывы (P1 — приоритет разработки)</td>
+      <td class="td-center"><strong class="no">4</strong></td>
+      <td>Требуют первоочередной реализации</td>
+    </tr>
+    <tr>
+      <td>Важные разрывы (P2)</td>
+      <td class="td-center"><strong>2</strong></td>
+      <td>Значимые, но не блокирующие</td>
+    </tr>
+    <tr>
+      <td>Перспективные улучшения (P3)</td>
+      <td class="td-center"><strong>2</strong></td>
+      <td>Желательны для полноты функционала</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Общий вывод:</strong> AQA обладает значительными преимуществами в плотности сети и публичной доступности, однако уступает AUATECH в части операционных инструментов — управления инцидентами, уведомлений, экспорта данных и атрибуции источников.</p>
+
+<!-- ══ РАЗДЕЛ 3 ══ -->
+<h2>3. Сравнительный анализ по функциональным блокам</h2>
+
+<h3>3.1. Общее позиционирование и назначение</h3>
+
+<table>
+  <thead>
+    <tr><th style="width:28%">Характеристика</th><th>AQA (Алматы)</th><th>AUATECH (Усть-Каменогорск)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Целевая аудитория</td><td>Жители города, общественность</td><td>Государственные органы, надзорные службы</td></tr>
+    <tr><td>Назначение</td><td>Публичный мониторинг, информирование граждан об AQI</td><td>Регуляторный мониторинг, контроль ПДК, атрибуция источников</td></tr>
+    <tr><td>Стандарт оценки</td><td>US EPA AQI 2024 (международный)</td><td>ПДК РК/ВОЗ (национальный регуляторный)</td></tr>
+    <tr><td>Наличие AI-компонента</td><td class="yes">✓ AI-вкладка, рекомендации</td><td class="no">✗ отсутствует</td></tr>
+    <tr><td>Доступность данных пыльцы</td><td class="yes">✓ 42 параметра пыльцы</td><td class="no">✗ отсутствует</td></tr>
+  </tbody>
+</table>
+
+<h3>3.2. Сеть мониторинга</h3>
+
+<table>
+  <thead>
+    <tr><th style="width:28%">Параметр</th><th>AQA</th><th>AUATECH</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Количество точек мониторинга</td><td><strong>173 датчика</strong> AAI + ~30 EcoIQ</td><td><strong>25 официальных постов</strong></td></tr>
+    <tr><td>Тип оборудования</td><td>IoT-датчики низкой точности</td><td>Сертифицированные государственные посты</td></tr>
+    <tr><td>Пространственный охват</td><td>8 районов Алматы + пригороды</td><td>Весь Усть-Каменогорск + пригороды</td></tr>
+    <tr><td>Гранулярность данных</td><td>15 мин (raw) · час · сутки</td><td>Не раскрыта (предположительно 1 час)</td></tr>
+    <tr><td>Измеряемые параметры</td><td>PM2.5, PM10, CO2, TVOC, T, RH, пыльца</td><td>PM2.5, PM10, CO, NO2, SO2, O3, H2S, TSP, T, P, RH, HB, ГСБ (13 параметров)</td></tr>
+    <tr><td>Промышленные газы (SO2, H2S, NO2)</td><td class="no">✗ не измеряются</td><td class="yes">✓ измеряются</td></tr>
+    <tr><td>Давление и осадки</td><td class="no">✗ нет</td><td class="yes">✓ давление (P), осадки</td></tr>
+    <tr><td>CO2 / TVOC</td><td class="yes">✓ есть</td><td class="no">✗ нет</td></tr>
+  </tbody>
+</table>
+
+<h3>3.3. Картографическая визуализация</h3>
+
+<table>
+  <thead>
+    <tr><th style="width:28%">Функция</th><th>AQA</th><th>AUATECH</th></tr>
+  </thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">Базовая карта</td></tr>
+    <tr><td>Движок карты</td><td>Mapbox GL JS</td><td>Mapbox (предположительно)</td></tr>
+    <tr><td>Цветовая индикация маркеров</td><td class="yes">✓ PM2.5 / AQI / EcoIQ</td><td class="yes">✓ концентрации по параметру</td></tr>
+    <tr><td>Анимация ветра</td><td class="yes">✓ WindLayer</td><td class="yes">✓ есть</td></tr>
+    <tr><td>Переключение параметра на карте</td><td class="part">~ только PM2.5 / AQI</td><td class="yes">✓ PM10, CO, NO2, SO2, O3, H2S, NH3</td></tr>
+    <tr class="grp"><td colspan="3">Дополнительные слои</td></tr>
+    <tr><td>Тепловая карта рассеивания (Impact)</td><td class="no">✗ нет</td><td class="yes">✓ расчётный слой рассеивания</td></tr>
+    <tr><td>Координатная сетка расчётной области</td><td class="no">✗ нет</td><td class="yes">✓ сетка A–I / 1–10</td></tr>
+    <tr><td>Слои карты / переключатели</td><td class="part">~ ограниченно</td><td class="yes">✓ Объекты + Слои</td></tr>
+    <tr class="grp"><td colspan="3">Временной контроль</td></tr>
+    <tr><td>Таймслайдер (воспроизведение по времени)</td><td class="yes">✓ TimeSlider</td><td class="yes">✓ есть</td></tr>
+    <tr><td>Выбор периода расчёта (daterange)</td><td class="no">✗ нет</td><td class="yes">✓ есть</td></tr>
+  </tbody>
+</table>
+
+<h3>3.4. Аналитика и статистика</h3>
+
+<table>
+  <thead>
+    <tr><th style="width:28%">Функция</th><th>AQA</th><th>AUATECH</th></tr>
+  </thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">Обзорная панель (дашборд)</td></tr>
+    <tr><td>Сводные KPI (T, P, AQI)</td><td class="yes">✓ в сайдпанели</td><td class="yes">✓ карточка города</td></tr>
+    <tr><td>Фотография / вид территории</td><td class="no">✗ нет</td><td class="yes">✓ аэрофотоснимок</td></tr>
+    <tr><td>Население и площадь территории</td><td class="no">✗ нет</td><td class="yes">✓ есть</td></tr>
+    <tr class="grp"><td colspan="3">Временны́е ряды</td></tr>
+    <tr><td>График 24ч / 30 сут / 180 сут по датчику</td><td class="yes">✓ AqiSidePanel</td><td class="part">~ явно не показан</td></tr>
+    <tr><td>Годовой цветовой бар по месяцам</td><td class="part">~ через календарь</td><td class="yes">✓ горизонтальный, по параметру</td></tr>
+    <tr><td>Тепловая таблица: посты × месяцы</td><td class="no">✗ нет</td><td class="yes">✓ вся сеть</td></tr>
+    <tr><td>Календарная тепловая карта (месяц)</td><td class="yes">✓ реализована</td><td class="yes">✓ реализована</td></tr>
+    <tr><td>Среднее качество воздуха по часам суток</td><td class="part">~ запланировано</td><td class="yes">✓ реализовано</td></tr>
+    <tr><td>Среднее качество воздуха по дням недели</td><td class="no">✗ нет</td><td class="yes">✓ реализовано</td></tr>
+    <tr><td>Роза преобладающих загрязнителей</td><td class="no">✗ нет</td><td class="yes">✓ разбивка по месяцам года</td></tr>
+    <tr class="grp"><td colspan="3">Отчётность</td></tr>
+    <tr><td>Экспорт данных (Excel / CSV)</td><td class="no">✗ нет</td><td class="yes">✓ автоматические ежедневные отчёты</td></tr>
+    <tr><td>AI-аналитика и инсайты</td><td class="yes">✓ AI-вкладка</td><td class="no">✗ нет</td></tr>
+    <tr><td>Рекомендации по поведению (AQI)</td><td class="yes">✓ 6 уровней × 2 карточки</td><td class="no">✗ нет</td></tr>
+    <tr><td>Переключение анализируемого параметра</td><td class="part">~ только PM-режимы</td><td class="yes">✓ все 8+ параметров</td></tr>
+  </tbody>
+</table>
+
+<h3>3.5. Превышения и инциденты</h3>
+
+<table>
+  <thead>
+    <tr><th style="width:28%">Функция</th><th>AQA</th><th>AUATECH</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Реестр превышений ПДК / инцидентов</td><td class="no">✗ отсутствует</td><td class="yes">✓ список с периодом, веществом, длительностью</td></tr>
+    <tr><td>Запись максимальной концентрации</td><td class="no">✗ отсутствует</td><td class="yes">✓ с привязкой к посту и времени</td></tr>
+    <tr><td>Вклад источников в конкретный инцидент</td><td class="no">✗ отсутствует</td><td class="yes">✓ круговая диаграмма + процентный список</td></tr>
+    <tr><td>Пользовательские уведомления (алерты)</td><td class="no">✗ отсутствует</td><td class="yes">✓ отдельная вкладка уведомлений</td></tr>
+    <tr><td>Карта инцидента с расчётным слоем</td><td class="no">✗ отсутствует</td><td class="yes">✓ Impact-расчёт по каждому инциденту</td></tr>
+  </tbody>
+</table>
+
+<h3>3.6. Атрибуция источников и оптимизация сети</h3>
+
+<table>
+  <thead>
+    <tr><th style="width:28%">Функция</th><th>AQA</th><th>AUATECH</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Каталог промышленных источников</td><td class="no">✗ отсутствует</td><td class="yes">✓ АО УКТМК, ТОО Казцинк и др.</td></tr>
+    <tr><td>Вклад источника на карте (% концентрация)</td><td class="no">✗ отсутствует</td><td class="yes">✓ числовые значения по каждому объекту</td></tr>
+    <tr><td>Расчётные конфигурации (Impact configs)</td><td class="no">✗ отсутствует</td><td class="yes">✓ базовая + пользовательские</td></tr>
+    <tr><td>Анализ эффективности сети</td><td class="no">✗ отсутствует</td><td class="yes">✓ плотность 87%, покрытие зон риска 80%</td></tr>
+    <tr><td>Симулятор размещения новых постов</td><td class="no">✗ отсутствует</td><td class="yes">✓ слайдер «Добавить N постов» + карта</td></tr>
+  </tbody>
+</table>
+
+<!-- ══ РАЗДЕЛ 4 ══ -->
+<h2>4. Анализ разрывов и приоритеты разработки</h2>
+
+<p>На основании сравнительного анализа сформирован перечень функциональных разрывов с оценкой приоритета по трёхуровневой шкале: <strong>P1</strong> — критический (первоочередная разработка), <strong>P2</strong> — важный, <strong>P3</strong> — перспективный.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:8%" class="td-center">Приоритет</th>
+      <th style="width:30%">Функциональный разрыв</th>
+      <th>Описание и обоснование</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="td-center"><strong class="no">P1</strong></td>
+      <td><strong>Реестр превышений ПДК / инцидентов</strong></td>
+      <td>Отсутствует журнал зафиксированных превышений предельно допустимых концентраций. Пользователь не может установить факт, время, место и масштаб превышения. Базовый элемент любой системы экологического мониторинга.</td>
+    </tr>
+    <tr>
+      <td class="td-center"><strong class="no">P1</strong></td>
+      <td><strong>Система уведомлений о превышениях</strong></td>
+      <td>Отсутствуют push/email/in-app уведомления при достижении пороговых значений AQI или ПДК. Пользователь узнаёт о загрязнении только при активном открытии приложения.</td>
+    </tr>
+    <tr>
+      <td class="td-center"><strong class="no">P1</strong></td>
+      <td><strong>Экспорт данных (CSV / Excel)</strong></td>
+      <td>Отсутствует возможность выгрузки данных. Референсная система генерирует автоматические ежедневные Excel-отчёты. Критично для профессиональных пользователей и государственных органов.</td>
+    </tr>
+    <tr>
+      <td class="td-center"><strong class="no">P1</strong></td>
+      <td><strong>Переключение параметра в аналитике</strong></td>
+      <td>Весь аналитический модуль ориентирован исключительно на PM2.5. Отсутствует возможность просмотра статистики по PM10, CO2, TVOC. Данные в базе присутствуют — необходим UI-переключатель.</td>
+    </tr>
+    <tr>
+      <td class="td-center"><strong class="part">P2</strong></td>
+      <td><strong>Тепловая таблица: посты × период</strong></td>
+      <td>Матрица всех постов мониторинга (строки) по периодам/параметрам (столбцы) с цветовой кодировкой по концентрации. Обеспечивает мгновенный обзор сравнительного состояния всей сети.</td>
+    </tr>
+    <tr>
+      <td class="td-center"><strong class="part">P2</strong></td>
+      <td><strong>Анализ паттернов по часам и дням недели</strong></td>
+      <td>Распределение среднего качества воздуха по часам суток и дням недели позволяет выявлять источники загрязнения (утренний трафик, производственные смены). Функция запланирована в ANALYTICS.md, требует реализации.</td>
+    </tr>
+    <tr>
+      <td class="td-center">P3</td>
+      <td><strong>Роза преобладающих загрязнителей</strong></td>
+      <td>Радиальная диаграмма структуры загрязнения с разбивкой по месяцам года. Актуальна при наличии нескольких измеряемых параметров.</td>
+    </tr>
+    <tr>
+      <td class="td-center">P3</td>
+      <td><strong>Промышленные параметры (SO2, NO2, H2S)</strong></td>
+      <td>AQA не охватывает газообразные промышленные загрязнители. Для Алматы наиболее актуальны NO2 (автотранспорт) и SO2 (ТЭЦ). Реализация зависит от наличия соответствующих датчиков.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ══ РАЗДЕЛ 5 ══ -->
+<h2>5. Конкурентные преимущества AQA</h2>
+
+<p>Ниже перечислены функциональные возможности AQA, отсутствующие в референсной системе AUATECH:</p>
+
+<table>
+  <thead>
+    <tr><th style="width:30%">Преимущество</th><th>Описание</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Плотность сети: 173 датчика</strong></td><td>В 7 раз больше точек наблюдения по сравнению с 25 официальными постами. Обеспечивает гиперлокальный мониторинг на уровне микрорайона и отдельных улиц.</td></tr>
+    <tr><td><strong>AI-аналитика и рекомендации</strong></td><td>Автоматическая интерпретация данных AQI с персонализированными рекомендациями по поведению (6 уровней × 2 инсайта). Уникальная функция, отсутствующая в AUATECH.</td></tr>
+    <tr><td><strong>Мониторинг пыльцы</strong></td><td>42 параметра пыльцевого датчика — критически важно для граждан с аллергическими заболеваниями. Полностью отсутствует в AUATECH.</td></tr>
+    <tr><td><strong>CO2 и TVOC</strong></td><td>Измерение концентрации углекислого газа и летучих органических соединений — актуально для оценки качества воздуха вблизи дорог и в помещениях.</td></tr>
+    <tr><td><strong>Двойная сеть (EcoIQ)</strong></td><td>Интеграция собственной сети AAI и сторонней сети EcoIQ на единой карте обеспечивает перекрёстную верификацию показателей.</td></tr>
+    <tr><td><strong>Международный стандарт AQI</strong></td><td>Применение US EPA AQI 2024 делает данные понятными широкой аудитории и совместимыми с международными системами сравнения.</td></tr>
+    <tr><td><strong>Карта зданий без газа</strong></td><td>Специализированный слой выявления объектов угольного отопления — инструмент для экологической политики Алматы.</td></tr>
+    <tr><td><strong>Поддержка тёмной/светлой темы</strong></td><td>Адаптивный интерфейс под системные предпочтения пользователя.</td></tr>
+  </tbody>
+</table>
+
+<!-- ══ РАЗДЕЛ 6 ══ -->
+<h2>6. Выводы и рекомендации</h2>
+
+<p><strong>6.1. Общий вывод.</strong> Платформа AQA представляет собой технологически современную систему публичного мониторинга качества атмосферного воздуха с наибольшей плотностью сети датчиков в г. Алматы. По совокупности критериев AQA превосходит AUATECH в части гиперлокального охвата, публичной доступности и применения международных стандартов оценки. Вместе с тем референсная система AUATECH обладает более зрелым инструментарием для регуляторного применения — реестрами инцидентов, моделированием источников загрязнения и автоматической отчётностью.</p>
+
+<p><strong>6.2. Рекомендации по развитию AQA.</strong> В порядке убывания приоритета рекомендуется реализовать следующие функции:</p>
+
+<ol>
+  <li><strong>Реестр превышений ПДК</strong> — журнал фиксации инцидентов с возможностью фильтрации по периоду, датчику и веществу (P1).</li>
+  <li><strong>Система уведомлений</strong> — алерты пользователям при превышении настраиваемых пороговых значений AQI (P1).</li>
+  <li><strong>Экспорт данных</strong> — выгрузка в форматы CSV и Excel по выбранным датчикам, периодам и параметрам (P1).</li>
+  <li><strong>Мультипараметрическая аналитика</strong> — переключатель параметра (PM10, CO2, TVOC) в аналитическом модуле (P1).</li>
+  <li><strong>Тепловая таблица сети</strong> — матрица постов × периоды с цветовой кодировкой (P2).</li>
+  <li><strong>Паттерны по часам и дням недели</strong> — гистограммы среднего AQI по времени суток и дням недели (P2).</li>
+</ol>
+
+<p><strong>6.3. Стратегическая рекомендация.</strong> Разработка функций P1 позволит AQA перейти из категории «публичного информатора» в категорию полнофункциональной операционной системы экологического мониторинга, сопоставимой с государственными платформами регуляторного класса.</p>
+
+<p style="margin-top:30pt">&nbsp;</p>
+
+<table style="width:100%;border:none;border-top:1pt solid #000;margin-top:20pt">
+  <tr>
+    <td style="border:none;width:50%;padding-top:6pt;font-size:11pt">
+      <p>Составил:</p>
+      <p style="margin-top:30pt">_________________________ / ________________ /</p>
+      <p class="note">(подпись) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (расшифровка)</p>
+    </td>
+    <td style="border:none;width:50%;padding-top:6pt;font-size:11pt;text-align:right;vertical-align:top">
+      <p>Дата: «____» ___________ 2026 г.</p>
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>`;
+
+  const blob = new Blob(['﻿', wordHtml], {
+    type: 'application/msword;charset=utf-8'
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'АС-ЭМ-2026-07_Сравнительный-анализ-AQA-AUATECH.doc';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+}
+</script>

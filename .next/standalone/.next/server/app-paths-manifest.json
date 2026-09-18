@@ -1,8 +1,11 @@
 {
   "/_global-error/page": "app/_global-error/page.js",
   "/_not-found/page": "app/_not-found/page.js",
+  "/api/plants-mvt/[z]/[x]/[y]/route": "app/api/plants-mvt/[z]/[x]/[y]/route.js",
+  "/api/plants-tile/route": "app/api/plants-tile/route.js",
   "/buildings-without-gas/analytics/page": "app/buildings-without-gas/analytics/page.js",
   "/buildings-without-gas/page": "app/buildings-without-gas/page.js",
+  "/eco-almaty/page": "app/eco-almaty/page.js",
   "/outgoing-calls/page": "app/outgoing-calls/page.js",
   "/page": "app/page.js"
 }

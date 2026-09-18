@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic"
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { ChevronLeft, ChevronRight, Map, CalendarDays, BarChart2, Sparkles } from "lucide-react"
+import { ChevronLeft, ChevronRight, Map, CalendarDays, BarChart2, Sparkles, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -171,6 +171,8 @@ export default function AirQualityDashboard() {
   const [sourceFilter, setSourceFilter] = useState<string | "all">("all")
   const [districtFilter, setDistrictFilter] = useState<string | "all">("all")
   const [hoveredDay, setHoveredDay] = useState<HoveredDay | null>(null)
+  const [selectedDay, setSelectedDay] = useState<{ date: string; pm25: number } | null>(null)
+  const [districtDaily90, setDistrictDaily90] = useState<{ district_name: string; day: string; avg_pm25: number }[]>([])
   const [selectedSensor, setSelectedSensor] = useState<AirSensor | null>(null)
   const [metricMode, setMetricMode] = useState<AirMetricMode>("epa-aqi")
   const [timeseries, setTimeseries] = useState<TimeseriesData | null>(null)
@@ -278,9 +280,16 @@ export default function AirQualityDashboard() {
   }, [])
   useEffect(() => {
     const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "https://admin.smartalmaty.kz/api/v1"
-    fetch(`${BASE}/air/eco-iq/city-daily/?days=30`, { headers: { Accept: "application/json" } })
+    // Fetch the full 90-day cap so a clicked calendar day can look up an IQAir value too,
+    // not just the last 30 days shown in the mini-strip.
+    fetch(`${BASE}/air/eco-iq/city-daily/?days=90`, { headers: { Accept: "application/json" } })
       .then((r) => r.json())
       .then((res) => setIqairDaily(res.data ?? []))
+      .catch(() => {})
+
+    fetch(`${BASE}/air/analytics/district-daily/?parameter=pm25&days=90`, { headers: { Accept: "application/json" } })
+      .then((r) => r.json())
+      .then((res) => setDistrictDaily90(res.data ?? []))
       .catch(() => {})
   }, [])
   useEffect(() => {
@@ -383,6 +392,19 @@ export default function AirQualityDashboard() {
   const canGoPreviousYear = currentYear > MIN_YEAR
   const canGoNextYear = currentYear < MAX_YEAR
 
+  // ── Day detail drawer — AAI district breakdown + IQAir only cover the last 90 days ──
+  const selectedDayDistricts = useMemo(() => {
+    if (!selectedDay) return []
+    return districtDaily90
+      .filter((r) => r.day === selectedDay.date)
+      .sort((a, b) => b.avg_pm25 - a.avg_pm25)
+  }, [selectedDay, districtDaily90])
+
+  const selectedDayIqair = useMemo(() => {
+    if (!selectedDay) return null
+    return iqairDaily.find((r) => r.date === selectedDay.date) ?? null
+  }, [selectedDay, iqairDaily])
+
   const renderMonthCalendar = (month: number) => {
     const monthName = new Date(currentYear, month).toLocaleDateString("ru-RU", { month: "long" })
     const daysInMonth = new Date(currentYear, month + 1, 0).getDate()
@@ -432,6 +454,7 @@ export default function AirQualityDashboard() {
                   setHoveredDay({ date: dateStr, pm25: aqi, x, y, above })
                 } : undefined}
                 onMouseLeave={() => setHoveredDay(null)}
+                onClick={aqi != null ? () => setSelectedDay({ date: dateStr, pm25: aqi }) : undefined}
               >
                 <span className="text-[9px] font-semibold leading-none">{day}</span>
                 {aqi != null && (
@@ -716,7 +739,7 @@ export default function AirQualityDashboard() {
                   <span className="text-[10px] text-muted-foreground">{ecoIqSensors.length} станций · отдельная сеть</span>
                 </div>
                 <div className="flex gap-1">
-                  {iqairDaily.map(({ date, avg_pm25 }) => (
+                  {iqairDaily.slice(-30).map(({ date, avg_pm25 }) => (
                     <div
                       key={date}
                       className="group relative h-6 flex-1 rounded-sm"
@@ -802,6 +825,114 @@ export default function AirQualityDashboard() {
               </div>
             </div>
           </div>
+        )
+      })()}
+
+      {/* Day detail drawer — opens on click, persists until closed (unlike the hover tooltip) */}
+      {selectedDay && (() => {
+        const { date, pm25 } = selectedDay
+        const hex = pm25ToHex(pm25)
+        const label = pm25ToLabel(pm25)
+        const whoRatio = pm25 / 5.0
+        const fullDate = new Date(date).toLocaleDateString("ru-RU", {
+          day: "numeric", month: "long", year: "numeric", weekday: "long",
+        })
+        const maxDistrict = selectedDayDistricts[0]?.avg_pm25 ?? 1
+
+        return (
+          <>
+            <div
+              className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm dark:bg-black/60"
+              onClick={() => setSelectedDay(null)}
+            />
+            <div className="fixed inset-y-0 right-0 z-50 flex w-full flex-col border-l border-border bg-background shadow-2xl md:w-[420px]">
+              <div className="flex items-center justify-between border-b border-border px-6 py-5">
+                <div>
+                  <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">Сводка за день</p>
+                  <h2 className="text-lg font-bold capitalize text-foreground">{fullDate}</h2>
+                </div>
+                <button
+                  onClick={() => setSelectedDay(null)}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-muted text-muted-foreground transition-all hover:bg-muted/80 hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
+                {/* Government calendar value — the primary source */}
+                <div className="overflow-hidden rounded-2xl border border-border">
+                  <div className="px-5 py-4" style={{ backgroundColor: hex }}>
+                    <p className="text-[11px] font-semibold text-white/80">Гос. мониторинг (основной источник)</p>
+                    <div className="flex items-end gap-2">
+                      <span className="text-4xl font-black leading-none text-white">{pm25.toFixed(1)}</span>
+                      <span className="mb-1 text-sm font-medium text-white/75">µg/m³</span>
+                    </div>
+                    <p className="mt-1 text-xs font-semibold text-white/90">{label}</p>
+                  </div>
+                  <div className="px-5 py-3">
+                    <div className="mb-1 flex items-center justify-between">
+                      <span className="text-[11px] text-muted-foreground">Норма ВОЗ 5.0 µg/m³</span>
+                      <span className="text-[11px] font-bold" style={{ color: hex }}>{whoRatio.toFixed(1)}×</span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                      <div className="h-full rounded-full" style={{ width: `${Math.min(100, (pm25 / 60) * 100)}%`, backgroundColor: hex }} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* IQAir comparison — only covers the last 90 days */}
+                <div>
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">Сеть IQAir / EcoIQ</p>
+                  {selectedDayIqair ? (
+                    <div className="rounded-xl border border-border bg-card p-4">
+                      <div className="flex items-end gap-2">
+                        <span className="text-2xl font-bold" style={{ color: pm25ToHex(selectedDayIqair.avg_pm25) }}>
+                          {selectedDayIqair.avg_pm25.toFixed(1)}
+                        </span>
+                        <span className="mb-0.5 text-xs text-muted-foreground">µg/m³ — {pm25ToLabel(selectedDayIqair.avg_pm25)}</span>
+                      </div>
+                      <p className="mt-1 text-[11px] text-muted-foreground">
+                        {selectedDayIqair.avg_pm25 > pm25 ? "Выше" : selectedDayIqair.avg_pm25 < pm25 ? "Ниже"  : "Совпадает с"} гос. значения на {Math.abs(selectedDayIqair.avg_pm25 - pm25).toFixed(1)} µg/m³
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="rounded-xl border border-dashed border-border p-4 text-xs text-muted-foreground">
+                      Нет данных IQAir за этот день — сеть покрывает только последние 90 дней.
+                    </p>
+                  )}
+                </div>
+
+                {/* AAI district breakdown — only covers the last 90 days */}
+                <div>
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">Районы — сеть AAI</p>
+                  {selectedDayDistricts.length > 0 ? (
+                    <div className="space-y-1.5">
+                      {selectedDayDistricts.map((d) => {
+                        const pct = Math.min(100, (d.avg_pm25 / maxDistrict) * 100)
+                        const dHex = pm25ToHex(d.avg_pm25)
+                        return (
+                          <div key={d.district_name} className="flex items-center gap-2">
+                            <span className="w-24 flex-shrink-0 truncate text-[11px] text-muted-foreground">{d.district_name}</span>
+                            <div className="relative h-5 flex-1 overflow-hidden rounded bg-muted/30">
+                              <div className="absolute inset-y-0 left-0 rounded" style={{ width: `${Math.max(pct, 4)}%`, backgroundColor: dHex, opacity: 0.75 }} />
+                              <span className="absolute inset-0 flex items-center justify-end px-2 text-[11px] font-semibold">
+                                {d.avg_pm25.toFixed(1)}
+                              </span>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <p className="rounded-xl border border-dashed border-border p-4 text-xs text-muted-foreground">
+                      Нет данных по районам AAI за этот день — разбивка доступна только за последние 90 дней.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </>
         )
       })()}
     </div>

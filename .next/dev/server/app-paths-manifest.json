@@ -1,3 +1,10 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/plants-detail/[id]/route": "app/api/plants-detail/[id]/route.js",
+  "/api/plants-mvt/[z]/[x]/[y]/route": "app/api/plants-mvt/[z]/[x]/[y]/route.js",
+  "/api/plants-stats/route": "app/api/plants-stats/route.js",
+  "/api/plants-tile/route": "app/api/plants-tile/route.js",
+  "/buildings-without-gas/page": "app/buildings-without-gas/page.js",
+  "/eco-almaty/page": "app/eco-almaty/page.js",
   "/page": "app/page.js"
 }

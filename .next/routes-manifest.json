@@ -19,7 +19,18 @@
     "afterFiles": [],
     "fallback": []
   },
-  "dynamicRoutes": [],
+  "dynamicRoutes": [
+    {
+      "page": "/api/plants-mvt/[z]/[x]/[y]",
+      "regex": "^/api/plants\\-mvt/([^/]+?)/([^/]+?)/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPz": "nxtPz",
+        "nxtPx": "nxtPx",
+        "nxtPy": "nxtPy"
+      },
+      "namedRegex": "^/api/plants\\-mvt/(?<nxtPz>[^/]+?)/(?<nxtPx>[^/]+?)/(?<nxtPy>[^/]+?)(?:/)?$"
+    }
+  ],
   "staticRoutes": [
     {
       "page": "/",
@@ -40,6 +51,12 @@
       "namedRegex": "^/_not\\-found(?:/)?$"
     },
     {
+      "page": "/api/plants-tile",
+      "regex": "^/api/plants\\-tile(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/plants\\-tile(?:/)?$"
+    },
+    {
       "page": "/buildings-without-gas",
       "regex": "^/buildings\\-without\\-gas(?:/)?$",
       "routeKeys": {},
@@ -50,6 +67,12 @@
       "regex": "^/buildings\\-without\\-gas/analytics(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/buildings\\-without\\-gas/analytics(?:/)?$"
+    },
+    {
+      "page": "/eco-almaty",
+      "regex": "^/eco\\-almaty(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/eco\\-almaty(?:/)?$"
     },
     {
       "page": "/outgoing-calls",

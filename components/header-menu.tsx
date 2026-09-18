@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -12,15 +12,21 @@ const menuItems = [
   { name: "Карта датчиков", href: "/", icon: Map },
   { name: "Карта зданий без газа", href: "/buildings-without-gas", icon: Building2 },
   { name: "Исходящие звонки", href: "/outgoing-calls", icon: Phone },
+  { name: "Вода, фонтаны, отходы", href: "/eco-almaty", icon: Map },
 ]
 
 export function HeaderMenu() {
   const [isOpen, setIsOpen] = useState(false)
   const { resolvedTheme, setTheme } = useTheme()
   const pathname = usePathname()
-  // resolvedTheme is undefined during hydration — treat undefined as "light" so the
-  // correct logo renders on first paint instead of briefly flashing the dark logo
-  const logoSrc = resolvedTheme === "dark" ? "/logo_aqa.png" : "/logo_aqa_dark_letters.png"
+  // next-themes can resolve the real theme before React hydrates, so the client's first
+  // render already differs from the light-default SSR markup. Force both to render the
+  // same "light" branch until mounted, then swap post-hydration — avoids the mismatch
+  // instead of just guessing a default.
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+  const isDark = mounted && resolvedTheme === "dark"
+  const logoSrc = isDark ? "/logo_aqa.png" : "/logo_aqa_dark_letters.png"
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -64,11 +70,11 @@ export function HeaderMenu() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+              onClick={() => setTheme(isDark ? "light" : "dark")}
               aria-label="Toggle theme"
               className="h-9 w-9 rounded-xl"
             >
-              {resolvedTheme === "dark"
+              {isDark
                 ? <Sun className="h-4 w-4" />
                 : <Moon className="h-4 w-4" />
               }

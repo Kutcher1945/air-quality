@@ -393,7 +393,7 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
-const API = ("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
+const API = ("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
 const LAYERS = [
     {
         id: "ponds",

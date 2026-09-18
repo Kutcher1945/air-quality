@@ -366,7 +366,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$mapbox$2d$gl
 ;
 ;
 ;
-const API = ("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
+const API = ("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
 const LAYERS = [
     {
         id: "ponds",

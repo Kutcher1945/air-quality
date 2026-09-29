@@ -387,7 +387,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$themes$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next-themes/dist/index.mjs [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$mapbox$2d$gl$2f$dist$2f$mapbox$2d$gl$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/mapbox-gl/dist/mapbox-gl.js [app-client] (ecmascript)");
 ;
-var _s = __turbopack_context__.k.signature();
+var _s = __turbopack_context__.k.signature(), _s1 = __turbopack_context__.k.signature();
 "use client";
 ;
 ;
@@ -567,14 +567,10 @@ const LAYERS = [
 ];
 // ── DRF paginated fetch with module-level cache ────────────────────────────
 const geoCache = new Map();
-const GEO_TTL = 60 * 60 * 1000 // 1 hour — persists across tab switches in the same session
-;
+const GEO_TTL = 60 * 60 * 1000;
 function clearGeoCache() {
     geoCache.clear();
 }
-// kind drives geometry field priority:
-//   "point" → centroid first (API often puts point geom there)
-//   "fill"/"line" → geometry first (polygon/linestring is the real shape)
 async function fetchAll(endpoint, kind = "point") {
     const cacheKey = `${endpoint}:${kind}`;
     const hit = geoCache.get(cacheKey);
@@ -594,8 +590,7 @@ async function fetchAll(endpoint, kind = "point") {
         const items = Array.isArray(payload) ? payload : payload.results ?? [];
         for (const item of items){
             const obj = item;
-            const rawGeom = kind === "point" ? obj.centroid ?? obj.geometry : obj.geometry ?? obj.centroid // fill/line layers: real geometry preferred
-            ;
+            const rawGeom = kind === "point" ? obj.centroid ?? obj.geometry : obj.geometry ?? obj.centroid;
             if (!rawGeom) continue;
             results.push({
                 type: "Feature",
@@ -674,19 +669,576 @@ function makePopupHtml(props, label) {
     <table style="border-collapse:collapse">${rows || "<tr><td style='color:#666'>—</td></tr>"}</table>
   </div>`;
 }
-function EcoAlmatyMap({ visibleLayers }) {
+// ── PassportSection ────────────────────────────────────────────────────────
+function PassportSection({ title, rows }) {
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+        style: {
+            padding: "14px 18px",
+            borderBottom: "1px solid #f3f4f6"
+        },
+        children: [
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                style: {
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: "#9ca3af",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    marginBottom: 10
+                },
+                children: title
+            }, void 0, false, {
+                fileName: "[project]/components/eco-almaty-map.tsx",
+                lineNumber: 131,
+                columnNumber: 7
+            }, this),
+            rows.map((row, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    style: {
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        paddingTop: i > 0 ? 8 : 0
+                    },
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                            style: {
+                                fontSize: 13,
+                                color: "#6b7280"
+                            },
+                            children: row.label
+                        }, void 0, false, {
+                            fileName: "[project]/components/eco-almaty-map.tsx",
+                            lineNumber: 139,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                            style: {
+                                fontSize: 13,
+                                fontWeight: 600,
+                                color: row.accent ?? "#111",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 5
+                            },
+                            children: [
+                                row.accent && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    style: {
+                                        width: 8,
+                                        height: 8,
+                                        borderRadius: "50%",
+                                        background: row.accent,
+                                        display: "inline-block"
+                                    }
+                                }, void 0, false, {
+                                    fileName: "[project]/components/eco-almaty-map.tsx",
+                                    lineNumber: 141,
+                                    columnNumber: 28
+                                }, this),
+                                row.value
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/components/eco-almaty-map.tsx",
+                            lineNumber: 140,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, i, true, {
+                    fileName: "[project]/components/eco-almaty-map.tsx",
+                    lineNumber: 135,
+                    columnNumber: 9
+                }, this))
+        ]
+    }, void 0, true, {
+        fileName: "[project]/components/eco-almaty-map.tsx",
+        lineNumber: 130,
+        columnNumber: 5
+    }, this);
+}
+_c = PassportSection;
+// ── FormField ──────────────────────────────────────────────────────────────
+function FormField({ label, required, children }) {
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+        style: {
+            marginBottom: 14
+        },
+        children: [
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                style: {
+                    display: "block",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "#374151",
+                    marginBottom: 6
+                },
+                children: [
+                    label,
+                    required && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                        style: {
+                            color: "#dc2626",
+                            marginLeft: 3
+                        },
+                        children: "*"
+                    }, void 0, false, {
+                        fileName: "[project]/components/eco-almaty-map.tsx",
+                        lineNumber: 155,
+                        columnNumber: 29
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/components/eco-almaty-map.tsx",
+                lineNumber: 154,
+                columnNumber: 7
+            }, this),
+            children
+        ]
+    }, void 0, true, {
+        fileName: "[project]/components/eco-almaty-map.tsx",
+        lineNumber: 153,
+        columnNumber: 5
+    }, this);
+}
+_c1 = FormField;
+// ── Report form ────────────────────────────────────────────────────────────
+const REPORT_TYPES = [
+    "Неверное местоположение",
+    "Некорректные данные",
+    "Изменилось состояние объекта",
+    "Отсутствует объект на карте",
+    "Фактически объект отсутствует",
+    "Другое"
+];
+const inputStyle = {
+    width: "100%",
+    padding: "9px 12px",
+    border: "1px solid #e5e7eb",
+    borderRadius: 8,
+    fontSize: 13,
+    color: "#111",
+    boxSizing: "border-box",
+    fontFamily: "Inter,sans-serif"
+};
+function ReportForm({ extId, typeName, coords: initialCoords, onClose }) {
     _s();
+    const [reportType, setReportType] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(0);
+    const [description, setDescription] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
+    const [name, setName] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
+    const [contact, setContact] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
+    const [address, setAddress] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
+    const [pickedCoords, setPickedCoords] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
+    const [showPicker, setShowPicker] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [submitted, setSubmitted] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const activeCoords = pickedCoords ?? initialCoords;
+    if (submitted) {
+        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+            style: {
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 32,
+                gap: 16
+            },
+            children: [
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    style: {
+                        width: 56,
+                        height: 56,
+                        borderRadius: "50%",
+                        background: "#dcfce7",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center"
+                    },
+                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                        width: "28",
+                        height: "28",
+                        viewBox: "0 0 24 24",
+                        fill: "none",
+                        stroke: "#16a34a",
+                        strokeWidth: "2.5",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("polyline", {
+                            points: "20 6 9 17 4 12"
+                        }, void 0, false, {
+                            fileName: "[project]/components/eco-almaty-map.tsx",
+                            lineNumber: 196,
+                            columnNumber: 106
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/components/eco-almaty-map.tsx",
+                        lineNumber: 196,
+                        columnNumber: 11
+                    }, this)
+                }, void 0, false, {
+                    fileName: "[project]/components/eco-almaty-map.tsx",
+                    lineNumber: 195,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    style: {
+                        textAlign: "center"
+                    },
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            style: {
+                                fontSize: 15,
+                                fontWeight: 700,
+                                color: "#111"
+                            },
+                            children: "Обращение отправлено"
+                        }, void 0, false, {
+                            fileName: "[project]/components/eco-almaty-map.tsx",
+                            lineNumber: 199,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            style: {
+                                fontSize: 13,
+                                color: "#6b7280",
+                                marginTop: 4
+                            },
+                            children: "Спасибо! Мы рассмотрим ваше обращение."
+                        }, void 0, false, {
+                            fileName: "[project]/components/eco-almaty-map.tsx",
+                            lineNumber: 200,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/components/eco-almaty-map.tsx",
+                    lineNumber: 198,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                    onClick: onClose,
+                    style: {
+                        padding: "9px 24px",
+                        borderRadius: 8,
+                        border: "1px solid #e5e7eb",
+                        background: "#f9fafb",
+                        fontSize: 13,
+                        cursor: "pointer",
+                        color: "#374151",
+                        fontFamily: "Inter,sans-serif"
+                    },
+                    children: "Закрыть"
+                }, void 0, false, {
+                    fileName: "[project]/components/eco-almaty-map.tsx",
+                    lineNumber: 202,
+                    columnNumber: 9
+                }, this)
+            ]
+        }, void 0, true, {
+            fileName: "[project]/components/eco-almaty-map.tsx",
+            lineNumber: 194,
+            columnNumber: 7
+        }, this);
+    }
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+        style: {
+            flex: 1,
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column"
+        },
+        children: [
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                style: {
+                    padding: "16px 18px 80px",
+                    flex: 1
+                },
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        style: {
+                            fontSize: 12,
+                            color: "#6b7280",
+                            background: "#f3f4f6",
+                            padding: "7px 12px",
+                            borderRadius: 8,
+                            marginBottom: 16
+                        },
+                        children: [
+                            typeName,
+                            " · ID ",
+                            extId
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/components/eco-almaty-map.tsx",
+                        lineNumber: 214,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(FormField, {
+                        label: "Тип обращения",
+                        required: true,
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
+                            value: reportType,
+                            onChange: (e)=>setReportType(Number(e.target.value)),
+                            style: {
+                                ...inputStyle,
+                                background: "#fff"
+                            },
+                            children: REPORT_TYPES.map((t, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                    value: i,
+                                    children: t
+                                }, i, false, {
+                                    fileName: "[project]/components/eco-almaty-map.tsx",
+                                    lineNumber: 221,
+                                    columnNumber: 41
+                                }, this))
+                        }, void 0, false, {
+                            fileName: "[project]/components/eco-almaty-map.tsx",
+                            lineNumber: 219,
+                            columnNumber: 11
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/components/eco-almaty-map.tsx",
+                        lineNumber: 218,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(FormField, {
+                        label: "Описание",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
+                            value: description,
+                            onChange: (e)=>setDescription(e.target.value),
+                            rows: 3,
+                            placeholder: "Опишите проблему…",
+                            style: {
+                                ...inputStyle,
+                                resize: "vertical"
+                            }
+                        }, void 0, false, {
+                            fileName: "[project]/components/eco-almaty-map.tsx",
+                            lineNumber: 226,
+                            columnNumber: 11
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/components/eco-almaty-map.tsx",
+                        lineNumber: 225,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(FormField, {
+                        label: "Фото",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            style: {
+                                border: "1.5px dashed #d1d5db",
+                                borderRadius: 8,
+                                padding: "20px 16px",
+                                textAlign: "center",
+                                color: "#9ca3af",
+                                fontSize: 13,
+                                cursor: "pointer",
+                                background: "#fafafa"
+                            },
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                                    width: "24",
+                                    height: "24",
+                                    viewBox: "0 0 24 24",
+                                    fill: "none",
+                                    stroke: "currentColor",
+                                    strokeWidth: "1.5",
+                                    style: {
+                                        margin: "0 auto 6px",
+                                        display: "block"
+                                    },
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                            d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/eco-almaty-map.tsx",
+                                            lineNumber: 238,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("polyline", {
+                                            points: "17 8 12 3 7 8"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/eco-almaty-map.tsx",
+                                            lineNumber: 239,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("line", {
+                                            x1: "12",
+                                            y1: "3",
+                                            x2: "12",
+                                            y2: "15"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/eco-almaty-map.tsx",
+                                            lineNumber: 240,
+                                            columnNumber: 15
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/components/eco-almaty-map.tsx",
+                                    lineNumber: 236,
+                                    columnNumber: 13
+                                }, this),
+                                "Нажмите для загрузки"
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/components/eco-almaty-map.tsx",
+                            lineNumber: 232,
+                            columnNumber: 11
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/components/eco-almaty-map.tsx",
+                        lineNumber: 231,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(FormField, {
+                        label: "Адрес",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                            value: address,
+                            onChange: (e)=>setAddress(e.target.value),
+                            placeholder: "Введите адрес",
+                            style: inputStyle
+                        }, void 0, false, {
+                            fileName: "[project]/components/eco-almaty-map.tsx",
+                            lineNumber: 247,
+                            columnNumber: 11
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/components/eco-almaty-map.tsx",
+                        lineNumber: 246,
+                        columnNumber: 9
+                    }, this),
+                    coords && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(FormField, {
+                        label: "Координаты",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                            readOnly: true,
+                            value: `${coords[1].toFixed(6)}, ${coords[0].toFixed(6)}`,
+                            style: {
+                                ...inputStyle,
+                                background: "#f9fafb",
+                                color: "#6b7280"
+                            }
+                        }, void 0, false, {
+                            fileName: "[project]/components/eco-almaty-map.tsx",
+                            lineNumber: 253,
+                            columnNumber: 13
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/components/eco-almaty-map.tsx",
+                        lineNumber: 252,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(FormField, {
+                        label: "ФИО",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                            value: name,
+                            onChange: (e)=>setName(e.target.value),
+                            placeholder: "Имя и фамилия",
+                            style: inputStyle
+                        }, void 0, false, {
+                            fileName: "[project]/components/eco-almaty-map.tsx",
+                            lineNumber: 260,
+                            columnNumber: 11
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/components/eco-almaty-map.tsx",
+                        lineNumber: 259,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(FormField, {
+                        label: "Телефон / Email",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                            value: contact,
+                            onChange: (e)=>setContact(e.target.value),
+                            placeholder: "+7 700 000 0000 или email@mail.ru",
+                            style: inputStyle
+                        }, void 0, false, {
+                            fileName: "[project]/components/eco-almaty-map.tsx",
+                            lineNumber: 265,
+                            columnNumber: 11
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/components/eco-almaty-map.tsx",
+                        lineNumber: 264,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/components/eco-almaty-map.tsx",
+                lineNumber: 212,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                style: {
+                    position: "sticky",
+                    bottom: 0,
+                    background: "#fff",
+                    borderTop: "1px solid #e5e7eb",
+                    padding: "12px 16px",
+                    display: "flex",
+                    gap: 8
+                },
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                        onClick: onClose,
+                        style: {
+                            flex: 1,
+                            padding: "9px 0",
+                            borderRadius: 8,
+                            fontSize: 13,
+                            border: "1px solid #e5e7eb",
+                            background: "#f9fafb",
+                            color: "#6b7280",
+                            cursor: "pointer",
+                            fontWeight: 500,
+                            fontFamily: "Inter,sans-serif"
+                        },
+                        children: "Отмена"
+                    }, void 0, false, {
+                        fileName: "[project]/components/eco-almaty-map.tsx",
+                        lineNumber: 271,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                        onClick: ()=>setSubmitted(true),
+                        style: {
+                            flex: 1,
+                            padding: "9px 0",
+                            borderRadius: 8,
+                            fontSize: 13,
+                            border: "none",
+                            background: "#16a34a",
+                            color: "#fff",
+                            cursor: "pointer",
+                            fontWeight: 600,
+                            fontFamily: "Inter,sans-serif"
+                        },
+                        children: "Отправить"
+                    }, void 0, false, {
+                        fileName: "[project]/components/eco-almaty-map.tsx",
+                        lineNumber: 275,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/components/eco-almaty-map.tsx",
+                lineNumber: 270,
+                columnNumber: 7
+            }, this)
+        ]
+    }, void 0, true, {
+        fileName: "[project]/components/eco-almaty-map.tsx",
+        lineNumber: 211,
+        columnNumber: 5
+    }, this);
+}
+_s(ReportForm, "fbrnS3Welz742jkvonFj2Hv6ScA=");
+_c2 = ReportForm;
+function EcoAlmatyMap({ visibleLayers, centerCoords }) {
+    _s1();
     const mapRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const containerRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const { resolvedTheme } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$themes$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useTheme"])();
     const [loadedLayers, setLoadedLayers] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(new Set());
     const popupRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const [selectedPlant, setSelectedPlant] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
-    // keep ref in sync so mapbox click handlers (which close over stale deps) can call the setter
     const setSelectedPlantRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(setSelectedPlant);
     setSelectedPlantRef.current = setSelectedPlant;
-    // drawer tab
     const [drawerTab, setDrawerTab] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("detail");
+    const [drawerView, setDrawerView] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("main");
     const [stats, setStats] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "EcoAlmatyMap.useEffect": ()=>{
@@ -701,7 +1253,6 @@ function EcoAlmatyMap({ visibleLayers }) {
             }["EcoAlmatyMap.useEffect"]);
         }
     }["EcoAlmatyMap.useEffect"], []);
-    // full detail fetched from DB on click (independent of what's in the tile)
     const [fullDetail, setFullDetail] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "EcoAlmatyMap.useEffect": ()=>{
@@ -730,7 +1281,18 @@ function EcoAlmatyMap({ visibleLayers }) {
     }["EcoAlmatyMap.useEffect"], [
         selectedPlant?.properties?.external_id
     ]);
-    // shared loading overlay — counts in-flight fetches across non-plant layers
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "EcoAlmatyMap.useEffect": ()=>{
+            if (!centerCoords || !mapRef.current) return;
+            mapRef.current.flyTo({
+                center: centerCoords,
+                zoom: Math.max(mapRef.current.getZoom(), 15),
+                duration: 1200
+            });
+        }
+    }["EcoAlmatyMap.useEffect"], [
+        centerCoords
+    ]);
     const loadCountRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(0);
     const [globalLoading, setGlobalLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const beginLoad = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
@@ -745,9 +1307,7 @@ function EcoAlmatyMap({ visibleLayers }) {
             if (loadCountRef.current === 0) setGlobalLoading(false);
         }
     }["EcoAlmatyMap.useCallback[endLoad]"], []);
-    // synchronous guard so concurrent loadLayer calls don't double-add layers
     const loadingLayers = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(new Set());
-    // Register service worker that caches plant tiles in browser storage (once per session)
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "EcoAlmatyMap.useEffect": ()=>{
             if ("serviceWorker" in navigator) {
@@ -757,7 +1317,6 @@ function EcoAlmatyMap({ visibleLayers }) {
             }
         }
     }["EcoAlmatyMap.useEffect"], []);
-    // init map
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "EcoAlmatyMap.useEffect": ()=>{
             if (!containerRef.current || mapRef.current) return;
@@ -782,16 +1341,13 @@ function EcoAlmatyMap({ visibleLayers }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
         }
     }["EcoAlmatyMap.useEffect"], []);
-    // load & add a single layer
     const loadLayer = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
         "EcoAlmatyMap.useCallback[loadLayer]": async (layer)=>{
             const map = mapRef.current;
             if (!map || !map.isStyleLoaded()) return;
             if (loadedLayers.has(layer.id) || loadingLayers.current.has(layer.id)) return;
             loadingLayers.current.add(layer.id);
-            // Plants: all 3 type-layers share one MVT vector source
             if ("plantTiles" in layer && layer.plantTiles) {
-                // Add the shared source once
                 if (!map.getSource("src-plants")) {
                     map.addSource("src-plants", {
                         type: "vector",
@@ -811,7 +1367,6 @@ function EcoAlmatyMap({ visibleLayers }) {
                     ],
                     pt
                 ];
-                // Find first existing non-plant layer to anchor z-order — plants must render below water/waste/fountains
                 const nonPlantAnchor = LAYERS.filter({
                     "EcoAlmatyMap.useCallback[loadLayer].nonPlantAnchor": (l)=>!("plantTiles" in l)
                 }["EcoAlmatyMap.useCallback[loadLayer].nonPlantAnchor"]).flatMap({
@@ -883,16 +1438,18 @@ function EcoAlmatyMap({ visibleLayers }) {
                             const feat = e.features?.[0];
                             if (!feat) return;
                             const props = feat.properties;
+                            const coords1 = feat.geometry.coordinates;
                             popupRef.current?.remove();
                             popupRef.current = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$mapbox$2d$gl$2f$dist$2f$mapbox$2d$gl$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].Popup({
                                 maxWidth: "200px",
                                 closeButton: false,
                                 offset: 8
-                            }).setLngLat(feat.geometry.coordinates).setHTML(`<div style="font-family:Inter,sans-serif;font-size:12px;background:#fff;color:#111;padding:4px 6px;border-radius:4px;font-weight:600;color:${layer.color}">${layer.label}</div>`).addTo(map);
+                            }).setLngLat(coords1).setHTML(`<div style="font-family:Inter,sans-serif;font-size:12px;background:#fff;color:${layer.color};padding:4px 6px;border-radius:4px;font-weight:600">${layer.label}</div>`).addTo(map);
                             setSelectedPlantRef.current({
                                 label: layer.label,
                                 color: layer.color,
-                                properties: props
+                                properties: props,
+                                coords: coords1
                             });
                         }
                     }["EcoAlmatyMap.useCallback[loadLayer]"]);
@@ -1090,7 +1647,6 @@ function EcoAlmatyMap({ visibleLayers }) {
         beginLoad,
         endLoad
     ]);
-    // toggle layer visibility & trigger load
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "EcoAlmatyMap.useEffect": ()=>{
             const map = mapRef.current;
@@ -1127,6 +1683,13 @@ function EcoAlmatyMap({ visibleLayers }) {
         loadedLayers,
         loadLayer
     ]);
+    const closeDrawer = ()=>{
+        setSelectedPlant(null);
+        setFullDetail(null);
+        popupRef.current?.remove();
+        setDrawerTab("detail");
+        setDrawerView("main");
+    };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         style: {
             position: "relative",
@@ -1134,6 +1697,13 @@ function EcoAlmatyMap({ visibleLayers }) {
             height: "100%"
         },
         children: [
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("style", {
+                children: `@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`
+            }, void 0, false, {
+                fileName: "[project]/components/eco-almaty-map.tsx",
+                lineNumber: 533,
+                columnNumber: 7
+            }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 ref: containerRef,
                 style: {
@@ -1142,7 +1712,7 @@ function EcoAlmatyMap({ visibleLayers }) {
                 }
             }, void 0, false, {
                 fileName: "[project]/components/eco-almaty-map.tsx",
-                lineNumber: 390,
+                lineNumber: 534,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1165,43 +1735,23 @@ function EcoAlmatyMap({ visibleLayers }) {
                 },
                 children: selectedPlant && (()=>{
                     const tileProps = selectedPlant.properties;
-                    // prefer freshly fetched DB data; fall back to tile properties while loading
                     const p = fullDetail ?? tileProps;
-                    const loading = !fullDetail;
+                    const isLoading = !fullDetail;
                     const sanitaryId = typeof p.sanitary_id === "number" ? p.sanitary_id : parseInt(String(p.sanitary_id ?? ""), 10);
                     const sanitaryLabel = !isNaN(sanitaryId) ? SANITARY_LABEL[sanitaryId] : null;
                     const sanitaryClr = !isNaN(sanitaryId) ? sanitaryColor(sanitaryId) : "#6b7280";
-                    const rows = [
-                        {
-                            label: "Тип",
-                            value: PLANT_TYPE_LABEL[p.plant_type] ?? String(p.plant_type ?? "—")
-                        },
-                        {
-                            label: "ID",
-                            value: p.external_id != null ? String(p.external_id) : "—"
-                        }
-                    ];
-                    if (sanitaryLabel) rows.push({
-                        label: "Сан. состояние",
-                        value: sanitaryLabel,
-                        accent: sanitaryClr
-                    });
-                    if (p.redbook != null) rows.push({
-                        label: "Краснокнижный",
-                        value: p.redbook === 1 || p.redbook === true ? "Да" : "Нет",
-                        accent: p.redbook === 1 || p.redbook === true ? "#dc2626" : undefined
-                    });
-                    if (p.pine != null) rows.push({
-                        label: "Хвойное",
-                        value: p.pine === 1 || p.pine === true ? "Да" : "Нет"
-                    });
+                    const isRedbook = p.redbook === 1 || p.redbook === true;
+                    const isPine = p.pine === 1 || p.pine === true;
+                    const extId = p.external_id != null ? String(p.external_id) : "—";
+                    const typeName = PLANT_TYPE_LABEL[p.plant_type] ?? String(p.plant_type ?? "—");
                     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 style: {
                                     padding: "14px 18px 0",
                                     borderBottom: "1px solid #e5e7eb",
-                                    background: "#f9fafb"
+                                    background: "#f9fafb",
+                                    flexShrink: 0
                                 },
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1218,70 +1768,84 @@ function EcoAlmatyMap({ visibleLayers }) {
                                                     alignItems: "center",
                                                     gap: 10
                                                 },
-                                                children: [
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                        style: {
-                                                            width: 13,
-                                                            height: 13,
-                                                            borderRadius: "50%",
-                                                            background: selectedPlant.color,
-                                                            flexShrink: 0,
-                                                            boxShadow: "0 0 0 2px rgba(0,0,0,0.08)"
-                                                        }
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/components/eco-almaty-map.tsx",
-                                                        lineNumber: 430,
-                                                        columnNumber: 21
-                                                    }, this),
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                        children: [
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                                style: {
-                                                                    fontSize: 15,
-                                                                    fontWeight: 700,
-                                                                    color: "#111",
-                                                                    lineHeight: 1.2
-                                                                },
-                                                                children: selectedPlant.label
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/components/eco-almaty-map.tsx",
-                                                                lineNumber: 436,
-                                                                columnNumber: 23
-                                                            }, this),
-                                                            tileProps.external_id != null && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                                style: {
-                                                                    fontSize: 11,
-                                                                    color: "#9ca3af",
-                                                                    marginTop: 2
-                                                                },
-                                                                children: [
-                                                                    "ID ",
-                                                                    String(tileProps.external_id)
-                                                                ]
-                                                            }, void 0, true, {
-                                                                fileName: "[project]/components/eco-almaty-map.tsx",
-                                                                lineNumber: 438,
-                                                                columnNumber: 25
-                                                            }, this)
-                                                        ]
-                                                    }, void 0, true, {
-                                                        fileName: "[project]/components/eco-almaty-map.tsx",
-                                                        lineNumber: 435,
-                                                        columnNumber: 21
-                                                    }, this)
-                                                ]
-                                            }, void 0, true, {
+                                                children: drawerView === "report" ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                    onClick: ()=>setDrawerView("main"),
+                                                    style: {
+                                                        background: "none",
+                                                        border: "none",
+                                                        cursor: "pointer",
+                                                        padding: "4px 6px",
+                                                        borderRadius: 6,
+                                                        color: "#6b7280",
+                                                        fontSize: 13,
+                                                        fontFamily: "Inter,sans-serif"
+                                                    },
+                                                    children: "← Назад"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/components/eco-almaty-map.tsx",
+                                                    lineNumber: 573,
+                                                    columnNumber: 23
+                                                }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                            style: {
+                                                                width: 13,
+                                                                height: 13,
+                                                                borderRadius: "50%",
+                                                                background: selectedPlant.color,
+                                                                flexShrink: 0,
+                                                                boxShadow: "0 0 0 2px rgba(0,0,0,0.08)"
+                                                            }
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/components/eco-almaty-map.tsx",
+                                                            lineNumber: 581,
+                                                            columnNumber: 25
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            children: [
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                    style: {
+                                                                        fontSize: 15,
+                                                                        fontWeight: 700,
+                                                                        color: "#111",
+                                                                        lineHeight: 1.2
+                                                                    },
+                                                                    children: selectedPlant.label
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/components/eco-almaty-map.tsx",
+                                                                    lineNumber: 583,
+                                                                    columnNumber: 27
+                                                                }, this),
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                    style: {
+                                                                        fontSize: 11,
+                                                                        color: "#9ca3af",
+                                                                        marginTop: 2
+                                                                    },
+                                                                    children: [
+                                                                        "ID ",
+                                                                        extId
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/components/eco-almaty-map.tsx",
+                                                                    lineNumber: 584,
+                                                                    columnNumber: 27
+                                                                }, this)
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/components/eco-almaty-map.tsx",
+                                                            lineNumber: 582,
+                                                            columnNumber: 25
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true)
+                                            }, void 0, false, {
                                                 fileName: "[project]/components/eco-almaty-map.tsx",
-                                                lineNumber: 429,
+                                                lineNumber: 571,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                onClick: ()=>{
-                                                    setSelectedPlant(null);
-                                                    setFullDetail(null);
-                                                    popupRef.current?.remove();
-                                                    setDrawerTab("detail");
-                                                },
+                                                onClick: closeDrawer,
                                                 style: {
                                                     background: "none",
                                                     border: "none",
@@ -1296,16 +1860,16 @@ function EcoAlmatyMap({ visibleLayers }) {
                                                 children: "✕"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/eco-almaty-map.tsx",
-                                                lineNumber: 442,
+                                                lineNumber: 589,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/eco-almaty-map.tsx",
-                                        lineNumber: 428,
+                                        lineNumber: 570,
                                         columnNumber: 17
                                     }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    drawerView === "main" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         style: {
                                             display: "flex",
                                             gap: 0
@@ -1325,53 +1889,124 @@ function EcoAlmatyMap({ visibleLayers }) {
                                                     color: drawerTab === tab ? "#16a34a" : "#9ca3af",
                                                     borderBottom: drawerTab === tab ? "2px solid #16a34a" : "2px solid transparent",
                                                     marginBottom: -1,
-                                                    transition: "color 0.15s"
+                                                    transition: "color 0.15s",
+                                                    fontFamily: "Inter,sans-serif"
                                                 },
-                                                children: tab === "detail" ? "Объект" : "Аналитика"
+                                                children: tab === "detail" ? "Паспорт" : "Аналитика"
                                             }, tab, false, {
                                                 fileName: "[project]/components/eco-almaty-map.tsx",
-                                                lineNumber: 451,
-                                                columnNumber: 21
+                                                lineNumber: 599,
+                                                columnNumber: 23
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/components/eco-almaty-map.tsx",
-                                        lineNumber: 449,
-                                        columnNumber: 17
+                                        lineNumber: 597,
+                                        columnNumber: 19
+                                    }, this),
+                                    drawerView === "report" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        style: {
+                                            fontSize: 13,
+                                            fontWeight: 600,
+                                            color: "#111",
+                                            paddingBottom: 10
+                                        },
+                                        children: "Оставить обращение"
+                                    }, void 0, false, {
+                                        fileName: "[project]/components/eco-almaty-map.tsx",
+                                        lineNumber: 613,
+                                        columnNumber: 19
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/eco-almaty-map.tsx",
-                                lineNumber: 423,
+                                lineNumber: 566,
                                 columnNumber: 15
                             }, this),
-                            drawerTab === "detail" ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            drawerView === "report" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(ReportForm, {
+                                extId: extId,
+                                typeName: typeName,
+                                coords: selectedPlant.coords,
+                                onClose: ()=>setDrawerView("main")
+                            }, void 0, false, {
+                                fileName: "[project]/components/eco-almaty-map.tsx",
+                                lineNumber: 621,
+                                columnNumber: 17
+                            }, this),
+                            drawerView === "main" && drawerTab === "detail" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 style: {
                                     flex: 1,
                                     overflowY: "auto",
-                                    padding: "16px 18px"
+                                    display: "flex",
+                                    flexDirection: "column"
                                 },
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         style: {
-                                            fontSize: 11,
-                                            fontWeight: 600,
+                                            height: 140,
+                                            background: "#f3f4f6",
+                                            flexShrink: 0,
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            gap: 8,
                                             color: "#9ca3af",
-                                            textTransform: "uppercase",
-                                            letterSpacing: "0.08em",
-                                            marginBottom: 10
+                                            borderBottom: "1px solid #e5e7eb"
                                         },
-                                        children: "Зелёные насаждения"
-                                    }, void 0, false, {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                                                width: "36",
+                                                height: "36",
+                                                viewBox: "0 0 24 24",
+                                                fill: "none",
+                                                stroke: "currentColor",
+                                                strokeWidth: "1.5",
+                                                opacity: 0.45,
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                                        d: "M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/components/eco-almaty-map.tsx",
+                                                        lineNumber: 640,
+                                                        columnNumber: 23
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
+                                                        cx: "12",
+                                                        cy: "13",
+                                                        r: "4"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/components/eco-almaty-map.tsx",
+                                                        lineNumber: 641,
+                                                        columnNumber: 23
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/components/eco-almaty-map.tsx",
+                                                lineNumber: 639,
+                                                columnNumber: 21
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                style: {
+                                                    fontSize: 12
+                                                },
+                                                children: "Нет фото"
+                                            }, void 0, false, {
+                                                fileName: "[project]/components/eco-almaty-map.tsx",
+                                                lineNumber: 643,
+                                                columnNumber: 21
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
                                         fileName: "[project]/components/eco-almaty-map.tsx",
-                                        lineNumber: 467,
+                                        lineNumber: 633,
                                         columnNumber: 19
                                     }, this),
-                                    loading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    isLoading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         style: {
                                             display: "flex",
                                             gap: 6,
                                             alignItems: "center",
-                                            padding: "8px 0",
+                                            padding: "16px 18px",
                                             color: "#9ca3af",
                                             fontSize: 13
                                         },
@@ -1388,77 +2023,172 @@ function EcoAlmatyMap({ visibleLayers }) {
                                                 }
                                             }, void 0, false, {
                                                 fileName: "[project]/components/eco-almaty-map.tsx",
-                                                lineNumber: 472,
+                                                lineNumber: 648,
                                                 columnNumber: 23
                                             }, this),
                                             "Загрузка…"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/eco-almaty-map.tsx",
-                                        lineNumber: 471,
+                                        lineNumber: 647,
                                         columnNumber: 21
-                                    }, this) : rows.map((row, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            style: {
-                                                display: "flex",
-                                                justifyContent: "space-between",
-                                                alignItems: "center",
-                                                padding: "8px 0",
-                                                borderBottom: i < rows.length - 1 ? "1px solid #f3f4f6" : "none"
-                                            },
-                                            children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                    style: {
-                                                        fontSize: 13,
-                                                        color: "#6b7280"
+                                    }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        style: {
+                                            flex: 1
+                                        },
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(PassportSection, {
+                                                title: "Основная информация",
+                                                rows: [
+                                                    {
+                                                        label: "Тип объекта",
+                                                        value: typeName
                                                     },
-                                                    children: row.label
-                                                }, void 0, false, {
-                                                    fileName: "[project]/components/eco-almaty-map.tsx",
-                                                    lineNumber: 481,
-                                                    columnNumber: 23
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                    style: {
-                                                        fontSize: 13,
-                                                        fontWeight: 600,
-                                                        color: row.accent ?? "#111",
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        gap: 5
+                                                    {
+                                                        label: "Адрес",
+                                                        value: "—"
                                                     },
-                                                    children: [
-                                                        row.accent && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                            style: {
-                                                                width: 8,
-                                                                height: 8,
-                                                                borderRadius: "50%",
-                                                                background: row.accent,
-                                                                display: "inline-block"
-                                                            }
-                                                        }, void 0, false, {
-                                                            fileName: "[project]/components/eco-almaty-map.tsx",
-                                                            lineNumber: 483,
-                                                            columnNumber: 40
-                                                        }, this),
-                                                        row.value
-                                                    ]
-                                                }, void 0, true, {
-                                                    fileName: "[project]/components/eco-almaty-map.tsx",
-                                                    lineNumber: 482,
-                                                    columnNumber: 23
-                                                }, this)
-                                            ]
-                                        }, i, true, {
-                                            fileName: "[project]/components/eco-almaty-map.tsx",
-                                            lineNumber: 476,
-                                            columnNumber: 21
-                                        }, this))
+                                                    {
+                                                        label: "Район",
+                                                        value: "—"
+                                                    }
+                                                ]
+                                            }, void 0, false, {
+                                                fileName: "[project]/components/eco-almaty-map.tsx",
+                                                lineNumber: 653,
+                                                columnNumber: 23
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(PassportSection, {
+                                                title: "Идентификация",
+                                                rows: [
+                                                    {
+                                                        label: "ID объекта",
+                                                        value: extId
+                                                    }
+                                                ]
+                                            }, void 0, false, {
+                                                fileName: "[project]/components/eco-almaty-map.tsx",
+                                                lineNumber: 658,
+                                                columnNumber: 23
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(PassportSection, {
+                                                title: "Характеристики",
+                                                rows: [
+                                                    {
+                                                        label: "Порода / вид",
+                                                        value: "—"
+                                                    },
+                                                    {
+                                                        label: "Хвойное",
+                                                        value: isPine ? "Да" : "Нет",
+                                                        accent: isPine ? "#0891b2" : undefined
+                                                    },
+                                                    {
+                                                        label: "Краснокнижное",
+                                                        value: isRedbook ? "Да" : "Нет",
+                                                        accent: isRedbook ? "#dc2626" : undefined
+                                                    }
+                                                ]
+                                            }, void 0, false, {
+                                                fileName: "[project]/components/eco-almaty-map.tsx",
+                                                lineNumber: 661,
+                                                columnNumber: 23
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(PassportSection, {
+                                                title: "Состояние",
+                                                rows: [
+                                                    {
+                                                        label: "Санитарное состояние",
+                                                        value: sanitaryLabel ?? "—",
+                                                        accent: sanitaryLabel ? sanitaryClr : undefined
+                                                    }
+                                                ]
+                                            }, void 0, false, {
+                                                fileName: "[project]/components/eco-almaty-map.tsx",
+                                                lineNumber: 666,
+                                                columnNumber: 23
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(PassportSection, {
+                                                title: "Дополнительная информация",
+                                                rows: [
+                                                    {
+                                                        label: "Комментарий",
+                                                        value: "—"
+                                                    }
+                                                ]
+                                            }, void 0, false, {
+                                                fileName: "[project]/components/eco-almaty-map.tsx",
+                                                lineNumber: 669,
+                                                columnNumber: 23
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/components/eco-almaty-map.tsx",
+                                        lineNumber: 652,
+                                        columnNumber: 21
+                                    }, this),
+                                    !isLoading && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        style: {
+                                            borderTop: "1px solid #e5e7eb",
+                                            padding: "12px 16px",
+                                            display: "flex",
+                                            gap: 8,
+                                            flexShrink: 0,
+                                            background: "#fff"
+                                        },
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                style: {
+                                                    flex: 1,
+                                                    padding: "9px 0",
+                                                    borderRadius: 8,
+                                                    fontSize: 13,
+                                                    fontWeight: 500,
+                                                    border: "1px solid #e5e7eb",
+                                                    background: "#f9fafb",
+                                                    color: "#9ca3af",
+                                                    cursor: "not-allowed",
+                                                    fontFamily: "Inter,sans-serif"
+                                                },
+                                                children: "Редактировать"
+                                            }, void 0, false, {
+                                                fileName: "[project]/components/eco-almaty-map.tsx",
+                                                lineNumber: 681,
+                                                columnNumber: 23
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                onClick: ()=>setDrawerView("report"),
+                                                style: {
+                                                    flex: 1,
+                                                    padding: "9px 0",
+                                                    borderRadius: 8,
+                                                    fontSize: 13,
+                                                    fontWeight: 600,
+                                                    border: "none",
+                                                    background: "#16a34a",
+                                                    color: "#fff",
+                                                    cursor: "pointer",
+                                                    fontFamily: "Inter,sans-serif"
+                                                },
+                                                children: "Оставить обращение"
+                                            }, void 0, false, {
+                                                fileName: "[project]/components/eco-almaty-map.tsx",
+                                                lineNumber: 686,
+                                                columnNumber: 23
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/components/eco-almaty-map.tsx",
+                                        lineNumber: 676,
+                                        columnNumber: 21
+                                    }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/eco-almaty-map.tsx",
-                                lineNumber: 466,
+                                lineNumber: 631,
                                 columnNumber: 17
-                            }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            }, this),
+                            drawerView === "main" && drawerTab === "analytics" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 style: {
                                     flex: 1,
                                     overflowY: "auto",
@@ -1485,14 +2215,14 @@ function EcoAlmatyMap({ visibleLayers }) {
                                             }
                                         }, void 0, false, {
                                             fileName: "[project]/components/eco-almaty-map.tsx",
-                                            lineNumber: 493,
+                                            lineNumber: 703,
                                             columnNumber: 23
                                         }, this),
                                         "Загрузка статистики…"
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/eco-almaty-map.tsx",
-                                    lineNumber: 492,
+                                    lineNumber: 702,
                                     columnNumber: 21
                                 }, this) : (()=>{
                                     const fmt = (n)=>n.toLocaleString("ru-RU");
@@ -1550,7 +2280,7 @@ function EcoAlmatyMap({ visibleLayers }) {
                                                                 children: c.value
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/eco-almaty-map.tsx",
-                                                                lineNumber: 511,
+                                                                lineNumber: 720,
                                                                 columnNumber: 31
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1562,18 +2292,18 @@ function EcoAlmatyMap({ visibleLayers }) {
                                                                 children: c.label
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/eco-almaty-map.tsx",
-                                                                lineNumber: 512,
+                                                                lineNumber: 721,
                                                                 columnNumber: 31
                                                             }, this)
                                                         ]
                                                     }, c.label, true, {
                                                         fileName: "[project]/components/eco-almaty-map.tsx",
-                                                        lineNumber: 510,
+                                                        lineNumber: 719,
                                                         columnNumber: 29
                                                     }, this))
                                             }, void 0, false, {
                                                 fileName: "[project]/components/eco-almaty-map.tsx",
-                                                lineNumber: 504,
+                                                lineNumber: 713,
                                                 columnNumber: 25
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1588,7 +2318,7 @@ function EcoAlmatyMap({ visibleLayers }) {
                                                 children: "По типу"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/eco-almaty-map.tsx",
-                                                lineNumber: 518,
+                                                lineNumber: 726,
                                                 columnNumber: 25
                                             }, this),
                                             stats.byType.map((r)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1611,7 +2341,7 @@ function EcoAlmatyMap({ visibleLayers }) {
                                                                     children: PLANT_TYPE_LABEL[r.type] ?? `Тип ${r.type}`
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/eco-almaty-map.tsx",
-                                                                    lineNumber: 522,
+                                                                    lineNumber: 730,
                                                                     columnNumber: 31
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1622,13 +2352,13 @@ function EcoAlmatyMap({ visibleLayers }) {
                                                                     children: fmt(r.count)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/eco-almaty-map.tsx",
-                                                                    lineNumber: 523,
+                                                                    lineNumber: 731,
                                                                     columnNumber: 31
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/components/eco-almaty-map.tsx",
-                                                            lineNumber: 521,
+                                                            lineNumber: 729,
                                                             columnNumber: 29
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1647,18 +2377,18 @@ function EcoAlmatyMap({ visibleLayers }) {
                                                                 }
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/eco-almaty-map.tsx",
-                                                                lineNumber: 526,
+                                                                lineNumber: 734,
                                                                 columnNumber: 31
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/eco-almaty-map.tsx",
-                                                            lineNumber: 525,
+                                                            lineNumber: 733,
                                                             columnNumber: 29
                                                         }, this)
                                                     ]
                                                 }, r.type, true, {
                                                     fileName: "[project]/components/eco-almaty-map.tsx",
-                                                    lineNumber: 520,
+                                                    lineNumber: 728,
                                                     columnNumber: 27
                                                 }, this)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1673,7 +2403,7 @@ function EcoAlmatyMap({ visibleLayers }) {
                                                 children: "Санитарное состояние"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/eco-almaty-map.tsx",
-                                                lineNumber: 532,
+                                                lineNumber: 739,
                                                 columnNumber: 25
                                             }, this),
                                             stats.bySanitary.map((r)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1707,14 +2437,14 @@ function EcoAlmatyMap({ visibleLayers }) {
                                                                             }
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/components/eco-almaty-map.tsx",
-                                                                            lineNumber: 537,
+                                                                            lineNumber: 744,
                                                                             columnNumber: 33
                                                                         }, this),
                                                                         SANITARY_LABEL[r.id] ?? `КСО-${r.id}`
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/components/eco-almaty-map.tsx",
-                                                                    lineNumber: 536,
+                                                                    lineNumber: 743,
                                                                     columnNumber: 31
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1725,13 +2455,13 @@ function EcoAlmatyMap({ visibleLayers }) {
                                                                     children: fmt(r.count)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/eco-almaty-map.tsx",
-                                                                    lineNumber: 540,
+                                                                    lineNumber: 747,
                                                                     columnNumber: 31
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/components/eco-almaty-map.tsx",
-                                                            lineNumber: 535,
+                                                            lineNumber: 742,
                                                             columnNumber: 29
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1750,18 +2480,18 @@ function EcoAlmatyMap({ visibleLayers }) {
                                                                 }
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/eco-almaty-map.tsx",
-                                                                lineNumber: 543,
+                                                                lineNumber: 750,
                                                                 columnNumber: 31
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/eco-almaty-map.tsx",
-                                                            lineNumber: 542,
+                                                            lineNumber: 749,
                                                             columnNumber: 29
                                                         }, this)
                                                     ]
                                                 }, r.id, true, {
                                                     fileName: "[project]/components/eco-almaty-map.tsx",
-                                                    lineNumber: 534,
+                                                    lineNumber: 741,
                                                     columnNumber: 27
                                                 }, this))
                                         ]
@@ -1769,7 +2499,7 @@ function EcoAlmatyMap({ visibleLayers }) {
                                 })()
                             }, void 0, false, {
                                 fileName: "[project]/components/eco-almaty-map.tsx",
-                                lineNumber: 490,
+                                lineNumber: 700,
                                 columnNumber: 17
                             }, this)
                         ]
@@ -1777,7 +2507,7 @@ function EcoAlmatyMap({ visibleLayers }) {
                 })()
             }, void 0, false, {
                 fileName: "[project]/components/eco-almaty-map.tsx",
-                lineNumber: 393,
+                lineNumber: 537,
                 columnNumber: 7
             }, this),
             globalLoading && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1796,16 +2526,6 @@ function EcoAlmatyMap({ visibleLayers }) {
                     cursor: "wait"
                 },
                 children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("style", {
-                        children: `
-            @keyframes spin  { to { transform: rotate(360deg) } }
-            @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
-          `
-                    }, void 0, false, {
-                        fileName: "[project]/components/eco-almaty-map.tsx",
-                        lineNumber: 567,
-                        columnNumber: 11
-                    }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         style: {
                             width: 56,
@@ -1817,7 +2537,7 @@ function EcoAlmatyMap({ visibleLayers }) {
                         }
                     }, void 0, false, {
                         fileName: "[project]/components/eco-almaty-map.tsx",
-                        lineNumber: 571,
+                        lineNumber: 774,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1836,7 +2556,7 @@ function EcoAlmatyMap({ visibleLayers }) {
                                 children: "Загрузка данных карты"
                             }, void 0, false, {
                                 fileName: "[project]/components/eco-almaty-map.tsx",
-                                lineNumber: 578,
+                                lineNumber: 781,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1849,36 +2569,39 @@ function EcoAlmatyMap({ visibleLayers }) {
                                 children: "Пожалуйста, подождите…"
                             }, void 0, false, {
                                 fileName: "[project]/components/eco-almaty-map.tsx",
-                                lineNumber: 579,
+                                lineNumber: 782,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/eco-almaty-map.tsx",
-                        lineNumber: 577,
+                        lineNumber: 780,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/eco-almaty-map.tsx",
-                lineNumber: 559,
+                lineNumber: 766,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/eco-almaty-map.tsx",
-        lineNumber: 389,
+        lineNumber: 532,
         columnNumber: 5
     }, this);
 }
-_s(EcoAlmatyMap, "p/a0ZSjeDfQm6BjNe2YeRcD051U=", false, function() {
+_s1(EcoAlmatyMap, "nVSEqKTPF8s9dE4QCcnrs+/U4nw=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$themes$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useTheme"]
     ];
 });
-_c = EcoAlmatyMap;
-var _c;
-__turbopack_context__.k.register(_c, "EcoAlmatyMap");
+_c3 = EcoAlmatyMap;
+var _c, _c1, _c2, _c3;
+__turbopack_context__.k.register(_c, "PassportSection");
+__turbopack_context__.k.register(_c1, "FormField");
+__turbopack_context__.k.register(_c2, "ReportForm");
+__turbopack_context__.k.register(_c3, "EcoAlmatyMap");
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }
@@ -2570,6 +3293,7 @@ __turbopack_context__.s([
     "default",
     ()=>EcoAlmatyPage
 ]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$polyfills$2f$process$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = /*#__PURE__*/ __turbopack_context__.i("[project]/node_modules/next/dist/build/polyfills/process.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$shared$2f$lib$2f$app$2d$dynamic$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/shared/lib/app-dynamic.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
@@ -2585,10 +3309,12 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$map$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Map$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/map.js [app-client] (ecmascript) <export default as Map>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chart$2d$no$2d$axes$2d$column$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__BarChart2$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/chart-no-axes-column.js [app-client] (ecmascript) <export default as BarChart2>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$refresh$2d$cw$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__RefreshCw$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/refresh-cw.js [app-client] (ecmascript) <export default as RefreshCw>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/search.js [app-client] (ecmascript) <export default as Search>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__X$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/x.js [app-client] (ecmascript) <export default as X>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/utils.ts [app-client] (ecmascript)");
 ;
 ;
-var _s = __turbopack_context__.k.signature();
+var _s = __turbopack_context__.k.signature(), _s1 = __turbopack_context__.k.signature();
 "use client";
 ;
 ;
@@ -2609,6 +3335,197 @@ const EcoAlmatyMap = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_mo
     ssr: false
 });
 _c = EcoAlmatyMap;
+function MapSearch({ onSelect }) {
+    _s();
+    const [query, setQuery] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
+    const [results, setResults] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
+    const [open, setOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const inputRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const timerRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "MapSearch.useEffect": ()=>{
+            if (!query.trim()) {
+                setResults([]);
+                setOpen(false);
+                return;
+            }
+            if (timerRef.current) clearTimeout(timerRef.current);
+            timerRef.current = setTimeout({
+                "MapSearch.useEffect": async ()=>{
+                    const token = ("TURBOPACK compile-time value", "pk.eyJ1IjoiYXJjdGljLW5pZ2h0bWFyZSIsImEiOiJjbXFocGR5Nm4wMWU3MnhyNjl2dzJneHkyIn0.N_K1OAmPdssi3DrDnRNvSQ") ?? "";
+                    const enc = encodeURIComponent(query);
+                    try {
+                        const res = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${enc}.json?access_token=${token}&proximity=76.945,43.238&country=kz&language=ru&limit=6`);
+                        if (!res.ok) return;
+                        const data = await res.json();
+                        setResults(data.features ?? []);
+                        setOpen(true);
+                    } catch  {}
+                }
+            }["MapSearch.useEffect"], 350);
+        }
+    }["MapSearch.useEffect"], [
+        query
+    ]);
+    const pick = (r)=>{
+        onSelect(r.center);
+        setQuery(r.place_name.split(",")[0]);
+        setOpen(false);
+    };
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+        style: {
+            position: "relative",
+            width: 320
+        },
+        children: [
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                style: {
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    background: "#fff",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 10,
+                    padding: "7px 12px",
+                    boxShadow: "0 2px 12px rgba(0,0,0,0.12)"
+                },
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__["Search"], {
+                        size: 15,
+                        color: "#9ca3af"
+                    }, void 0, false, {
+                        fileName: "[project]/app/eco-almaty/page.tsx",
+                        lineNumber: 61,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                        ref: inputRef,
+                        value: query,
+                        onChange: (e)=>setQuery(e.target.value),
+                        placeholder: "Поиск адреса в Алматы…",
+                        style: {
+                            flex: 1,
+                            border: "none",
+                            outline: "none",
+                            fontSize: 13,
+                            color: "#111",
+                            background: "transparent",
+                            fontFamily: "Inter,sans-serif"
+                        }
+                    }, void 0, false, {
+                        fileName: "[project]/app/eco-almaty/page.tsx",
+                        lineNumber: 62,
+                        columnNumber: 9
+                    }, this),
+                    query && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                        onClick: ()=>{
+                            setQuery("");
+                            setResults([]);
+                            setOpen(false);
+                        },
+                        style: {
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            padding: 0,
+                            color: "#9ca3af",
+                            display: "flex"
+                        },
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__X$3e$__["X"], {
+                            size: 14
+                        }, void 0, false, {
+                            fileName: "[project]/app/eco-almaty/page.tsx",
+                            lineNumber: 72,
+                            columnNumber: 13
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/app/eco-almaty/page.tsx",
+                        lineNumber: 70,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/app/eco-almaty/page.tsx",
+                lineNumber: 55,
+                columnNumber: 7
+            }, this),
+            open && results.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                style: {
+                    position: "absolute",
+                    top: "calc(100% + 6px)",
+                    left: 0,
+                    right: 0,
+                    background: "#fff",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 10,
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.14)",
+                    overflow: "hidden",
+                    zIndex: 200
+                },
+                children: results.map((r, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                        onClick: ()=>pick(r),
+                        style: {
+                            width: "100%",
+                            textAlign: "left",
+                            padding: "9px 14px",
+                            border: "none",
+                            background: "none",
+                            cursor: "pointer",
+                            fontSize: 13,
+                            color: "#111",
+                            borderBottom: i < results.length - 1 ? "1px solid #f3f4f6" : "none",
+                            fontFamily: "Inter,sans-serif",
+                            display: "block"
+                        },
+                        onMouseEnter: (e)=>{
+                            e.currentTarget.style.background = "#f9fafb";
+                        },
+                        onMouseLeave: (e)=>{
+                            e.currentTarget.style.background = "none";
+                        },
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                style: {
+                                    fontWeight: 500
+                                },
+                                children: r.place_name.split(",")[0]
+                            }, void 0, false, {
+                                fileName: "[project]/app/eco-almaty/page.tsx",
+                                lineNumber: 94,
+                                columnNumber: 15
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                style: {
+                                    fontSize: 11,
+                                    color: "#9ca3af",
+                                    marginTop: 2
+                                },
+                                children: r.place_name.split(",").slice(1).join(",").trim()
+                            }, void 0, false, {
+                                fileName: "[project]/app/eco-almaty/page.tsx",
+                                lineNumber: 95,
+                                columnNumber: 15
+                            }, this)
+                        ]
+                    }, i, true, {
+                        fileName: "[project]/app/eco-almaty/page.tsx",
+                        lineNumber: 84,
+                        columnNumber: 13
+                    }, this))
+            }, void 0, false, {
+                fileName: "[project]/app/eco-almaty/page.tsx",
+                lineNumber: 78,
+                columnNumber: 9
+            }, this)
+        ]
+    }, void 0, true, {
+        fileName: "[project]/app/eco-almaty/page.tsx",
+        lineNumber: 54,
+        columnNumber: 5
+    }, this);
+}
+_s(MapSearch, "M3C7JJb0RpGMh/7T8+aHAE5erO0=");
+_c1 = MapSearch;
 const GROUP_META = {
     water: {
         label: "Водные объекты",
@@ -2632,8 +3549,9 @@ const GROUP_META = {
     }
 };
 function EcoAlmatyPage() {
-    _s();
+    _s1();
     const [subTab, setSubTab] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("map");
+    const [centerCoords, setCenterCoords] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [visibleLayers, setVisibleLayers] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(new Set([
         "waste-sites",
         "fountains",
@@ -2712,7 +3630,7 @@ function EcoAlmatyPage() {
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$header$2d$menu$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["HeaderMenu"], {}, void 0, false, {
                 fileName: "[project]/app/eco-almaty/page.tsx",
-                lineNumber: 71,
+                lineNumber: 157,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2736,24 +3654,24 @@ function EcoAlmatyPage() {
                                 className: "h-4 w-4"
                             }, void 0, false, {
                                 fileName: "[project]/app/eco-almaty/page.tsx",
-                                lineNumber: 86,
+                                lineNumber: 172,
                                 columnNumber: 13
                             }, this),
                             label
                         ]
                     }, key, true, {
                         fileName: "[project]/app/eco-almaty/page.tsx",
-                        lineNumber: 79,
+                        lineNumber: 165,
                         columnNumber: 11
                     }, this))
             }, void 0, false, {
                 fileName: "[project]/app/eco-almaty/page.tsx",
-                lineNumber: 74,
+                lineNumber: 160,
                 columnNumber: 7
             }, this),
             subTab === "analytics" ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$eco$2d$almaty$2d$analytics$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["EcoAlmatyAnalytics"], {}, void 0, false, {
                 fileName: "[project]/app/eco-almaty/page.tsx",
-                lineNumber: 93,
+                lineNumber: 179,
                 columnNumber: 9
             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "flex flex-1 overflow-hidden",
@@ -2769,7 +3687,7 @@ function EcoAlmatyPage() {
                                         children: "Слои"
                                     }, void 0, false, {
                                         fileName: "[project]/app/eco-almaty/page.tsx",
-                                        lineNumber: 99,
+                                        lineNumber: 185,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2777,13 +3695,13 @@ function EcoAlmatyPage() {
                                         children: "Выберите данные для отображения"
                                     }, void 0, false, {
                                         fileName: "[project]/app/eco-almaty/page.tsx",
-                                        lineNumber: 100,
+                                        lineNumber: 186,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/eco-almaty/page.tsx",
-                                lineNumber: 98,
+                                lineNumber: 184,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2804,13 +3722,13 @@ function EcoAlmatyPage() {
                                                         className: "h-3.5 w-3.5 text-muted-foreground shrink-0"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/eco-almaty/page.tsx",
-                                                        lineNumber: 115,
+                                                        lineNumber: 201,
                                                         columnNumber: 31
                                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$right$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronRight$3e$__["ChevronRight"], {
                                                         className: "h-3.5 w-3.5 text-muted-foreground shrink-0"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/eco-almaty/page.tsx",
-                                                        lineNumber: 116,
+                                                        lineNumber: 202,
                                                         columnNumber: 32
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(Icon, {
@@ -2820,7 +3738,7 @@ function EcoAlmatyPage() {
                                                         }
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/eco-almaty/page.tsx",
-                                                        lineNumber: 117,
+                                                        lineNumber: 203,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2828,7 +3746,7 @@ function EcoAlmatyPage() {
                                                         children: group.label
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/eco-almaty/page.tsx",
-                                                        lineNumber: 118,
+                                                        lineNumber: 204,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2843,13 +3761,13 @@ function EcoAlmatyPage() {
                                                         title: allOn ? "Скрыть все" : "Показать все"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/eco-almaty/page.tsx",
-                                                        lineNumber: 120,
+                                                        lineNumber: 206,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/eco-almaty/page.tsx",
-                                                lineNumber: 113,
+                                                lineNumber: 199,
                                                 columnNumber: 19
                                             }, this),
                                             isOpen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2866,7 +3784,7 @@ function EcoAlmatyPage() {
                                                                 className: "sr-only"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/eco-almaty/page.tsx",
-                                                                lineNumber: 139,
+                                                                lineNumber: 225,
                                                                 columnNumber: 29
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2878,12 +3796,12 @@ function EcoAlmatyPage() {
                                                                     className: "block w-1.5 h-1 border-b-2 border-l-2 border-white -rotate-45 -mt-0.5"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/eco-almaty/page.tsx",
-                                                                    lineNumber: 148,
+                                                                    lineNumber: 234,
                                                                     columnNumber: 38
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/eco-almaty/page.tsx",
-                                                                lineNumber: 143,
+                                                                lineNumber: 229,
                                                                 columnNumber: 29
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2893,7 +3811,7 @@ function EcoAlmatyPage() {
                                                                 }
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/eco-almaty/page.tsx",
-                                                                lineNumber: 151,
+                                                                lineNumber: 237,
                                                                 columnNumber: 29
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2901,31 +3819,31 @@ function EcoAlmatyPage() {
                                                                 children: layer.label
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/eco-almaty/page.tsx",
-                                                                lineNumber: 153,
+                                                                lineNumber: 239,
                                                                 columnNumber: 29
                                                             }, this)
                                                         ]
                                                     }, layer.id, true, {
                                                         fileName: "[project]/app/eco-almaty/page.tsx",
-                                                        lineNumber: 137,
+                                                        lineNumber: 223,
                                                         columnNumber: 27
                                                     }, this);
                                                 })
                                             }, void 0, false, {
                                                 fileName: "[project]/app/eco-almaty/page.tsx",
-                                                lineNumber: 133,
+                                                lineNumber: 219,
                                                 columnNumber: 21
                                             }, this)
                                         ]
                                     }, group.key, true, {
                                         fileName: "[project]/app/eco-almaty/page.tsx",
-                                        lineNumber: 111,
+                                        lineNumber: 197,
                                         columnNumber: 17
                                     }, this);
                                 })
                             }, void 0, false, {
                                 fileName: "[project]/app/eco-almaty/page.tsx",
-                                lineNumber: 103,
+                                lineNumber: 189,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2941,14 +3859,14 @@ function EcoAlmatyPage() {
                                                 }
                                             }, void 0, false, {
                                                 fileName: "[project]/app/eco-almaty/page.tsx",
-                                                lineNumber: 169,
+                                                lineNumber: 255,
                                                 columnNumber: 15
                                             }, this),
                                             "линия — линейный объект"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/eco-almaty/page.tsx",
-                                        lineNumber: 168,
+                                        lineNumber: 254,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2961,14 +3879,14 @@ function EcoAlmatyPage() {
                                                 }
                                             }, void 0, false, {
                                                 fileName: "[project]/app/eco-almaty/page.tsx",
-                                                lineNumber: 173,
+                                                lineNumber: 259,
                                                 columnNumber: 15
                                             }, this),
                                             "полигон — площадной объект"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/eco-almaty/page.tsx",
-                                        lineNumber: 172,
+                                        lineNumber: 258,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2981,20 +3899,20 @@ function EcoAlmatyPage() {
                                                 }
                                             }, void 0, false, {
                                                 fileName: "[project]/app/eco-almaty/page.tsx",
-                                                lineNumber: 177,
+                                                lineNumber: 263,
                                                 columnNumber: 15
                                             }, this),
                                             "точка — точечный объект"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/eco-almaty/page.tsx",
-                                        lineNumber: 176,
+                                        lineNumber: 262,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/eco-almaty/page.tsx",
-                                lineNumber: 167,
+                                lineNumber: 253,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3010,59 +3928,84 @@ function EcoAlmatyPage() {
                                             className: "h-3 w-3"
                                         }, void 0, false, {
                                             fileName: "[project]/app/eco-almaty/page.tsx",
-                                            lineNumber: 188,
+                                            lineNumber: 274,
                                             columnNumber: 15
                                         }, this),
                                         "Обновить кеш карты"
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/eco-almaty/page.tsx",
-                                    lineNumber: 184,
+                                    lineNumber: 270,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/eco-almaty/page.tsx",
-                                lineNumber: 183,
+                                lineNumber: 269,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/eco-almaty/page.tsx",
-                        lineNumber: 97,
+                        lineNumber: 183,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
                         className: "flex-1 relative",
-                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(EcoAlmatyMap, {
-                            visibleLayers: visibleLayers
-                        }, void 0, false, {
-                            fileName: "[project]/app/eco-almaty/page.tsx",
-                            lineNumber: 196,
-                            columnNumber: 11
-                        }, this)
-                    }, void 0, false, {
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(EcoAlmatyMap, {
+                                visibleLayers: visibleLayers,
+                                centerCoords: centerCoords
+                            }, void 0, false, {
+                                fileName: "[project]/app/eco-almaty/page.tsx",
+                                lineNumber: 282,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                style: {
+                                    position: "absolute",
+                                    top: 12,
+                                    left: "50%",
+                                    transform: "translateX(-50%)",
+                                    zIndex: 40,
+                                    pointerEvents: "auto"
+                                },
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(MapSearch, {
+                                    onSelect: (coords)=>setCenterCoords(coords)
+                                }, void 0, false, {
+                                    fileName: "[project]/app/eco-almaty/page.tsx",
+                                    lineNumber: 285,
+                                    columnNumber: 13
+                                }, this)
+                            }, void 0, false, {
+                                fileName: "[project]/app/eco-almaty/page.tsx",
+                                lineNumber: 284,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
                         fileName: "[project]/app/eco-almaty/page.tsx",
-                        lineNumber: 195,
+                        lineNumber: 281,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/eco-almaty/page.tsx",
-                lineNumber: 95,
+                lineNumber: 181,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/eco-almaty/page.tsx",
-        lineNumber: 70,
+        lineNumber: 156,
         columnNumber: 5
     }, this);
 }
-_s(EcoAlmatyPage, "XUyBHVyvkOjeBT6hGjnpvl7XXIM=");
-_c1 = EcoAlmatyPage;
-var _c, _c1;
+_s1(EcoAlmatyPage, "13ybAzGB81ywC0iJrfRv7Ch8oWw=");
+_c2 = EcoAlmatyPage;
+var _c, _c1, _c2;
 __turbopack_context__.k.register(_c, "EcoAlmatyMap");
-__turbopack_context__.k.register(_c1, "EcoAlmatyPage");
+__turbopack_context__.k.register(_c1, "MapSearch");
+__turbopack_context__.k.register(_c2, "EcoAlmatyPage");
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }

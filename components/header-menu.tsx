@@ -9,10 +9,10 @@ import { Menu, X, Map, Building2, Phone, Sun, Moon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const menuItems = [
-  { name: "Карта датчиков", href: "/", icon: Map },
+  { name: "Воздух", href: "/", icon: Map },
+  { name: "Чистый город", href: "/eco-almaty", icon: Map },
   { name: "Карта зданий без газа", href: "/buildings-without-gas", icon: Building2 },
   { name: "Исходящие звонки", href: "/outgoing-calls", icon: Phone },
-  { name: "Вода, фонтаны, отходы", href: "/eco-almaty", icon: Map },
 ]
 
 export function HeaderMenu() {

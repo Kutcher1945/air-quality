@@ -115,8 +115,13 @@ var _s = __turbopack_context__.k.signature();
 ;
 const menuItems = [
     {
-        name: "Карта датчиков",
+        name: "Воздух",
         href: "/",
+        icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$map$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Map$3e$__["Map"]
+    },
+    {
+        name: "Чистый город",
+        href: "/eco-almaty",
         icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$map$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Map$3e$__["Map"]
     },
     {
@@ -128,11 +133,6 @@ const menuItems = [
         name: "Исходящие звонки",
         href: "/outgoing-calls",
         icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$phone$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Phone$3e$__["Phone"]
-    },
-    {
-        name: "Вода, фонтаны, отходы",
-        href: "/eco-almaty",
-        icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$map$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Map$3e$__["Map"]
     }
 ];
 function HeaderMenu() {
@@ -1020,7 +1020,7 @@ function AqiSidePanel({ currentPm25, aqiData, cityName = "Алматы", selecte
                 return;
             }
             setSensorLoading(true);
-            const BASE = ("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
+            const BASE = ("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
             const url = selectedSensor.ecoIqStationId ? `${BASE}/air/eco-iq/${selectedSensor.ecoIqStationId}/daily/?days=180` : `${BASE}/air/sensors/${selectedSensor.sensor_id}/daily/?parameter=pm25&limit=180`;
             fetch(url, {
                 headers: {
@@ -2681,7 +2681,7 @@ const DISTRICT_COLORS = [
     "#06b6d4",
     "#ec4899"
 ];
-const BASE = ("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
+const BASE = ("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
 function doyToMonth(v) {
     for(let i = DOY_MONTH_STARTS.length - 1; i >= 0; i--){
         if (v >= DOY_MONTH_STARTS[i]) return MONTH_LABELS[i];
@@ -4959,7 +4959,7 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
-const BASE = ("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
+const BASE = ("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
 const MONTH_LABELS = [
     "Янв",
     "Фев",
@@ -6341,7 +6341,7 @@ function AirQualityDashboard() {
             try {
                 setSensorsLoading(true);
                 setSensorsError(null);
-                const response = await fetch(`${("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1"}/air/current/?parameter=pm25&limit=500`, {
+                const response = await fetch(`${("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1"}/air/current/?parameter=pm25&limit=500`, {
                     headers: {
                         Accept: "application/json"
                     }
@@ -6366,7 +6366,7 @@ function AirQualityDashboard() {
                 "AirQualityDashboard.useEffect.fetchAirQuality": async ()=>{
                     try {
                         setLoading(true);
-                        const response = await fetch(`${("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1"}/ecology/api/air-quality-calendar/?year=${currentYear}`, {
+                        const response = await fetch(`${("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1"}/ecology/api/air-quality-calendar/?year=${currentYear}`, {
                             headers: {
                                 Accept: "application/json"
                             }
@@ -6401,14 +6401,14 @@ function AirQualityDashboard() {
             const thisYear = new Date().getFullYear();
             const prevYear = thisYear - 1;
             Promise.all([
-                fetch(`${("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1"}/ecology/api/air-quality-calendar/?year=${prevYear}`, {
+                fetch(`${("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1"}/ecology/api/air-quality-calendar/?year=${prevYear}`, {
                     headers: {
                         Accept: "application/json"
                     }
                 }).then({
                     "AirQualityDashboard.useEffect": (r)=>r.json()
                 }["AirQualityDashboard.useEffect"]),
-                fetch(`${("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1"}/ecology/api/air-quality-calendar/?year=${thisYear}`, {
+                fetch(`${("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1"}/ecology/api/air-quality-calendar/?year=${thisYear}`, {
                     headers: {
                         Accept: "application/json"
                     }
@@ -6448,7 +6448,7 @@ function AirQualityDashboard() {
     ]);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "AirQualityDashboard.useEffect": ()=>{
-            const BASE = ("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
+            const BASE = ("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
             const fetchEcoIq = {
                 "AirQualityDashboard.useEffect.fetchEcoIq": ()=>fetch(`${BASE}/air/eco-iq/current/`, {
                         headers: {
@@ -6471,7 +6471,7 @@ function AirQualityDashboard() {
     }["AirQualityDashboard.useEffect"], []);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "AirQualityDashboard.useEffect": ()=>{
-            const BASE = ("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
+            const BASE = ("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
             // Fetch the full 90-day cap so a clicked calendar day can look up an IQAir value too,
             // not just the last 30 days shown in the mini-strip.
             fetch(`${BASE}/air/eco-iq/city-daily/?days=90`, {
@@ -6501,7 +6501,7 @@ function AirQualityDashboard() {
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "AirQualityDashboard.useEffect": ()=>{
             setTimeseriesLoading(true);
-            const BASE = ("TURBOPACK compile-time value", "http://localhost:8000/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
+            const BASE = ("TURBOPACK compile-time value", "https://admin.smartalmaty.kz/api/v1") ?? "https://admin.smartalmaty.kz/api/v1";
             fetch(`${BASE}/air/analytics/map-timeseries-hourly/?hours=48`, {
                 headers: {
                     Accept: "application/json"

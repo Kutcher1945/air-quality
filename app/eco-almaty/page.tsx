@@ -1,12 +1,12 @@
 "use client"
 
 import dynamic from "next/dynamic"
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { HeaderMenu } from "@/components/header-menu"
 import { LAYERS } from "@/components/eco-almaty-map"
 import { EcoAlmatyAnalytics } from "@/components/eco-almaty-analytics"
 import { clearGeoCache } from "@/components/eco-almaty-map"
-import { Droplets, Waves, Trash2, TreePine, ChevronDown, ChevronRight, Map, BarChart2, RefreshCw } from "lucide-react"
+import { Droplets, Waves, Trash2, TreePine, ChevronDown, ChevronRight, BarChart2, RefreshCw, Search, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const EcoAlmatyMap = dynamic(
@@ -15,6 +15,91 @@ const EcoAlmatyMap = dynamic(
 )
 
 type LayerId = (typeof LAYERS)[number]["id"]
+
+// ── Geocoding search ───────────────────────────────────────────────────────
+type GeoResult = { place_name: string; center: [number, number] }
+
+function MapSearch({ onSelect }: { onSelect: (coords: [number, number]) => void }) {
+  const [query, setQuery] = useState("")
+  const [results, setResults] = useState<GeoResult[]>([])
+  const [open, setOpen] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (!query.trim()) { setResults([]); setOpen(false); return }
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(async () => {
+      const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? ""
+      const enc = encodeURIComponent(query)
+      try {
+        const res = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${enc}.json?access_token=${token}&proximity=76.945,43.238&country=kz&language=ru&limit=6`
+        )
+        if (!res.ok) return
+        const data = await res.json() as { features: GeoResult[] }
+        setResults(data.features ?? [])
+        setOpen(true)
+      } catch { /* non-fatal */ }
+    }, 350)
+  }, [query])
+
+  const pick = (r: GeoResult) => {
+    onSelect(r.center)
+    setQuery(r.place_name.split(",")[0])
+    setOpen(false)
+  }
+
+  return (
+    <div style={{ position: "relative", width: 320 }}>
+      <div style={{
+        display: "flex", alignItems: "center", gap: 8,
+        background: "#fff", border: "1px solid #e5e7eb",
+        borderRadius: 10, padding: "7px 12px",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.12)",
+      }}>
+        <Search size={15} color="#9ca3af" />
+        <input
+          ref={inputRef}
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          placeholder="Поиск адреса в Алматы…"
+          style={{ flex: 1, border: "none", outline: "none", fontSize: 13, color: "#111", background: "transparent", fontFamily: "Inter,sans-serif" }}
+        />
+        {query && (
+          <button onClick={() => { setQuery(""); setResults([]); setOpen(false) }}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: "#9ca3af", display: "flex" }}>
+            <X size={14} />
+          </button>
+        )}
+      </div>
+
+      {open && results.length > 0 && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0,
+          background: "#fff", border: "1px solid #e5e7eb", borderRadius: 10,
+          boxShadow: "0 8px 24px rgba(0,0,0,0.14)", overflow: "hidden", zIndex: 200,
+        }}>
+          {results.map((r, i) => (
+            <button key={i} onClick={() => pick(r)}
+              style={{
+                width: "100%", textAlign: "left", padding: "9px 14px", border: "none",
+                background: "none", cursor: "pointer", fontSize: 13, color: "#111",
+                borderBottom: i < results.length - 1 ? "1px solid #f3f4f6" : "none",
+                fontFamily: "Inter,sans-serif", display: "block",
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "#f9fafb" }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "none" }}
+            >
+              <div style={{ fontWeight: 500 }}>{r.place_name.split(",")[0]}</div>
+              <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 2 }}>{r.place_name.split(",").slice(1).join(",").trim()}</div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const GROUP_META = {
   water:    { label: "Водные объекты",      icon: Droplets, color: "#3b82f6" },
@@ -25,13 +110,25 @@ const GROUP_META = {
 
 type GroupKey = keyof typeof GROUP_META
 
+type ModuleKey = "green" | "water" | "fountain" | "waste"
 type SubTab = "map" | "analytics"
 
+const MODULE_TABS: { key: ModuleKey; label: string; icon: React.ElementType; group?: GroupKey; hasAnalytics?: boolean }[] = [
+  { key: "green",    label: "Зеленые насаждения", icon: TreePine,  group: "green",    hasAnalytics: true  },
+  { key: "water",    label: "Водные объекты",     icon: Droplets,  group: "water"                        },
+  { key: "fountain", label: "Фонтаны",            icon: Waves,     group: "fountain"                     },
+  { key: "waste",    label: "Отходы",             icon: Trash2,    group: "waste"                        },
+]
+
 export default function EcoAlmatyPage() {
+  const [activeModule, setActiveModule] = useState<ModuleKey>("green")
   const [subTab, setSubTab] = useState<SubTab>("map")
+  const [centerCoords, setCenterCoords] = useState<[number, number] | null>(null)
   const [visibleLayers, setVisibleLayers] = useState<Set<LayerId>>(
-    new Set(["waste-sites", "fountains", "ponds", "lakes", "rivers", "plants-1", "plants-2", "plants-3", "plants-4", "plants-5", "plants-6", "plants-7", "plants-8"])
+    () => new Set(LAYERS.filter(l => l.group === "green").map(l => l.id) as LayerId[])
   )
+  const currentModule = MODULE_TABS.find(m => m.key === activeModule)!
+  const activeGroup = currentModule.group
   const [openGroups, setOpenGroups] = useState<Set<GroupKey>>(new Set(["water", "fountain", "waste", "green"]))
 
   const toggleLayer = useCallback((id: LayerId) => {
@@ -60,6 +157,16 @@ export default function EcoAlmatyPage() {
     })
   }, [visibleLayers])
 
+  const switchModule = useCallback((key: ModuleKey) => {
+    setActiveModule(key)
+    setSubTab("map")
+    const mod = MODULE_TABS.find(m => m.key === key)!
+    const groupIds = mod.group
+      ? LAYERS.filter(l => l.group === mod.group).map(l => l.id)
+      : []
+    setVisibleLayers(new Set(groupIds as LayerId[]))
+  }, [])
+
   const groups = (Object.keys(GROUP_META) as GroupKey[]).map(g => ({
     key: g,
     ...GROUP_META[g],
@@ -70,38 +177,54 @@ export default function EcoAlmatyPage() {
     <div className="flex flex-col h-screen overflow-hidden bg-background">
       <HeaderMenu />
 
-      {/* sub-navigation */}
-      <div className="flex items-center gap-1 px-4 border-b border-border bg-card shrink-0">
-        {([
-          { key: "map",       label: "Карта",      Icon: Map },
-          { key: "analytics", label: "Аналитика",  Icon: BarChart2 },
-        ] as { key: SubTab; label: string; Icon: React.ElementType }[]).map(({ key, label, Icon }) => (
-          <button key={key} onClick={() => setSubTab(key)}
+      {/* module tab navigation */}
+      <div className="flex items-center gap-0 px-4 border-b border-border bg-card shrink-0 overflow-x-auto">
+        {MODULE_TABS.map(({ key, label, icon: Icon }) => (
+          <button key={key}
+            onClick={() => switchModule(key)}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-2.5 text-sm border-b-2 transition-colors",
-              subTab === key
-                ? "border-green-600 text-foreground font-medium"
+              "flex items-center gap-1.5 px-4 py-2.5 text-sm border-b-2 transition-colors whitespace-nowrap shrink-0",
+              activeModule === key
+                ? "border-green-600 text-green-700 dark:text-green-400 font-medium"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             )}>
-            <Icon className="h-4 w-4" />
+            <Icon className="h-3.5 w-3.5" />
             {label}
           </button>
         ))}
       </div>
 
-      {subTab === "analytics" ? (
+      {subTab === "analytics" && currentModule.hasAnalytics ? (
         <EcoAlmatyAnalytics />
       ) : (
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <aside className="w-64 shrink-0 border-r border-border bg-card flex flex-col overflow-y-auto">
-          <div className="px-4 py-3 border-b border-border">
-            <h2 className="text-sm font-semibold text-foreground">Слои</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Выберите данные для отображения</p>
+          <div className="px-4 pt-3 pb-0 border-b border-border">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm font-semibold text-foreground">Слои</h2>
+            </div>
+            {/* Карта / Аналитика toggle — only when module has analytics */}
+            {currentModule.hasAnalytics && (
+              <div className="flex gap-0 mb-0">
+                {(["map", "analytics"] as SubTab[]).map(t => (
+                  <button key={t} onClick={() => setSubTab(t)}
+                    className={cn(
+                      "flex-1 py-1.5 text-xs border-b-2 transition-colors",
+                      subTab === t
+                        ? "border-green-600 text-green-700 dark:text-green-400 font-medium"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    )}>
+                    {t === "map" ? "Карта" : "Аналитика"}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="flex-1 py-2">
-            {groups.map(group => {
+          {(
+          <div className="flex-1 py-2 overflow-y-auto">
+            {groups.filter(g => g.key === activeGroup).map(group => {
               const Icon = group.icon
               const isOpen = openGroups.has(group.key)
               const allOn = group.layers.every(l => visibleLayers.has(l.id))
@@ -135,10 +258,9 @@ export default function EcoAlmatyPage() {
                         const on = visibleLayers.has(layer.id)
                         return (
                           <label key={layer.id}
-                            className="flex items-center gap-2 py-1.5 px-2 rounded cursor-pointer hover:bg-muted/50 group">
-                            <input type="checkbox" checked={on}
-                              onChange={() => toggleLayer(layer.id)}
-                              className="sr-only" />
+                            className="flex items-center gap-2 py-1.5 px-2 rounded cursor-pointer hover:bg-muted/50 group"
+                            onClick={e => { e.preventDefault(); toggleLayer(layer.id) }}>
+                            <input type="checkbox" checked={on} readOnly className="sr-only" />
                             {/* custom checkbox */}
                             <span className={cn(
                               "w-3.5 h-3.5 rounded border-2 shrink-0 flex items-center justify-center transition-colors",
@@ -162,38 +284,45 @@ export default function EcoAlmatyPage() {
               )
             })}
           </div>
+          )}
 
-          {/* legend */}
-          <div className="px-4 py-3 border-t border-border text-xs text-muted-foreground space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="w-5 h-0.5 rounded" style={{ backgroundColor: "#3b82f6" }} />
-              линия — линейный объект
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded opacity-40" style={{ backgroundColor: "#3b82f6" }} />
-              полигон — площадной объект
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#06d6a0" }} />
-              точка — точечный объект
-            </div>
-          </div>
-
-          {/* cache refresh */}
-          <div className="px-4 py-3 border-t border-border">
-            <button
-              onClick={() => { clearGeoCache(); window.location.reload() }}
-              className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors w-full"
-            >
-              <RefreshCw className="h-3 w-3" />
-              Обновить кеш карты
-            </button>
-          </div>
+          {/* legend + cache refresh — always visible */}
+          {subTab === "map" && (
+            <>
+              <div className="px-4 py-3 border-t border-border text-xs text-muted-foreground space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-0.5 rounded" style={{ backgroundColor: "#3b82f6" }} />
+                  линия — линейный объект
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded opacity-40" style={{ backgroundColor: "#3b82f6" }} />
+                  полигон — площадной объект
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#06d6a0" }} />
+                  точка — точечный объект
+                </div>
+              </div>
+              <div className="px-4 py-3 border-t border-border">
+                <button
+                  onClick={() => { clearGeoCache(); window.location.reload() }}
+                  className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors w-full"
+                >
+                  <RefreshCw className="h-3 w-3" />
+                  Обновить кеш карты
+                </button>
+              </div>
+            </>
+          )}
         </aside>
 
         {/* Map */}
         <main className="flex-1 relative">
-          <EcoAlmatyMap visibleLayers={visibleLayers} />
+          <EcoAlmatyMap visibleLayers={visibleLayers} centerCoords={centerCoords} />
+          {/* Search bar overlay */}
+          <div style={{ position: "absolute", top: 12, left: "50%", transform: "translateX(-50%)", zIndex: 40, pointerEvents: "auto" }}>
+            <MapSearch onSelect={coords => setCenterCoords(coords)} />
+          </div>
         </main>
       </div>
       )}

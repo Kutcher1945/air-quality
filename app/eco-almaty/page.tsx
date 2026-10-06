@@ -3,7 +3,8 @@
 import dynamic from "next/dynamic"
 import { useState, useCallback, useEffect, useRef } from "react"
 import { HeaderMenu } from "@/components/header-menu"
-import { LAYERS } from "@/components/eco-almaty-map"
+import { LAYERS, DISTRICT_COLORS } from "@/components/eco-almaty-map"
+import type { DistrictInfo } from "@/components/eco-almaty-map"
 import { EcoAlmatyAnalytics } from "@/components/eco-almaty-analytics"
 import { clearGeoCache } from "@/components/eco-almaty-map"
 import { Droplets, Waves, Trash2, TreePine, ChevronDown, ChevronRight, BarChart2, RefreshCw, Search, X } from "lucide-react"
@@ -127,6 +128,11 @@ export default function EcoAlmatyPage() {
   const [visibleLayers, setVisibleLayers] = useState<Set<LayerId>>(
     () => new Set(LAYERS.filter(l => l.group === "green").map(l => l.id) as LayerId[])
   )
+  const [layerCounts, setLayerCounts] = useState<Record<string, number>>({})
+  const [isMapLoading, setIsMapLoading] = useState(true)
+  const [showDistricts, setShowDistricts] = useState(true)
+  const [selectedDistrict, setSelectedDistrict] = useState<DistrictInfo | null>(null)
+  const [districts, setDistricts] = useState<(DistrictInfo & {color: string})[]>([])
   const currentModule = MODULE_TABS.find(m => m.key === activeModule)!
   const activeGroup = currentModule.group
   const [openGroups, setOpenGroups] = useState<Set<GroupKey>>(new Set(["water", "fountain", "waste", "green"]))
@@ -173,17 +179,43 @@ export default function EcoAlmatyPage() {
     layers: LAYERS.filter(l => l.group === g),
   }))
 
+  useEffect(() => {
+    const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1"
+    const EXCLUDED = new Set([0, 9])
+    fetch(`${API}/address/districts/`)
+      .then(r => r.ok ? r.json() : null)
+      .then((fc: {features?: {id?: number; properties?: {id?: number; name_ru?: string}}[]} | null) => {
+        if (!fc?.features) return
+        const list = fc.features
+          .map(f => {
+            const id = Number(f.id ?? f.properties?.id ?? 0)
+            const name = String(f.properties?.name_ru ?? "")
+            return { id, name, color: DISTRICT_COLORS[id] ?? "#94a3b8" }
+          })
+          .filter(d => d.id && !EXCLUDED.has(d.id) && d.name)
+          .sort((a, b) => a.id - b.id)
+        setDistricts(list)
+      })
+      .catch(() => {})
+  }, [])
+
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-background">
+      {/* Full-page blocker — covers header, tabs, sidebar, everything while loading */}
+      {isMapLoading && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 50, cursor: "wait", pointerEvents: "all" }} />
+      )}
       <HeaderMenu />
 
-      {/* module tab navigation */}
-      <div className="flex items-center gap-0 px-4 border-b border-border bg-card shrink-0 overflow-x-auto">
+      {/* module tab navigation — blocked while map is loading */}
+      <div className="relative flex items-center gap-0 px-4 border-b border-border bg-card shrink-0 overflow-x-auto">
         {MODULE_TABS.map(({ key, label, icon: Icon }) => (
           <button key={key}
-            onClick={() => switchModule(key)}
+            onClick={() => !isMapLoading && switchModule(key)}
+            disabled={isMapLoading}
             className={cn(
               "flex items-center gap-1.5 px-4 py-2.5 text-sm border-b-2 transition-colors whitespace-nowrap shrink-0",
+              isMapLoading ? "opacity-40 cursor-not-allowed" : "",
               activeModule === key
                 ? "border-green-600 text-green-700 dark:text-green-400 font-medium"
                 : "border-transparent text-muted-foreground hover:text-foreground"
@@ -192,18 +224,83 @@ export default function EcoAlmatyPage() {
             {label}
           </button>
         ))}
+        {isMapLoading && (
+          <div className="absolute inset-0 cursor-not-allowed" />
+        )}
       </div>
 
       {subTab === "analytics" && currentModule.hasAnalytics ? (
         <EcoAlmatyAnalytics />
       ) : (
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <aside className="w-64 shrink-0 border-r border-border bg-card flex flex-col overflow-y-auto">
+        {/* Sidebar — blocked during loading */}
+        <aside className="relative w-64 shrink-0 border-r border-border bg-card flex flex-col overflow-y-auto">
           <div className="px-4 pt-3 pb-0 border-b border-border">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-sm font-semibold text-foreground">Слои</h2>
             </div>
+            {/* Districts overlay toggle — always visible */}
+            <label className="flex items-center gap-2 py-1.5 px-1 mb-1 rounded cursor-pointer hover:bg-muted/50 select-none"
+              onClick={e => {
+                e.preventDefault()
+                setShowDistricts(v => {
+                  if (v) setSelectedDistrict(null) // clear filter when hiding districts
+                  return !v
+                })
+              }}>
+              <span className={cn(
+                "w-3.5 h-3.5 rounded border-2 shrink-0 flex items-center justify-center transition-colors",
+                showDistricts ? "border-transparent bg-indigo-500" : "border-muted-foreground"
+              )}>
+                {showDistricts && <span className="block w-1.5 h-1 border-b-2 border-l-2 border-white -rotate-45 -mt-0.5" />}
+              </span>
+              <span className="w-2 h-2 rounded-full shrink-0 bg-indigo-400" />
+              <span className="text-xs text-foreground">Районы города</span>
+            </label>
+
+            {/* District list — shown when districts layer is on */}
+            {showDistricts && districts.length > 0 && (
+              <div className="pb-1.5 space-y-0.5">
+                {/* "All districts" reset button */}
+                <button
+                  onClick={() => setSelectedDistrict(null)}
+                  className={cn(
+                    "w-full flex items-center gap-2 px-2 py-1 rounded text-xs transition-colors text-left",
+                    !selectedDistrict
+                      ? "bg-indigo-50 text-indigo-700 font-medium dark:bg-indigo-950/40 dark:text-indigo-300"
+                      : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                  )}
+                >
+                  <span className="w-3.5 h-3.5 rounded border-2 shrink-0 flex items-center justify-center border-transparent bg-indigo-400">
+                    {!selectedDistrict && <span className="block w-1.5 h-1 border-b-2 border-l-2 border-white -rotate-45 -mt-0.5" />}
+                  </span>
+                  Все районы
+                </button>
+                {districts.map(d => (
+                  <button
+                    key={d.id}
+                    onClick={() => setSelectedDistrict(prev => prev?.id === d.id ? null : d)}
+                    className={cn(
+                      "w-full flex items-center gap-2 px-2 py-1 rounded text-xs transition-colors text-left",
+                      selectedDistrict?.id === d.id
+                        ? "font-semibold"
+                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                    )}
+                    style={selectedDistrict?.id === d.id ? { background: d.color + "18", color: d.color } : {}}
+                  >
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shrink-0 ring-2 ring-transparent transition-all"
+                      style={{
+                        backgroundColor: d.color,
+                        boxShadow: selectedDistrict?.id === d.id ? `0 0 0 2px ${d.color}55` : undefined,
+                      }}
+                    />
+                    {d.name}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* Карта / Аналитика toggle — only when module has analytics */}
             {currentModule.hasAnalytics && (
               <div className="flex gap-0 mb-0">
@@ -272,9 +369,14 @@ export default function EcoAlmatyPage() {
                             {/* color dot */}
                             <span className="w-2 h-2 rounded-full shrink-0"
                               style={{ backgroundColor: layer.color }} />
-                            <span className={cn("text-xs leading-tight", on ? "text-foreground" : "text-muted-foreground")}>
+                            <span className={cn("text-xs leading-tight flex-1", on ? "text-foreground" : "text-muted-foreground")}>
                               {layer.label}
                             </span>
+                            {layerCounts[layer.id] != null && (
+                              <span className="text-xs text-muted-foreground ml-auto shrink-0 tabular-nums">
+                                {layerCounts[layer.id].toLocaleString("ru")}
+                              </span>
+                            )}
                           </label>
                         )
                       })}
@@ -314,11 +416,28 @@ export default function EcoAlmatyPage() {
               </div>
             </>
           )}
+
+          {/* Sidebar loading block */}
+          {isMapLoading && (
+            <div className="absolute inset-0 z-10 bg-card/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3 cursor-not-allowed select-none">
+              <div className="w-5 h-5 rounded-full border-2 border-border border-t-green-500 animate-spin" />
+              <span className="text-xs text-muted-foreground text-center px-4">Загрузка данных…</span>
+            </div>
+          )}
         </aside>
 
         {/* Map */}
         <main className="flex-1 relative">
-          <EcoAlmatyMap visibleLayers={visibleLayers} centerCoords={centerCoords} />
+          <EcoAlmatyMap
+            visibleLayers={visibleLayers}
+            centerCoords={centerCoords}
+            activeGroup={activeGroup}
+            showDistricts={showDistricts}
+            selectedDistrict={selectedDistrict}
+            onDistrictChange={setSelectedDistrict}
+            onLayerLoad={(id, count) => setLayerCounts(prev => ({ ...prev, [id]: count }))}
+            onLoadingChange={setIsMapLoading}
+          />
           {/* Search bar overlay */}
           <div style={{ position: "absolute", top: 12, left: "50%", transform: "translateX(-50%)", zIndex: 40, pointerEvents: "auto" }}>
             <MapSearch onSelect={coords => setCenterCoords(coords)} />
